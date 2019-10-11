@@ -1,5 +1,6 @@
-package com.sjtu.objectdataengine.utils;
+package com.sjtu.objectdataengine.dao;
 
+import com.sjtu.objectdataengine.utils.ExpireEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.BoundListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -17,12 +18,12 @@ import java.util.concurrent.TimeUnit;
  */
 
 @Component
-public class RedisUtil {
+public class RedisDAO {
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
-    public RedisUtil(RedisTemplate<String, Object> redisTemplate) {
+    public RedisDAO(RedisTemplate<String, Object> redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
 
@@ -103,7 +104,7 @@ public class RedisUtil {
      * @param value 值
      * @return true成功 false失败
      */
-    public boolean set(String key,Object value) {
+    public boolean set(String key, Object value) {
         try {
             redisTemplate.opsForValue().set(key, value);
             return true;
