@@ -6,7 +6,7 @@ public class ExpireEnum {
     private long time;
     private TimeUnit timeUnit;
 
-    ExpireEnum(long time, TimeUnit timeUnit) {
+    public ExpireEnum(long time, TimeUnit timeUnit) {
         this.time = time;
         this.timeUnit = timeUnit;
     }
