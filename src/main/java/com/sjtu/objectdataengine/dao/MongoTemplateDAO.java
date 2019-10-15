@@ -2,6 +2,7 @@ package com.sjtu.objectdataengine.dao;
 
 import com.sjtu.objectdataengine.model.ObjectTemplate;
 import com.sjtu.objectdataengine.utils.MongoCondition;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -12,11 +13,12 @@ import org.springframework.stereotype.Component;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.regex.Pattern;
 
 @Component
 public class MongoTemplateDAO extends MongoBaseDAO<ObjectTemplate>{
-
+    @Autowired
     private MongoTemplate mongoTemplate;
 
     /**
@@ -26,8 +28,11 @@ public class MongoTemplateDAO extends MongoBaseDAO<ObjectTemplate>{
      */
     @Override
     public boolean create(ObjectTemplate objectTemplate) {
-        objectTemplate.setCreateTime(new Date());
-        objectTemplate.setUpdateTime(new Date());
+        Date date = new Date();
+        TimeZone.setDefault(TimeZone.getTimeZone("Asia/Shanghai"));
+        System.out.println(date);
+        objectTemplate.setCreateTime(date);
+        objectTemplate.setUpdateTime(date);
         try {
             mongoTemplate.insert(objectTemplate);
             return true;
@@ -56,6 +61,7 @@ public class MongoTemplateDAO extends MongoBaseDAO<ObjectTemplate>{
         Query query = new Query();
         Criteria criteria = Criteria.where("_id").is(key);
         query.addCriteria(criteria);
+        //System.out.println(query);
         return mongoTemplate.findOne(query, ObjectTemplate.class);
     }
 
@@ -73,6 +79,7 @@ public class MongoTemplateDAO extends MongoBaseDAO<ObjectTemplate>{
             String mapValue = entry.getValue();
             query.addCriteria(Criteria.where(mapKey).is(mapValue));
         }
+        //System.out.println(query);
         return mongoTemplate.find(query, ObjectTemplate.class);
     }
 
@@ -81,7 +88,7 @@ public class MongoTemplateDAO extends MongoBaseDAO<ObjectTemplate>{
      * @param mongoCondition 更新条件
      */
     @Override
-    public void update(MongoCondition mongoCondition) {
+    public boolean update(MongoCondition mongoCondition) {
         Query query = new Query();
         Update update = new Update();
         Map<String, String> queryMap = mongoCondition.getQueryMap();
@@ -96,7 +103,12 @@ public class MongoTemplateDAO extends MongoBaseDAO<ObjectTemplate>{
             String mapValue = entry.getValue();
             update.set(mapKey, mapValue);
         }
-        mongoTemplate.updateMulti(query, update, ObjectTemplate.class);
+        try {
+            mongoTemplate.updateMulti(query, update, ObjectTemplate.class);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     /**
@@ -104,9 +116,15 @@ public class MongoTemplateDAO extends MongoBaseDAO<ObjectTemplate>{
      * @param key 键
      */
     @Override
-    public void deleteByKey(String key)  {
+    public boolean deleteByKey(String key)  {
         ObjectTemplate objectTemplate = findByKey(key);
-        mongoTemplate.remove(objectTemplate);
+        try {
+            mongoTemplate.remove(objectTemplate);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     /**
@@ -114,13 +132,24 @@ public class MongoTemplateDAO extends MongoBaseDAO<ObjectTemplate>{
      * @param mongoCondition 删除条件
      */
     @Override
-    public void deleteByArgs(MongoCondition mongoCondition) {
+    public boolean deleteByArgs(MongoCondition mongoCondition) {
         List<ObjectTemplate> objectTemplates = findByArgs(mongoCondition);
-        for (ObjectTemplate objectTemplate : objectTemplates) {
-            mongoTemplate.remove(objectTemplate);
+        try {
+            for (ObjectTemplate objectTemplate : objectTemplates) {
+                mongoTemplate.remove(objectTemplate);
+            }
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
     }
 
+    /**
+     * 模糊查询
+     * @param search 查询条件
+     * @return 查询结果
+     */
     @Override
     public List<ObjectTemplate> fuzzySearch(String search) {
         Query query = new Query();

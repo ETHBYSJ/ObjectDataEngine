@@ -38,19 +38,19 @@ public abstract class MongoBaseDAO<T> {
      * 更新对象
      * @param mongoCondition 更新条件
      */
-    public abstract void update(MongoCondition mongoCondition);
+    public abstract boolean update(MongoCondition mongoCondition);
 
     /**
      * 根据键值删除对象
      * @param key 键
      */
-    public abstract void deleteByKey(String key);
+    public abstract boolean deleteByKey(String key);
 
     /**
      * 根据查询条件删除对象
      * @param mongoCondition 删除条件
      */
-    public abstract void deleteByArgs(MongoCondition mongoCondition);
+    public abstract boolean deleteByArgs(MongoCondition mongoCondition);
 
     /**
      * 模糊查询

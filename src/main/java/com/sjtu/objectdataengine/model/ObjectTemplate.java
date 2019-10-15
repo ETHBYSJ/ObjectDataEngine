@@ -15,10 +15,10 @@ public class ObjectTemplate {
     private Date createTime;        //创建时间
     private Date updateTime;        //更新时间
 
-    public ObjectTemplate(String id, String name, Set<String> attribute) {
+    public ObjectTemplate(String id, String name, Set<String> attr) {
         this.id = id;
         this.name = name;
-        this.attr = attribute;
+        this.attr = attr;
     }
 
     public String getId() {
@@ -75,5 +75,10 @@ public class ObjectTemplate {
         } else {
             return false;
         }
+    }
+
+    @Override
+    public String toString() {
+        return id + " " + name + " " + attr;
     }
 }

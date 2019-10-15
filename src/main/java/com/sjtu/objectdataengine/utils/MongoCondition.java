@@ -84,4 +84,9 @@ public class MongoCondition {
     public void clearUpdate() {
         this.updateMap.clear();
     }
+
+    @Override
+    public String toString() {
+        return queryMap.toString();
+    }
 }

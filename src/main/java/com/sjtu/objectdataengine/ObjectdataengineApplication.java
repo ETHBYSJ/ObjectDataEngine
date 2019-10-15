@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ObjectdataengineApplication {
+public class ObjectDataEngineApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(ObjectdataengineApplication.class, args);
+        SpringApplication.run(ObjectDataEngineApplication.class, args);
     }
 
 }
