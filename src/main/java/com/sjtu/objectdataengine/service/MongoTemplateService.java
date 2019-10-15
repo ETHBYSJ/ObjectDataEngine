@@ -62,7 +62,7 @@ public class MongoTemplateService {
      * @throws Exception readValue
      */
     public List<ObjectTemplate> findTemplate(String request) throws Exception{
-        HashMap<String, String> queryMap = MAPPER.readValue(request, HashMap.class);
+        HashMap<String, Object> queryMap = MAPPER.readValue(request, HashMap.class);
         MongoCondition mongoCondition = new MongoCondition("query", queryMap, queryMap);
         return mongoTemplateDAO.findByArgs(mongoCondition);
     }
@@ -83,7 +83,7 @@ public class MongoTemplateService {
      * @throws Exception readValue错误
      */
     public boolean deleteTemplate(String request) throws Exception{
-        HashMap<String, String> queryMap = MAPPER.readValue(request, HashMap.class);
+        HashMap<String, Object> queryMap = MAPPER.readValue(request, HashMap.class);
         MongoCondition mongoCondition = new MongoCondition("delete", queryMap, queryMap);
         return mongoTemplateDAO.deleteByArgs(mongoCondition);
     }
@@ -93,8 +93,8 @@ public class MongoTemplateService {
         JSONObject jsonObject = JSON.parseObject(request);
         String query = jsonObject.getJSONObject("query").toJSONString();
         String update = jsonObject.getJSONObject("update").toJSONString();
-        HashMap<String, String> queryMap = MAPPER.readValue(query, HashMap.class);
-        HashMap<String, String> updateMap = MAPPER.readValue(update, HashMap.class);
+        HashMap<String, Object> queryMap = MAPPER.readValue(query, HashMap.class);
+        HashMap<String, Object> updateMap = MAPPER.readValue(update, HashMap.class);
         MongoCondition mongoCondition = new MongoCondition("update", queryMap, updateMap);
         //System.out.println(query);
         //System.out.println(update);

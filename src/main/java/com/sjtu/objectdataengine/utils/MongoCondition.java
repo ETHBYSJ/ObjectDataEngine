@@ -1,5 +1,9 @@
 package com.sjtu.objectdataengine.utils;
 
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -7,20 +11,19 @@ import java.util.Map;
 
 public class MongoCondition {
     private String opType;                  //操作类型，query和update和delete
-    private Map<String, String> queryMap;
-    private Map<String, String> updateMap;
+    private Map<String, Object> queryMap;
+    private Map<String, Object> updateMap;
 
     public MongoCondition() {
-        this.queryMap = new HashMap<String, String>();
-        this.updateMap = new HashMap<String, String>();
+        this.queryMap = new HashMap<String, Object>();
+        this.updateMap = new HashMap<String, Object>();
     }
 
-    public MongoCondition(String opType, Map<String, String> queryMap, Map<String, String> updateMap) {
+    public MongoCondition(String opType, Map<String, Object> queryMap, Map<String, Object> updateMap) {
         this.opType = opType;
         this.queryMap = queryMap;
         this.updateMap = updateMap;
     }
-
     public String getOpType() {
         return opType;
     }
@@ -29,19 +32,16 @@ public class MongoCondition {
         this.opType = opType;
     }
 
-    public Map<String, String> getQueryMap() {
+    public Map<String, Object> getQueryMap() {
         return queryMap;
     }
 
-    public void setQueryMap(Map<String, String> queryMap) {
-        this.queryMap = queryMap;
-    }
 
-    public Map<String, String> getUpdateMap() {
+    public Map<String, ?> getUpdateMap() {
         return updateMap;
     }
 
-    public void setUpdateMap(Map<String, String> updateMap) {
+    public void setUpdateMap(Map<String, Object> updateMap) {
         this.updateMap = updateMap;
     }
 
@@ -61,11 +61,11 @@ public class MongoCondition {
         return updateMap.size();
     }
 
-    public void addQuery(String key, String value) {
+    public void addQuery(String key, Object value) {
         this.queryMap.put(key, value);
     }
 
-    public void addUpdate(String key, String value) {
+    public void addUpdate(String key, Object value) {
         this.updateMap.put(key, value);
     }
 
@@ -83,6 +83,26 @@ public class MongoCondition {
 
     public void clearUpdate() {
         this.updateMap.clear();
+    }
+
+    public Query getQuery() {
+        Query query = new Query();
+        for(Map.Entry<String, Object> entry : queryMap.entrySet()) {
+            String mapKey = entry.getKey();
+            Object mapValue = entry.getValue();
+            query.addCriteria(Criteria.where(mapKey).is(mapValue));
+        }
+        return query;
+    }
+
+    public Update getUpdate() {
+        Update update = new Update();
+        for(Map.Entry<String, Object> entry : updateMap.entrySet()) {
+            String mapKey = entry.getKey();
+            Object mapValue = entry.getValue();
+            update.set(mapKey, mapValue);
+        }
+        return update;
     }
 
     @Override

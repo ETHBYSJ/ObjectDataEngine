@@ -1,18 +1,41 @@
 package com.sjtu.objectdataengine.dao;
 
+import com.sjtu.objectdataengine.model.MongoBase;
+import com.sjtu.objectdataengine.model.ObjectTemplate;
 import com.sjtu.objectdataengine.utils.MongoCondition;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 
+
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
-public abstract class MongoBaseDAO<T> {
-
+public abstract class MongoBaseDAO<T extends MongoBase> {
+    @Autowired
+    protected MongoTemplate mongoTemplate;
 
     /**
      * 创建对象
      * @param t 存储对象
      * @return 布尔，1表示成功
      */
-    public abstract boolean create(T t);
+    public boolean create(T t) {
+        Date date = new Date();
+        t.setCreateTime(date);
+        t.setUpdateTime(date);
+        try {
+            mongoTemplate.insert(t);
+            return true;
+        } catch (DuplicateKeyException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
     /**
      * 查询全部
@@ -44,17 +67,38 @@ public abstract class MongoBaseDAO<T> {
      * 根据键值删除对象
      * @param key 键
      */
-    public abstract boolean deleteByKey(String key);
+    public boolean deleteByKey(String key) {
+        T t = findByKey(key);
+        try {
+            mongoTemplate.remove(t);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
     /**
      * 根据查询条件删除对象
      * @param mongoCondition 删除条件
      */
-    public abstract boolean deleteByArgs(MongoCondition mongoCondition);
+    public boolean deleteByArgs(MongoCondition mongoCondition) {
+        try {
+            List<T> ts = findByArgs(mongoCondition);
+            for (T t : ts) {
+                mongoTemplate.remove(t);
+            }
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
     /**
      * 模糊查询
      * @param search 查询条件
      */
     public abstract List<T> fuzzySearch(String search);
+
 }
