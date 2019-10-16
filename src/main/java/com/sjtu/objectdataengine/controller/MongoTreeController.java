@@ -31,4 +31,9 @@ public class MongoTreeController {
         return mongoTreeService.findNodeByKey(key);
     }
 
+    @PostMapping("/update_node")
+    @ResponseBody
+    public boolean updateNode(@RequestBody String request) {
+        return mongoTreeService.updateNodeByKey(request);
+    }
 }
