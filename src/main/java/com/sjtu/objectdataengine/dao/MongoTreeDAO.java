@@ -36,11 +36,13 @@ public class MongoTreeDAO extends MongoBaseDAO<KnowledgeTreeNode> {
 
     @Override
     public boolean update(MongoCondition mongoCondition) {
-        Query query = mongoCondition.getQuery();
-        Update update = mongoCondition.getUpdate();
-        update.set("updateTime", new Date());
-        try {
-            mongoTemplate.updateMulti(query, update, ObjectTemplate.class);
+       try {
+            Query query = mongoCondition.getQuery();
+            Update update = mongoCondition.getUpdate();
+            update.set("updateTime", new Date());
+            System.out.println(query);
+            System.out.println(update);
+            mongoTemplate.updateMulti(query, update, KnowledgeTreeNode.class);
             return true;
         } catch (Exception e) {
             return false;

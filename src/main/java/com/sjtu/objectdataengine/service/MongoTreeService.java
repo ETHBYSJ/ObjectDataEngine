@@ -8,10 +8,12 @@ import com.sjtu.objectdataengine.dao.MongoTemplateDAO;
 import com.sjtu.objectdataengine.dao.MongoTreeDAO;
 import com.sjtu.objectdataengine.model.KnowledgeTreeNode;
 import com.sjtu.objectdataengine.utils.MongoCondition;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.List;
 
+@Component
 public class MongoTreeService {
 
     private static ObjectMapper MAPPER = new ObjectMapper();
@@ -20,13 +22,18 @@ public class MongoTreeService {
     MongoTreeDAO mongoTreeDAO;
 
     private void addChild(String child, List<String> parents) {
+        //System.out.println(child);
+        //System.out.println(parents);
         MongoCondition mongoCondition = new MongoCondition();
         for (String parent : parents) {
             List<String> childrenList = mongoTreeDAO.findByKey(parent).getChildren();
             childrenList.add(child);
-            mongoCondition.addQuery("_id", parent);
+            mongoCondition.addQuery("id", parent);
             mongoCondition.addUpdate("children", childrenList);
+            //System.out.println(mongoCondition);
             mongoTreeDAO.update(mongoCondition);
+            mongoCondition.clearQuery();
+            mongoCondition.clearUpdate();
         }
     }
 
