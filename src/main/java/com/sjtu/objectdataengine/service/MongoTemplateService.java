@@ -3,13 +3,16 @@ package com.sjtu.objectdataengine.service;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sjtu.objectdataengine.dao.MongoTemplateDAO;
 import com.sjtu.objectdataengine.model.ObjectTemplate;
 import com.sjtu.objectdataengine.utils.MongoCondition;
+import io.netty.handler.codec.json.JsonObjectDecoder;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -29,10 +32,13 @@ public class MongoTemplateService {
      */
     public boolean createObjectTemplate(String request) {
         JSONObject jsonObject = JSON.parseObject(request);
+        //id必须要有
         String id = jsonObject.getString("id");
+        if(id == null) return false;
         String name = jsonObject.getString("name");
+        if (name == null) name = "";
         JSONArray jsonArray = jsonObject.getJSONArray("attr");
-        List<String> attr = JSONObject.parseArray(jsonArray.toJSONString(), String.class);
+        List<String> attr = jsonArray==null ? new ArrayList<>() : JSONObject.parseArray(jsonArray.toJSONString(), String.class);
         HashSet<String> attrSet = new HashSet<String>(attr);
         ObjectTemplate objectTemplate = new ObjectTemplate(id, name, attrSet);
         return mongoTemplateDAO.create(objectTemplate);
@@ -88,16 +94,21 @@ public class MongoTemplateService {
         return mongoTemplateDAO.deleteByArgs(mongoCondition);
     }
 
+    /**
+     * 根据条件更新对象模板
+     * @param request json条件，同mongodb，一个query一个update都是json，不写query=全部
+     * @return true表示成功，false反之
+     * @throws Exception readValue
+     */
     public boolean updateTemplate(String request) throws Exception{
-        //System.out.println(query);
         JSONObject jsonObject = JSON.parseObject(request);
-        String query = jsonObject.getJSONObject("query").toJSONString();
-        String update = jsonObject.getJSONObject("update").toJSONString();
-        HashMap<String, Object> queryMap = MAPPER.readValue(query, HashMap.class);
-        HashMap<String, Object> updateMap = MAPPER.readValue(update, HashMap.class);
+        JSONObject queryObject = jsonObject.getJSONObject("query");
+        String query = queryObject==null ? "" : queryObject.toJSONString();
+        JSONObject updateObject = jsonObject.getJSONObject("update");
+        String update = updateObject==null ? "" : updateObject.toJSONString();
+        HashMap<String, Object> queryMap = query.equals("") ? new HashMap<>(): MAPPER.readValue(query, HashMap.class);
+        HashMap<String, Object> updateMap = update.equals("") ? new HashMap<>(): MAPPER.readValue(update, HashMap.class);
         MongoCondition mongoCondition = new MongoCondition("update", queryMap, updateMap);
-        //System.out.println(query);
-        //System.out.println(update);
         return mongoTemplateDAO.update(mongoCondition);
     }
 }

@@ -1,7 +1,6 @@
 package com.sjtu.objectdataengine.dao;
 
 import com.sjtu.objectdataengine.model.KnowledgeTreeNode;
-import com.sjtu.objectdataengine.model.ObjectTemplate;
 import com.sjtu.objectdataengine.utils.MongoCondition;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -40,8 +39,6 @@ public class MongoTreeDAO extends MongoBaseDAO<KnowledgeTreeNode> {
             Query query = mongoCondition.getQuery();
             Update update = mongoCondition.getUpdate();
             update.set("updateTime", new Date());
-            System.out.println(query);
-            System.out.println(update);
             mongoTemplate.updateMulti(query, update, KnowledgeTreeNode.class);
             return true;
         } catch (Exception e) {
