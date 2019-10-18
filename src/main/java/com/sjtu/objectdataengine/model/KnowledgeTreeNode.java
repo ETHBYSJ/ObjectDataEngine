@@ -12,15 +12,7 @@ public class KnowledgeTreeNode extends MongoBase{
     private String name;    //名称
     private String template;    //对象模板
 
-    public Map<String, String> getSys() {
-        return sys;
-    }
 
-    public void setSys(Map<String, String> sys) {
-        this.sys = sys;
-    }
-
-    private Map<String, String> sys; //系统
     //private Map<String, String> events; //事件
     private List<String> parents; //父节点
     private List<String> children;

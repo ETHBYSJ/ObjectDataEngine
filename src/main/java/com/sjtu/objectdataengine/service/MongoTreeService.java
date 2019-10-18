@@ -10,7 +10,6 @@ import com.sjtu.objectdataengine.utils.MongoCondition;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import javax.print.DocFlavor;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
