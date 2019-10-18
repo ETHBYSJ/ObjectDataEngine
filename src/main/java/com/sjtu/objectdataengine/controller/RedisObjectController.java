@@ -9,12 +9,15 @@ import java.util.Set;
 @RequestMapping("/redisobject")
 @RestController
 public class RedisObjectController {
+
     @Autowired
     private RedisObjectService redisObjectService;
+
     @GetMapping("find_attr")
     public Set<Object> findAttr(@RequestParam String id) {
         return redisObjectService.findAttrByObjectId(id);
     }
+
     @GetMapping("remove_attr")
     public boolean removeAttr(@RequestParam String id, @RequestParam String attr) {
         return redisObjectService.removeAttrByObjectId(id, attr);
