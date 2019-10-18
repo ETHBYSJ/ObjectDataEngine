@@ -12,11 +12,15 @@ public class ObjectTemplate extends MongoBase{
     private String id;              //对象模板id
     private String name;            //对象模板name
     private Set<String> attr;       //属性集合
+    private String nodeId;          //对应的结点id
+    private String type;            //类型，有事件和实体
 
-    public ObjectTemplate(String id, String name, Set<String> attr) {
+    public ObjectTemplate(String id, String name, Set<String> attr, String nodeId, String type) {
         this.id = id;
         this.name = name;
         this.attr = attr;
+        this.nodeId = nodeId;
+        this.type = type;
     }
 
     public String getId() {
@@ -41,6 +45,22 @@ public class ObjectTemplate extends MongoBase{
 
     public void setAttr(Set<String> attribute) {
         this.attr = attribute;
+    }
+
+    public String getNodeId() {
+        return nodeId;
+    }
+
+    public void setNodeId(String nodeId) {
+        this.nodeId = nodeId;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public boolean addAttr(String name) {
