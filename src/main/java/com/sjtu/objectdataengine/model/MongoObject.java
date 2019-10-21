@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class MongoObject extends MongoBase{
-    private String id;              //对象id
+    /*private String id;              //对象id
 
     private String type;            //类型，event或entity
     private String template;        //模板id
@@ -86,5 +86,5 @@ public class MongoObject extends MongoBase{
         List<MongoAttr> mongoAttrs = this.attr.get(name);
         mongoAttrs.add(mongoAttr);
         this.attr.put(name, mongoAttrs);
-    }
+    }*/
 }

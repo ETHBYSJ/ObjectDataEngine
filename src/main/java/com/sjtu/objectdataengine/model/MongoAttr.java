@@ -2,13 +2,12 @@ package com.sjtu.objectdataengine.model;
 
 import java.util.Date;
 
-public class MongoAttr {
-    private String value;
-    private Date updateTime;
+public class MongoAttr extends MongoBase{
 
-    MongoAttr(String value, Date updateTime) {
+    private String value;
+
+    public MongoAttr(String value) {
         this.value = value;
-        this.updateTime = updateTime;
     }
 
     public String getValue() {
@@ -19,11 +18,4 @@ public class MongoAttr {
         this.value = value;
     }
 
-    public Date getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(Date updateTime) {
-        this.updateTime = updateTime;
-    }
 }

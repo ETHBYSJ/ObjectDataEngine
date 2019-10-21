@@ -1,5 +1,8 @@
 package com.sjtu.objectdataengine.dao;
 
+import com.sjtu.objectdataengine.model.MongoAttr;
+import com.sjtu.objectdataengine.model.MongoAttrs;
+import com.sjtu.objectdataengine.model.MongoBase;
 import com.sjtu.objectdataengine.model.MongoObject;
 import com.sjtu.objectdataengine.utils.MongoCondition;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -9,33 +12,32 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class MongoObjectDAO extends MongoBaseDAO<MongoObject> {
+public class MongoObjectDAO extends MongoBaseDAO<MongoAttrs> {
 
     /**
-     * 查找全部
+     * 查找全部属性
      * @return list
      */
     @Override
-    public List<MongoObject> findAll() {
-        return mongoTemplate.findAll(MongoObject.class);
+    public List<MongoAttrs> findAll() {
+        return mongoTemplate.findAll(MongoAttrs.class);
     }
 
     /**
-     * 根据对象主键（对象id）查询对象
+     * 根据主键id查询某条属性
      * @param key 主键key
      * @return 对象
      */
     @Override
-    public MongoObject findByKey(String key) {
+    public MongoAttrs findByKey(String key) {
         Query query = new Query();
         Criteria criteria = Criteria.where("_id").is(key);
         query.addCriteria(criteria);
-        return mongoTemplate.findOne(query, MongoObject.class);
+        return mongoTemplate.findOne(query, MongoAttrs.class);
     }
 
-
     @Override
-    public List<MongoObject> findByArgs(MongoCondition mongoCondition) {
+    public List<MongoAttrs> findByArgs(MongoCondition mongoCondition) {
         return null;
     }
 
@@ -45,7 +47,12 @@ public class MongoObjectDAO extends MongoBaseDAO<MongoObject> {
     }
 
     @Override
-    public List<MongoObject> fuzzySearch(String search) {
+    public List<MongoAttrs> fuzzySearch(String search) {
         return null;
     }
+
+
+
+
+
 }
