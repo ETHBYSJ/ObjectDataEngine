@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -37,4 +38,12 @@ public class testController {
         return mongoObjectService.findLatestAttrByKey(id, name);
     }
 
+    @GetMapping("add")
+    public boolean add(@RequestParam String id, @RequestParam String name, @RequestParam String value) {
+        Date now = new Date();
+        MongoAttr mongoAttr = new MongoAttr(value);
+        mongoAttr.setCreateTime(now);
+        mongoAttr.setUpdateTime(now);
+        return mongoObjectService.addValue(id, name, mongoAttr);
+    }
 }

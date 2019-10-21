@@ -39,7 +39,8 @@ public class MongoObjectService {
             Set<String> attrs = mongoTemplateDAO.findByKey(template).getAttr();
             for (String attr : attrs) {
                 String value = kv.get(attr)==null ? "" : kv.get(attr);
-                createAttr(id, attr, value);
+                createHeader(id, attr, value, 1);
+                createAttr(id, attr, value, 1);
             }
             return true;
         } catch (Exception e) {
@@ -49,17 +50,20 @@ public class MongoObjectService {
 
     }
 
-    private void createAttr(String id, String name, String value) {
+    private void createHeader(String id, String name, String value, int size) {
         //先创建header
         Date now = new Date();
         String headerId = id + name + "0";
-        AttrsHeader attrsHeader = new AttrsHeader(headerId, id, name, 1);
+        AttrsHeader attrsHeader = new AttrsHeader(headerId, id, name, size);
         attrsHeader.setCreateTime(now);
         attrsHeader.setUpdateTime(now);
         mongoHeaderDAO.create(attrsHeader);
+    }
+
+    private void createAttr(String id, String name, String value, int size) {
         //再创建属性文档
         Date later = new Date();
-        String attrId = id + name + "1";
+        String attrId = id + name + size;
         List<MongoAttr> mongoAttrList = new ArrayList<>();
         //创建一条属性的一个mongo attr
         MongoAttr mongoAttr = new MongoAttr(value);
@@ -81,12 +85,8 @@ public class MongoObjectService {
      */
     public List<MongoAttrs> findAttrsByKey(String id, String name) {
         List<MongoAttrs> mongoAttrsList = new ArrayList<>();
-        String header = id + name + "0";
-        //System.out.println(header);
-        //System.out.println(mongoHeaderDAO.findByKey("110"));
-        AttrsHeader attrsHeader= mongoHeaderDAO.findByKey(header);
-        if (attrsHeader == null) return mongoAttrsList;
-        int size = attrsHeader.getSize();
+        int size = getAttrChainSize(id, name);
+        if (size == 0) return mongoAttrsList; //空列表
         for (int i=1; i<=size; ++i) {
             String key = id + name + i;
             mongoAttrsList.add(mongoObjectDAO.findByKey(key));
@@ -101,11 +101,37 @@ public class MongoObjectService {
      * @return 最新属性值
      */
     public MongoAttr findLatestAttrByKey(String id, String name) {
-        String header = id + name + "0";
-        int size = mongoHeaderDAO.findByKey(header).getSize();
+        int size = getAttrChainSize(id, name);
+        if (size == 0) return null; //null
         String key = id + name + size;
         MongoAttrs mongoAttrs = mongoObjectDAO.findByKey(key);
         List<MongoAttr> mongoValueList =  mongoAttrs.getAttrs();
         return mongoValueList.get(mongoAttrs.getSize()-1);
+    }
+
+    public boolean addValue(String id, String name, MongoAttr mongoAttr) {
+        int size = getAttrChainSize(id, name);
+        String key = id + name + size;
+        MongoAttrs mongoAttrs = mongoObjectDAO.findByKey(key);
+        if (mongoAttrs.isFull()) {
+            //addAttrs(id, name, size);
+        }
+        return mongoObjectDAO.addValue(key, mongoAttr);
+    }
+
+    /**
+     * 获取链长度
+     * @param id 对象id
+     * @param name 属性名称
+     * @return 返回长度，若不存在则返回0
+     */
+    private int getAttrChainSize(String id, String name) {
+        String header = id + name + "0";
+        AttrsHeader attrsHeader = mongoHeaderDAO.findByKey(header);
+        if (attrsHeader == null) {
+            return 0;
+        } else {
+            return mongoHeaderDAO.findByKey(header).getSize();
+        }
     }
 }
