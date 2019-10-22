@@ -3,10 +3,13 @@ package com.sjtu.objectdataengine.dao;
 import com.sjtu.objectdataengine.utils.ExpireEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.BoundListOperations;
+import org.springframework.data.redis.core.DefaultTypedTuple;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -472,6 +475,21 @@ public class RedisDAO {
      * 将list放入缓存
      * @param key 键
      * @param value 值
+     * @return
+     */
+    public boolean lSet(String key, Object... value) {
+        try {
+            redisTemplate.opsForList().rightPushAll(key, value);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    /**
+     * 将list放入缓存
+     * @param key 键
+     * @param value 值
      * @param time 时间(秒)
      * @return
      */
@@ -581,5 +599,216 @@ public class RedisDAO {
     }
 
     //=========BoundListOperations 用法 End============
+
+    //=========zSet操作 有序集合=============
+
+    /**
+     * 添加数据
+     * 使用方式:
+     * 1.创建一个set集合
+     * Set<ZSetOperations.TypedTuple<Object>>sets = new HashSet<>();
+     * 2.创建一个有序集合
+     * ZSetOperations.TypedTuple<Object> objectTypedTuple1 = new DefaultTypedTuple<Object>("zset-1",9.6);
+     * ZSetOperations.TypedTuple<Object> objectTypedTuple1 = new DefaultTypedTuple<Object>("zset-2",9.9);
+     * 3.放入set集合
+     * sets.add(objectTypedTuple1);
+     * sets.add(objectTypedTuple2);
+     * 4.放入缓存
+     * redisDAO.Zadd("zSet", sets);
+     *
+     * @param key
+     * @param tuples
+     */
+    public long Zadd(String key, Set<ZSetOperations.TypedTuple<Object>> tuples) {
+        try {
+            return redisTemplate.opsForZSet().add(key, tuples);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    /**
+     * 本方法是对同名方法的包装
+     * @param key
+     * @param value
+     * @param score
+     * @return
+     */
+    public long Zadd(String key, Object value, Double score) {
+        Set<ZSetOperations.TypedTuple<Object>>tuples = new HashSet<>();
+        ZSetOperations.TypedTuple<Object> objectTypedTuple = new DefaultTypedTuple<Object>(value, score);
+        tuples.add(objectTypedTuple);
+        try {
+            return redisTemplate.opsForZSet().add(key, tuples);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    /**
+     * 获取有序集合的成员数
+     * @param key
+     * @return
+     */
+    public long Zcard(String key) {
+        try {
+            return redisTemplate.opsForZSet().zCard(key);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    /**
+     * 计算在有序集合中指定区间分数的成员数
+     * @param key
+     * @param min 最小排序分数
+     * @param max 最大排序分数
+     * @return
+     */
+    public long Zcount(String key, Double min, Double max) {
+        try {
+            return redisTemplate.opsForZSet().count(key, min, max);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    /**
+     * 获取有序集合下标区间start至end的成员 分数值从小到大排列
+     * @param key
+     * @param start
+     * @param end
+     * @return
+     */
+    public Set<Object> Zrange(String key, long start, long end) {
+        try {
+            return redisTemplate.opsForZSet().range(key, start, end);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * 获取有序集合下标区间start至end的成员 分数值从大到小排列
+     * @param key
+     * @param start
+     * @param end
+     * @return
+     */
+    public Set<Object> ZreverseRange(String key, long start, long end) {
+        try {
+            return redisTemplate.opsForZSet().reverseRange(key, start, end);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * 获取有序集合下标区间start至end的成员 同时返回分数和值
+     * @param key
+     * @param start
+     * @param end
+     * @return
+     */
+    public Set<ZSetOperations.TypedTuple<Object>> ZrangeWithScores(String key, long start, long end) {
+        try {
+            return redisTemplate.opsForZSet().rangeWithScores(key, start, end);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * 返回指定成员的下标
+     * @param key
+     * @param value
+     * @return
+     */
+    public long Zrank(String key, Object value) {
+        try {
+            return redisTemplate.opsForZSet().rank(key, value);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return -1;
+        }
+    }
+
+    /**
+     * 删除key的指定元素
+     * @param key
+     * @param values
+     * @return
+     */
+    public long ZremoveValue(String key, Object ...values) {
+        try {
+            return redisTemplate.opsForZSet().remove(key, values);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    /**
+     * 移除下标从start至end的元素
+     * @param key
+     * @param start
+     * @param end
+     * @return
+     */
+    public long ZremoveRange(String key, long start, long end) {
+        try {
+            return redisTemplate.opsForZSet().removeRange(key, start, end);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+    public Set<Object> ZrangeByScore(String key, Double min, Double max) {
+        try {
+            return redisTemplate.opsForZSet().rangeByScore(key, min, max);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    /**
+     * 移除分数从min至max的元素
+     * @param key
+     * @param min
+     * @param max
+     * @return
+     */
+    public long ZremoveRangeByScore(String key, Double min, Double max) {
+        try {
+            return redisTemplate.opsForZSet().removeRangeByScore(key, min, max);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 }
