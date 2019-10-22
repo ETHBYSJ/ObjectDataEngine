@@ -6,6 +6,8 @@ redis:
   max-idle: 20    # 连接池中的最大空闲连接
   min-idle: 0     # 连接池中的最小空闲连接
   timeout: 3000   # 连接超时
+  cache-size: 5   # 对象属性表大小
+  evict-size: 2   # 单次淘汰的数据量
 
 spring:
   data:
