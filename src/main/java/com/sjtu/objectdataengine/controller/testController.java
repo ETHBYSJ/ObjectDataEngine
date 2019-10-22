@@ -25,7 +25,7 @@ public class testController {
         HashMap<String, String> hashMap = new HashMap<>();
         hashMap.put("id", "hh");
         hashMap.put("name", "go");
-        return mongoObjectService.createObject("2","4", hashMap);
+        return mongoObjectService.create("2","4", hashMap);
     }
 
     @GetMapping("find")

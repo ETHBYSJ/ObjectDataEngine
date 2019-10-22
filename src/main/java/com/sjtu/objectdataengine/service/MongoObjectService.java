@@ -1,14 +1,15 @@
 package com.sjtu.objectdataengine.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.Mongo;
 import com.sjtu.objectdataengine.dao.MongoHeaderDAO;
 import com.sjtu.objectdataengine.dao.MongoAttrsDAO;
+import com.sjtu.objectdataengine.dao.MongoObjectDAO;
 import com.sjtu.objectdataengine.dao.MongoTemplateDAO;
-import com.sjtu.objectdataengine.model.AttrsHeader;
-import com.sjtu.objectdataengine.model.MongoAttr;
-import com.sjtu.objectdataengine.model.MongoAttrs;
+import com.sjtu.objectdataengine.model.*;
 import com.sjtu.objectdataengine.utils.MongoCondition;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -27,28 +28,44 @@ public class MongoObjectService {
     @Autowired
     MongoHeaderDAO mongoHeaderDAO;
 
+    @Autowired
+    MongoObjectDAO mongoObjectDAO;
+
     /**
      * 这里分为三步，首先创建对象链的头结点，名为对象id+属性名称+0，头结点内含当前长度等属性
      * 其次创建好单条属性的文档，没有的值为“”（空字符串）
      * 最后多条属性都要塞进去
      * @param id 对象id
      * @param template 对象模板
+     * @param kv 属性kv对
+     * @param objects 关联对象集合
      * @return true or false
      */
-    public boolean createObject(String id, String template, HashMap<String, String> kv) {
+    public boolean create(String id, String template, HashMap<String, String> kv, List<String> objects) {
         try {
             Set<String> attrs = mongoTemplateDAO.findByKey(template).getAttr();
+            HashMap<String, MongoAttr> hashMap = new HashMap<>();
             for (String attr : attrs) {
                 String value = kv.get(attr)==null ? "" : kv.get(attr);
                 createHeader(id, attr, 1);
-                createAttr(id, attr, value, 1);
+                MongoAttr mongoAttr = createAttr(id, attr, value, 1);
+                hashMap.put(attr, mongoAttr);
             }
+            createObject(id, template, objects, hashMap);
             return true;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
 
+    }
+
+    private void createObject(String id, String template, List<String> objects, HashMap<String, MongoAttr> hashMap) {
+        ObjectTemplate objectTemplate = mongoTemplateDAO.findByKey(template);
+        String nodeId = objectTemplate.getNodeId();
+        String type = objectTemplate.getType();
+        MongoObject mongoObject = new MongoObject(id, type, template, nodeId, hashMap);
+        mongoObjectDAO.create(mongoObject);
     }
 
     /**
@@ -70,8 +87,9 @@ public class MongoObjectService {
      * @param name 属性名称
      * @param value 属性值
      * @param size 属性块index
+     * @return 返回初始的属性，封装成MongoAttr
      */
-    private void createAttr(String id, String name, String value, int size) {
+    private MongoAttr createAttr(String id, String name, String value, int size) {
         //再创建属性文档
         Date later = new Date();
         String attrId = id + name + size;
@@ -84,6 +102,7 @@ public class MongoObjectService {
         mongoAttrList.add(mongoAttr);
         MongoAttrs mongoAttrs = new MongoAttrs(attrId, mongoAttrList);
         mongoAttrsDAO.create(mongoAttrs);
+        return mongoAttr;
     }
 
     /**
@@ -131,6 +150,8 @@ public class MongoObjectService {
         String key = id + name + size;
         MongoAttrs mongoAttrs = mongoAttrsDAO.findByKey(key);
 
+        updateObject(id, name, mongoAttr);
+
         if (mongoAttrs.isFull()) {
             int newSize = size + 1;
             String key0 = id + name + "0";
@@ -144,6 +165,18 @@ public class MongoObjectService {
             int mongoAttrSize = mongoAttrs.getSize();
             return mongoAttrsDAO.addValue(key, mongoAttrSize, mongoAttr);
         }
+    }
+
+    /**
+     * 更新Object最新值
+     * @param id 对象id
+     * @param name 属性名称
+     */
+    private void updateObject(String id, String name, MongoAttr mongoAttr) {
+        MongoCondition mongoCondition = new MongoCondition();
+        mongoCondition.addQuery("id", id);
+        mongoCondition.addUpdate(name, mongoAttr);
+       // mongoObjectDAO.addValue();
     }
 
     /**

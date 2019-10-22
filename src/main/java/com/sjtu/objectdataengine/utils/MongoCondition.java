@@ -69,6 +69,7 @@ public class MongoCondition {
         this.updateMap.put(key, value);
     }
 
+
     public void delQuery(String key) {
         this.queryMap.remove(key);
     }
