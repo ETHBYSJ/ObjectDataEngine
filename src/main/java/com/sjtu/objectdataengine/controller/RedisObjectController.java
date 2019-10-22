@@ -16,7 +16,6 @@ import java.util.Set;
 @RequestMapping("/redisobject")
 @RestController
 public class RedisObjectController {
-<<<<<<< HEAD
     /*
     @Autowired
     private RedisDAO redisDAO;
@@ -33,9 +32,6 @@ public class RedisObjectController {
     public JSONObject getByTime(@RequestParam String id, @RequestParam Date date) {
         return redisObjectService.findObjectById(id, date);
     }
-=======
-
->>>>>>> 30f7ed3ce4ae12ca21ead4f7eb60c8c9cdf0edc9
     @Autowired
     private RedisObjectService redisObjectService;
 
