@@ -1,11 +1,14 @@
 package com.sjtu.objectdataengine.dao;
 
 import com.sjtu.objectdataengine.model.AttrsHeader;
+import com.sjtu.objectdataengine.model.ObjectTemplate;
 import com.sjtu.objectdataengine.utils.MongoCondition;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
 import java.util.List;
 
 @Component
@@ -13,7 +16,7 @@ public class MongoHeaderDAO extends MongoBaseDAO<AttrsHeader> {
 
     @Override
     public List<AttrsHeader> findAll() {
-        return null;
+        return mongoTemplate.findAll(AttrsHeader.class);
     }
 
     @Override
@@ -24,6 +27,7 @@ public class MongoHeaderDAO extends MongoBaseDAO<AttrsHeader> {
         return mongoTemplate.findOne(query, AttrsHeader.class);
     }
 
+
     @Override
     public List<AttrsHeader> findByArgs(MongoCondition mongoCondition) {
         return null;
@@ -31,7 +35,15 @@ public class MongoHeaderDAO extends MongoBaseDAO<AttrsHeader> {
 
     @Override
     public boolean update(MongoCondition mongoCondition) {
-        return false;
+        Query query = mongoCondition.getQuery();
+        Update update = mongoCondition.getUpdate();
+        update.set("updateTime", new Date());
+        try {
+            mongoTemplate.updateMulti(query, update, AttrsHeader.class);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     @Override

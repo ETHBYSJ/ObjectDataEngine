@@ -3,6 +3,7 @@ package com.sjtu.objectdataengine.model;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -15,7 +16,7 @@ public class MongoAttrs extends MongoBase{
     private String id;
 
     private List<MongoAttr> attrs;
-    public static int length=100; //规定长度
+    public static int length=3; //规定长度
 
     private int size; //已有长度
 
@@ -51,5 +52,9 @@ public class MongoAttrs extends MongoBase{
 
     public boolean isFull() {
         return this.size >= length;
+    }
+
+    public boolean isNearlyFull() {
+        return this.size >= length - 1;
     }
 }
