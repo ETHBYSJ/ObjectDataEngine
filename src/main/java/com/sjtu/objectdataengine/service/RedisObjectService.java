@@ -36,6 +36,7 @@ public class RedisObjectService {
     }
     */
     public List<Object> findAttrByObjectId(String id) {
+        redisDAO.switchToAttrRedisTemplate();
         return redisDAO.lGet(id, 0, -1);
     }
 
@@ -58,6 +59,7 @@ public class RedisObjectService {
     }
     */
     public boolean addAttrByObjectId(String id, String attr) {
+        redisDAO.switchToAttrRedisTemplate();
         //如果属性已存在，插入失败
         List<Object> attrList = redisDAO.lGet(id, 0, -1);
         for(Object everyAttr : attrList) {
@@ -86,6 +88,7 @@ public class RedisObjectService {
     }
     */
     public boolean removeAttrByObjectId(String id, String attr) {
+        redisDAO.switchToAttrRedisTemplate();
         return redisDAO.lRemove(id, 1, attr) > 0;
     }
     /**
@@ -96,6 +99,7 @@ public class RedisObjectService {
      * @return true代表更新成功，false代表更新失败
      */
     public boolean updateAttrByObjectId(String id, String oldAttr, String newAttr) {
+        redisDAO.switchToAttrRedisTemplate();
         return removeAttrByObjectId(id, oldAttr) && addAttrByObjectId(id, newAttr);
     }
 
@@ -116,6 +120,7 @@ public class RedisObjectService {
     }
     */
     public boolean createAttr(String request) {
+        redisDAO.switchToAttrRedisTemplate();
         JSONObject jsonObject =  JSON.parseObject(request);
         //必须传入id
         String id = jsonObject.getString("id");
@@ -139,10 +144,14 @@ public class RedisObjectService {
      * @return true代表插入成功，false代表插入失败
      */
     public boolean Zadd(String id, String attr, String value, Date date) {
+        redisDAO.switchToAttrRedisTemplate();
         if(id == null || attr == null || value == null) {
             //不允许任何一个参数为null值
             return false;
         }
+        List<Object> attrList = redisDAO.lGet(id, 0, -1);
+
+        redisDAO.switchToObjectRedisTemplate();
         //拼接成key
         String key = id + '#' + attr + '#' + "time";
         //检查表的大小
@@ -169,7 +178,7 @@ public class RedisObjectService {
             //执行淘汰策略
             redisDAO.ZremoveRange(key, 0, evictSize - 1);
             redisDAO.Zadd(key, value, (double)date.getTime());
-            for(Object everyAttr : redisDAO.lGet(id, 0, -1)) {
+            for(Object everyAttr : attrList) {
                 if(!everyAttr.equals(attr)) {
                     String k = id + '#' + everyAttr + '#' + "time";
                     //删除
@@ -192,9 +201,10 @@ public class RedisObjectService {
     /**
      * 根据对象id查找对象的最新值
      * @param id 对象id
-     * @return
+     * @return 对象最新值
      */
     public JSONObject findObjectById(String id) {
+        redisDAO.switchToAttrRedisTemplate();
         if(id == null) {
             return null;
         }
@@ -202,6 +212,7 @@ public class RedisObjectService {
         if(attrList.size() == 0) {
             return null;
         }
+        redisDAO.switchToObjectRedisTemplate();
         JSONObject jsonObject = new JSONObject();
         for(Object everyAttr : attrList) {
             String key = id + '#' + everyAttr + '#' + "time";
@@ -222,6 +233,7 @@ public class RedisObjectService {
      * @param date 日期
      */
     public JSONObject findObjectById(String id, Date date) {
+        redisDAO.switchToAttrRedisTemplate();
         if(id == null) {
             return null;
         }
@@ -229,6 +241,7 @@ public class RedisObjectService {
         if(attrList.size() == 0) {
             return null;
         }
+        redisDAO.switchToObjectRedisTemplate();
         JSONObject jsonObject = new JSONObject();
         for(Object everyAttr : attrList) {
             String key = id + '#' + everyAttr + '#' + "time";
@@ -245,7 +258,25 @@ public class RedisObjectService {
         }
         return jsonObject;
     }
+
+    /**
+     * 根据对象id获得一段时间内对象的状态集合
+     * @param id 对象id
+     * @param startDate 起始时间
+     * @param endDate 结束时间
+     * @return
+     */
+    public List<JSONObject> findObjectBetweenTime(String id, Date startDate, Date endDate) {
+
+        return null;
+    }
+    /**
+     * 根据对象id删除对象
+     * @param id 对象id
+     * @return true代表删除成功,false代表删除失败
+     */
     public boolean delObjectById(String id) {
+        redisDAO.switchToAttrRedisTemplate();
         //id必须非空
         if(id == null) {
             return false;
@@ -255,6 +286,7 @@ public class RedisObjectService {
         if(attrSet.size() == 0) {
             return false;
         }
+        redisDAO.switchToObjectRedisTemplate();
         //按照属性分别删除
         for(Object everyAttr : attrSet) {
             String key = id + '#' + everyAttr + '#' + "time";

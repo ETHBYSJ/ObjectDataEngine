@@ -24,12 +24,23 @@ import java.util.concurrent.TimeUnit;
 public class RedisDAO {
 
     @Autowired
+    private RedisTemplate<String, Object> objectRedisTemplate;
+    @Autowired
+    private RedisTemplate<String, Object> attrRedisTemplate;
     private RedisTemplate<String, Object> redisTemplate;
-
-    public RedisDAO(RedisTemplate<String, Object> redisTemplate) {
-        this.redisTemplate = redisTemplate;
+    public RedisDAO(RedisTemplate<String, Object> objectRedisTemplate, RedisTemplate<String, Object> attrRedisTemplate) {
+        this.objectRedisTemplate = objectRedisTemplate;
+        this.attrRedisTemplate = attrRedisTemplate;
+        this.redisTemplate = attrRedisTemplate;
     }
-
+    //切换到属性数据库
+    public void switchToAttrRedisTemplate() {
+        this.redisTemplate = this.attrRedisTemplate;
+    }
+    //切换到对象数据库
+    public void switchToObjectRedisTemplate() {
+        this.redisTemplate = this.objectRedisTemplate;
+    }
     /**
      * 指定缓存失效时间
      * @param key 键
