@@ -5,6 +5,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 @Document(collection = "mongoObjects")
 public class MongoObject extends MongoBase{
@@ -73,5 +74,23 @@ public class MongoObject extends MongoBase{
 
     public void setAttr(HashMap<String, MongoAttr> attr) {
         this.attr = attr;
+    }
+
+    public void putAttr(String name, MongoAttr mongoAttr) {
+        this.attr.put(name, mongoAttr);
+    }
+
+    /**
+     * 清扫time之后的关联，用于返回某个时间点的对象
+     * @param time 截止时间
+     */
+    public void cutObjects(Date time) {
+        Set<String> keySet = objects.keySet();
+        for (String key : keySet) {
+            Date bindTime = objects.get(key);
+            if (bindTime.after(time)) {
+                objects.remove(key);
+            }
+        }
     }
 }

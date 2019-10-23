@@ -18,4 +18,8 @@ public class MongoAttr extends MongoBase{
         this.value = value;
     }
 
+    @Override
+    public String toString() {
+        return value + " " + getUpdateTime();
+    }
 }

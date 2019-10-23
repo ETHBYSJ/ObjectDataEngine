@@ -43,7 +43,7 @@ public class MongoAttrsDAO extends MongoBaseDAO<MongoAttrs> {
 
     @Override
     public boolean update(MongoCondition mongoCondition) {
-        /*Query query = mongoCondition.getQuery();
+        Query query = mongoCondition.getQuery();
         Update update = mongoCondition.getUpdate();
         update.set("updateTime", new Date());
         try {
@@ -51,8 +51,7 @@ public class MongoAttrsDAO extends MongoBaseDAO<MongoAttrs> {
             return true;
         } catch (Exception e) {
             return false;
-        }*/
-        return true;
+        }
     }
 
     /**

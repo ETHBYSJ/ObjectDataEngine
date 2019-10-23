@@ -123,6 +123,18 @@ public class MongoObjectService {
     }
 
     /**
+     * 根据属性id获取一块属性
+     * @param id 对象id
+     * @param name 属性名字
+     * @param index 第几块
+     * @return 一条属性的一块记录
+     */
+    public MongoAttrs findAttrsByBlock(String id, String name, int index) {
+        String key = id + name + index;
+        return mongoAttrsDAO.findByKey(key);
+    }
+
+    /**
      * 根据对象id和属性name获取最新属性值
      * @param id 对象id
      * @param name 属性名字
@@ -160,10 +172,31 @@ public class MongoObjectService {
 
         } else if (mongoAttrs.isNearlyFull()) {
             int mongoAttrSize = mongoAttrs.getSize();
-            return mongoAttrsDAO.addValue(key, mongoAttrSize, mongoAttr) && addAttrs(id, name, size + 1);
+            return mongoAttrsDAO.addValue(key, mongoAttrSize, mongoAttr) && addAttrs(id, name, size + 1) && timeSync(id, name, size);
         } else {
             int mongoAttrSize = mongoAttrs.getSize();
             return mongoAttrsDAO.addValue(key, mongoAttrSize, mongoAttr);
+        }
+    }
+
+    /**
+     * 同步两个块的CT和UT，首尾相连
+     */
+
+    private boolean timeSync(String id, String name, int size) {
+        try{
+            int newSize = size + 1;
+            String newKey = id + name + newSize;
+            MongoAttrs preMongoAttrs = findAttrsByBlock(id, name ,size);
+            Date ut = preMongoAttrs.getUpdateTime();
+            MongoCondition mongoCondition = new MongoCondition();
+            mongoCondition.addQuery("id", newKey);
+            mongoCondition.addUpdate("createTime", ut);
+            //System.out.println(mongoCondition.getUpdate());
+            return mongoAttrsDAO.update(mongoCondition);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
     }
 
@@ -217,7 +250,7 @@ public class MongoObjectService {
         MongoCondition mongoCondition = new MongoCondition();
         mongoCondition.addQuery("id", key0);
         mongoCondition.addUpdate("size", size + 1);
-        System.out.println(mongoCondition.getUpdate());
+        //System.out.println(mongoCondition.getUpdate());
         return mongoHeaderDAO.update(mongoCondition);
     }
 
@@ -251,6 +284,21 @@ public class MongoObjectService {
     /**
      * 查找某个时间点的属性
      */
+    public MongoAttr findAttrByTime(String id, String name, Date time) {
+        int cSize = getAttrChainSize(id, name); //chain size
+        MongoAttrs mongoAttrs = divFindAttrsByTime(id, name, time, cSize);
+        if (mongoAttrs == null) return null;
+        Date firstUt = mongoAttrs.getAttrs().get(0).getUpdateTime();
+        //System.out.println(mongoAttrs.getAttrs());
+        //如果发现第一个ut都大于这个时间，说明是上一块的最后一个
+        if (time.before(firstUt) && cSize > 1) {
+            MongoAttrs mongoAttrs1 = findAttrsByBlock(id, name, cSize-1);
+            List<MongoAttr> mongoAttrList = mongoAttrs1.getAttrs();
+            return mongoAttrList.get(mongoAttrs1.getSize()-1);
+        }
+        //反之 用二分法查找属性
+        return divFindAttrByTime(mongoAttrs, time);
+    }
 
     /**
      * 查找某个时间段的属性
@@ -259,8 +307,82 @@ public class MongoObjectService {
     /**
      * 查找某个时间点的obj
      */
+    public MongoObject findObjectByTime(String id, Date time) {
+        MongoObject mongoObject = mongoObjectDAO.findByKey(id);
+        Set<String> attrName = mongoObject.getAttr().keySet();
+        for(String name : attrName) {
+            MongoAttr mongoAttr = findAttrByTime(id, name, time);
+            mongoObject.putAttr(name, mongoAttr);
+        }
+        mongoObject.cutObjects(time);
+        return mongoObject;
+    }
 
     /**
      * 查找某个时间段的obj
      */
+
+    /**
+     * 二分法在指定的属性块内，查找对应时间点的属性
+     */
+    private MongoAttr divFindAttrByTime(MongoAttrs mongoAttrs, Date time) {
+        List<MongoAttr> mongoAttrList = mongoAttrs.getAttrs();
+        int low = 0;
+        int high = mongoAttrList.size()-1;
+        while(high - low > 1) {
+            int mid = (low + high) / 2;
+            //System.out.println(low + " " + high + " " + mid);
+            MongoAttr midAttr = mongoAttrList.get(mid);
+            Date ut = midAttr.getUpdateTime();
+            if (time.before(ut)) {
+                high = mid;
+            } else if(time.after(ut)) {
+                low = mid;
+            } else {
+                return midAttr;
+            }
+        }
+        if (time.after(mongoAttrList.get(high).getUpdateTime()) || time.equals(mongoAttrList.get(high).getUpdateTime())) {
+            return mongoAttrList.get(high);
+        } else {
+            return mongoAttrList.get(low);
+        }
+    }
+
+    /**
+     * 二分法查找对应时间点的属性块
+     * @return 返回块
+     */
+    private MongoAttrs divFindAttrsByTime(String id, String name, Date time, int cSize) {
+        int high = cSize;
+        int low = 1;
+        MongoAttrs endBlock = findAttrsByBlock(id, name, cSize);
+        List<MongoAttr> endBlockList = endBlock.getAttrs();
+        Date endTime = endBlockList.get(endBlockList.size()-1).getUpdateTime();
+        if (endTime.before(time)) {
+            return endBlock;
+        }
+
+        while (low <= high) {
+            int mid = (low + high) / 2;
+            //System.out.println(low + " " + high + " " + mid);
+            MongoAttrs mongoAttrs = findAttrsByBlock(id, name, mid);
+            Date ct = mongoAttrs.getCreateTime();
+            Date ut = mongoAttrs.getUpdateTime();
+            //System.out.println(time.before(ct));
+            //System.out.println(time.before(ut));
+            //time.before(ct)<=> time < ct
+            if (time.before(ct) || time.equals(ct)) {
+                high = mid - 1;
+            } //time > ct && time <= ut
+            else if (time.after(ct) && (time.before(ut) || time.equals(ut))) {
+                //System.out.println();
+                return mongoAttrs;
+            } else if (time.after(ct) && time.after(ut)) {
+                low = mid + 1;
+            }
+        }
+        return null;
+    }
+
 }
