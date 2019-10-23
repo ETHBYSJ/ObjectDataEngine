@@ -1,7 +1,6 @@
 package com.sjtu.objectdataengine.dao;
 
 import com.sjtu.objectdataengine.model.MongoAttr;
-import com.sjtu.objectdataengine.model.MongoAttrs;
 import com.sjtu.objectdataengine.model.MongoObject;
 import com.sjtu.objectdataengine.utils.MongoCondition;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -71,23 +70,24 @@ public class MongoObjectDAO extends MongoBaseDAO<MongoObject>{
      * 在一个属性里增加一个值，包括update time，用mongoAttr封装
      * @param key 属性id
      * @param mongoAttr 值
-     * @return true or false
      */
-    /*public boolean addValue(String key, MongoAttr mongoAttr) {
+    public void updateAttrList(String key, String name, MongoAttr mongoAttr) {
         try {
             Query query = new Query();
             Update update = new Update();
             Criteria criteria = Criteria.where("_id").is(key);
             query.addCriteria(criteria);
-            update.addToSet("attr", mongoAttr);
+
+            //Query query = Query.query(new Criteria().andOperator(Criteria.where("id").is(viewTemplateId),Criteria.where("template").elemMatch(Criteria.where("id").is(templateId))));
+
+            update.set("attr." + name + ".value", mongoAttr.getValue());
+            update.set("attr." + name + ".updateTime", mongoAttr.getUpdateTime());
             update.set("updateTime", new Date());
             mongoTemplate.updateMulti(query, update, MongoObject.class);
-            return true;
         } catch (Exception e) {
             e.printStackTrace();
-            return false;
         }
-    }*/
+    }
 
     /**
      * 模糊查询

@@ -171,12 +171,10 @@ public class MongoObjectService {
      * 更新Object最新值
      * @param id 对象id
      * @param name 属性名称
+     * @param mongoAttr 最新值
      */
     private void updateObject(String id, String name, MongoAttr mongoAttr) {
-        MongoCondition mongoCondition = new MongoCondition();
-        mongoCondition.addQuery("id", id);
-        mongoCondition.addUpdate(name, mongoAttr);
-       // mongoObjectDAO.addValue();
+        mongoObjectDAO.updateAttrList(id, name, mongoAttr);
     }
 
     /**
@@ -242,6 +240,27 @@ public class MongoObjectService {
     }
 
     /**
-     *
+     * 查找最新的object
+     * @param id 对象id
+     * @return 最新对象
+     */
+    public MongoObject findLatestObjectByKey(String id) {
+        return mongoObjectDAO.findByKey(id);
+    }
+
+    /**
+     * 查找某个时间点的属性
+     */
+
+    /**
+     * 查找某个时间段的属性
+     */
+
+    /**
+     * 查找某个时间点的obj
+     */
+
+    /**
+     * 查找某个时间段的obj
      */
 }
