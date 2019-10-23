@@ -1,27 +1,29 @@
 package com.sjtu.objectdataengine.model;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
+@Document(collection = "mongoObjects")
 public class MongoObject extends MongoBase{
-    /*private String id;              //对象id
+    private String id;              //对象id
 
     private String type;            //类型，event或entity
     private String template;        //模板id
     private String nodeId;          //标签id
 
-    private Date endTime;           //结束时间，只有活动有意义
     private HashMap<String, Date> objects; //关联的objects
 
-    private HashMap<String, List<MongoAttr>> attr;  //属性集合
+    private HashMap<String, MongoAttr> attr;  //最新属性集合
 
-    MongoObject(String id, String type, String template, String nodeId, Date endTime, HashMap<String, List<MongoAttr>> attr) {
+    public MongoObject(String id, String type, String template, String nodeId, HashMap<String, MongoAttr> attr) {
         this.id = id;
         this.type = type;
         this.template = template;
         this.nodeId = nodeId;
-        this.endTime = endTime;
         this.attr = attr;
     }
 
@@ -57,13 +59,6 @@ public class MongoObject extends MongoBase{
         this.nodeId = nodeId;
     }
 
-    public Date getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(Date endTime) {
-        this.endTime = endTime;
-    }
 
     public HashMap<String, Date> getObjects() {
         return objects;
@@ -73,18 +68,29 @@ public class MongoObject extends MongoBase{
         this.objects = objects;
     }
 
-    public HashMap<String, List<MongoAttr>> getAttr() {
+    public HashMap<String, MongoAttr> getAttr() {
         return attr;
     }
 
-    public void setAttr(HashMap<String, List<MongoAttr>> attr) {
+    public void setAttr(HashMap<String, MongoAttr> attr) {
         this.attr = attr;
     }
 
-    public void addValue(String name, String value, Date time) {
-        MongoAttr mongoAttr = new MongoAttr(value, time);
-        List<MongoAttr> mongoAttrs = this.attr.get(name);
-        mongoAttrs.add(mongoAttr);
-        this.attr.put(name, mongoAttrs);
-    }*/
+    public void putAttr(String name, MongoAttr mongoAttr) {
+        this.attr.put(name, mongoAttr);
+    }
+
+    /**
+     * 清扫time之后的关联，用于返回某个时间点的对象
+     * @param time 截止时间
+     */
+    public void cutObjects(Date time) {
+        Set<String> keySet = objects.keySet();
+        for (String key : keySet) {
+            Date bindTime = objects.get(key);
+            if (bindTime.after(time)) {
+                objects.remove(key);
+            }
+        }
+    }
 }
