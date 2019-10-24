@@ -150,7 +150,9 @@ public class RedisObjectService {
             return false;
         }
         List<Object> attrList = redisDAO.lGet(id, 0, -1);
-
+        if(attrList == null || attrList.size() == 0) {
+            return false;
+        }
         redisDAO.switchToObjectRedisTemplate();
         //拼接成key
         String key = id + '#' + attr + '#' + "time";
@@ -209,7 +211,7 @@ public class RedisObjectService {
             return null;
         }
         List<Object> attrList = redisDAO.lGet(id, 0, -1);
-        if(attrList.size() == 0) {
+        if(attrList == null || attrList.size() == 0) {
             return null;
         }
         redisDAO.switchToObjectRedisTemplate();
@@ -238,7 +240,7 @@ public class RedisObjectService {
             return null;
         }
         List<Object> attrList = redisDAO.lGet(id, 0, -1);
-        if(attrList.size() == 0) {
+        if(attrList == null || attrList.size() == 0) {
             return null;
         }
         redisDAO.switchToObjectRedisTemplate();
@@ -267,14 +269,139 @@ public class RedisObjectService {
      * @return
      */
     public List<JSONObject> findObjectBetweenTime(String id, Date startDate, Date endDate) {
+        redisDAO.switchToAttrRedisTemplate();
+        if(id == null) {
+            return null;
+        }
+        List<Object> attrList = redisDAO.lGet(id, 0, -1);
 
-        return null;
+        if(attrList == null || attrList.size() == 0) {
+            return null;
+        }
+        redisDAO.switchToObjectRedisTemplate();
+        List<ArrayList<ZSetOperations.TypedTuple<Object>>> arr = new ArrayList<ArrayList<ZSetOperations.TypedTuple<Object>>>();
+        int i = 0;
+        for(Object everyAttr : attrList) {
+            String key = id + '#' + everyAttr + '#' + "time";
+            System.out.println(key);
+            Set<ZSetOperations.TypedTuple<Object>> tempSet = redisDAO.ZrangeByScoreWithScores(key, (double)startDate.getTime(), (double)endDate.getTime());
+            arr.add(new ArrayList<ZSetOperations.TypedTuple<Object>>(tempSet));
+            //按时间排序
+            Collections.sort(arr.get(i), new Comparator<ZSetOperations.TypedTuple<Object>>() {
+                public int compare(ZSetOperations.TypedTuple<Object> t1, ZSetOperations.TypedTuple<Object> t2) {
+                    if(t1.getScore() > t2.getScore()) {
+                        return 1;
+                    }
+                    else if(t1.getScore() < t2.getScore()) {
+                        return -1;
+                    }
+                    else {
+                        return 0;
+                    }
+                }
+            });
+            i += 1;
+        }
+        //记录前一个时间点的数据
+        List<ZSetOperations.TypedTuple<Object>> pre = new ArrayList<ZSetOperations.TypedTuple<Object>>(attrList.size());
+        //每一个属性当前扫描到的位置
+        List<Integer> indexList = new ArrayList<Integer>(attrList.size());
+
+        //存储最终返回结果
+        List<JSONObject> retList = new ArrayList<JSONObject>();
+        //初始化
+        for(i = 0; i < attrList.size(); i++) {
+            //从第一个数据开始
+            indexList.add(0);
+            pre.add(null);
+        }
+        //初始化(待完成)
+        for(i = 0; i < attrList.size(); i++) {
+            String key = id + '#' + attrList.get(i) + '#' + "time";
+            //获得小于或等于起始时间的最大的数
+            long cnt = redisDAO.Zcount(key, 0.0, (double)startDate.getTime());
+            if(cnt > 0) {
+                Set<ZSetOperations.TypedTuple<Object>> delSet = redisDAO.ZrangeWithScores(key, cnt - 1, cnt - 1);
+                Iterator<ZSetOperations.TypedTuple<Object>> delIt = delSet.iterator();
+                ZSetOperations.TypedTuple<Object> lastValue = delIt.next();
+                pre.set(i, lastValue);
+                //System.out.println(i + " " + lastValue.getValue());
+            }
+            else {
+                //如果全部大于起始时间
+                Set<ZSetOperations.TypedTuple<Object>> delSet = redisDAO.ZrangeWithScores(key, 0,  0);
+                Iterator<ZSetOperations.TypedTuple<Object>> delIt = delSet.iterator();
+                ZSetOperations.TypedTuple<Object> lastValue = delIt.next();
+                pre.set(i, lastValue);
+                //System.out.println(i + " " + lastValue.getValue());
+            }
+
+        }
+        //对完成排序的数据进行处理
+        boolean isComplete = false;
+        while(!isComplete) {
+            //是否有剩余数据待处理
+            boolean notRemain = true;
+            JSONObject jsonObject = new JSONObject();
+            double minTime = Double.MAX_VALUE;
+
+            int minIndex = -1;
+            for(i = 0; i < attrList.size(); i++) {
+                //当前属性还没有扫描到最后一个数据
+                if(indexList.get(i) < arr.get(i).size()) {
+                    notRemain = false;
+                    if(arr.get(i).get(indexList.get(i)).getScore() < minTime) {
+                        minIndex = i;
+                        minTime = arr.get(i).get(indexList.get(i)).getScore();
+                    }
+                }
+            }
+            //如果已经没有剩余元素，就完成
+            if(notRemain) {
+                isComplete = true;
+            }
+            else {
+                jsonObject.put("time", minTime);
+                //jsonObject.put(attrList.get(minIndex).toString(), arr.get(minIndex).get(indexList.get(minIndex)).getValue());
+                for(i = 0; i < attrList.size(); i++) {
+                    if(indexList.get(i) < arr.get(i).size()) {
+                        //填入各属性值
+                        if (arr.get(i).get(indexList.get(i)).getScore() != minTime) {
+                            jsonObject.put(attrList.get(i).toString(), pre.get(i).getValue());
+                        } else {
+                            //arr.get(i).get(indexList.get(i)).getScore() == minTime
+                            jsonObject.put(attrList.get(i).toString(), arr.get(i).get(indexList.get(i)).getValue());
+                            pre.set(i, arr.get(i).get(indexList.get(i)));
+                            indexList.set(i, indexList.get(i) + 1);
+
+                        }
+                    }
+                    else {
+                        jsonObject.put(attrList.get(i).toString(), pre.get(i).getValue());
+                    }
+                }
+                retList.add(jsonObject);
+            }
+        }
+        //System.out.println(retList.size());
+        return retList;
+
+        //pretty print
+        /*
+        for(int j = 0; j < arr.size(); j++) {
+            for(int k = 0; k < arr.get(j).size(); k++) {
+                System.out.print(arr.get(j).get(k).getValue() + " ");
+            }
+            System.out.println();
+        }
+        */
     }
     /**
      * 根据对象id删除对象
      * @param id 对象id
      * @return true代表删除成功,false代表删除失败
      */
+    /*未完成
     public boolean delObjectById(String id) {
         redisDAO.switchToAttrRedisTemplate();
         //id必须非空
@@ -297,6 +424,6 @@ public class RedisObjectService {
         return true;
 
     }
-
+    */
 
 }

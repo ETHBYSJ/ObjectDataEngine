@@ -603,7 +603,7 @@ public class RedisDAO {
      * 弹出右边的值 --- 并且移除这个值
      * @param listKey
      */
-    public Object rifhtPop(String listKey){
+    public Object rightPop(String listKey){
         //绑定操作
         BoundListOperations<String, Object> boundValueOperations = redisTemplate.boundListOps(listKey);
         return boundValueOperations.rightPop();
@@ -721,7 +721,7 @@ public class RedisDAO {
     }
 
     /**
-     * 获取有序集合下标区间start至end的成员 同时返回分数和值
+     * 获取有序集合下标区间start至end的成员 同时返回分数
      * @param key
      * @param start
      * @param end
@@ -781,6 +781,14 @@ public class RedisDAO {
             return 0;
         }
     }
+
+    /**
+     * 返回分数从min至max的元素
+     * @param key
+     * @param min
+     * @param max
+     * @return
+     */
     public Set<Object> ZrangeByScore(String key, Double min, Double max) {
         try {
             return redisTemplate.opsForZSet().rangeByScore(key, min, max);
@@ -802,6 +810,22 @@ public class RedisDAO {
         } catch (Exception e) {
             e.printStackTrace();
             return 0;
+        }
+    }
+
+    /**
+     * 返回分数从min至max的元素，同时也返回分数
+     * @param key
+     * @param min
+     * @param max
+     * @return
+     */
+    public Set<ZSetOperations.TypedTuple<Object>> ZrangeByScoreWithScores(String key, double min, double max) {
+        try {
+            return redisTemplate.opsForZSet().rangeByScoreWithScores(key, min, max);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 

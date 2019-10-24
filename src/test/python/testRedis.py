@@ -26,9 +26,8 @@ if __name__ == "__main__":
     r.zadd(id + '#age#time', {'\"5\"':transDate('2019-10-22 17:00:00')})
 
     r.zadd(id + '#name#time', {'\"a\"':transDate('2019-10-22 13:00:00')})
-    '''
     r.zadd(id + '#name#time', {'\"b\"':transDate('2019-10-22 13:30:00')})
     r.zadd(id + '#name#time', {'\"c\"':transDate('2019-10-22 14:00:00')})
     r.zadd(id + '#name#time', {'\"d\"':transDate('2019-10-22 16:30:00')})
     r.zadd(id + '#name#time', {'\"e\"':transDate('2019-10-22 18:00:00')})
-    '''
+
