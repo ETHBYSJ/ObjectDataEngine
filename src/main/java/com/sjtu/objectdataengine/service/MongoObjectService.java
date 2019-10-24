@@ -311,8 +311,8 @@ public class MongoObjectService {
         MongoAttrs endMongoAttrs = divFindAttrsByTime(id, name, et, cSize);
         int startIndex = startMongoAttrs.getIndex();
         int endIndex = endMongoAttrs.getIndex();
-        System.out.println(startIndex);
-        System.out.println(endIndex);
+        //System.out.println(startIndex);
+        //System.out.println(endIndex);
         //mongoAttrList 用于返回
         List<MongoAttr> mongoAttrList = new ArrayList<>();
         //找到开始块内ct的index
@@ -325,28 +325,39 @@ public class MongoObjectService {
         List<MongoAttr> endAttrsList = endMongoAttrs.getAttrs();
         int endAttrIndex = endAttrsList.indexOf(endAttr);
 
-        System.out.println(startAttrIndex);
-        System.out.println(endAttrIndex);
+        //System.out.println(startAttrIndex);
+        //System.out.println(endAttrIndex);
 
-        //开始块
-        mongoAttrList.add(startAttr);
-        for (int s=startAttrIndex+1; s<startSize-1; ++s) {
-            MongoAttr tmp = startAttrsList.get(s);
-            mongoAttrList.add(tmp);
+
+        if (startIndex < endIndex) {
+            //开始块
+            mongoAttrList.add(startAttr);
+            for (int s=startAttrIndex+1; s<startSize-1; ++s) {
+                MongoAttr tmp = startAttrsList.get(s);
+                mongoAttrList.add(tmp);
+            }
+
+            //中间块
+            for (int i=startIndex+1; i<endIndex; ++i) {
+                MongoAttrs mongoAttrs1 = findAttrsByBlock(id, name, i);
+                if(mongoAttrs1!=null) {
+                    List<MongoAttr> mongoAttrList1 = mongoAttrs1.getAttrs();
+                    mongoAttrList.addAll(mongoAttrList1);
+                }
+            }
+
+            //结束块
+            for (int e=0; e<endAttrIndex; ++e) {
+                MongoAttr tmp = endAttrsList.get(e);
+                mongoAttrList.add(tmp);
+            }
+            mongoAttrList.add(endAttr);
+        } else {
+            for (int j=startAttrIndex; j<=endAttrIndex; ++j) {
+                mongoAttrList.add(startAttrsList.get(j));
+            }
         }
 
-        //中间块
-        for (int i=startIndex+1; i<endIndex; ++i) {
-            List<MongoAttr> mongoAttrList1 = findAttrsByBlock(id, name, i).getAttrs();
-            mongoAttrList.addAll(mongoAttrList1);
-        }
-
-        //结束块
-        for (int e=0; e<endAttrIndex; ++e) {
-            MongoAttr tmp = endAttrsList.get(e);
-            mongoAttrList.add(tmp);
-        }
-        mongoAttrList.add(endAttr);
 
         return mongoAttrList;
     }
@@ -416,8 +427,6 @@ public class MongoObjectService {
             MongoAttrs mongoAttrs = findAttrsByBlock(id, name, mid);
             Date ct = mongoAttrs.getCreateTime();
             Date ut = mongoAttrs.getUpdateTime();
-            //System.out.println(time.before(ct));
-            //System.out.println(time.before(ut));
             //time.before(ct)<=> time < ct
             if (time.before(ct) || time.equals(ct)) {
                 high = mid - 1;
