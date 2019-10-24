@@ -35,6 +35,7 @@ public class MongoAttrsDAO extends MongoBaseDAO<MongoAttrs> {
         Query query = new Query();
         Criteria criteria = Criteria.where("_id").is(key);
         query.addCriteria(criteria);
+        //System.out.println(query);
         return mongoTemplate.findOne(query, MongoAttrs.class);
     }
 
