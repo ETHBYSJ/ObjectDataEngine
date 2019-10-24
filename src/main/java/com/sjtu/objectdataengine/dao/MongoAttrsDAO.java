@@ -9,7 +9,9 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class MongoAttrsDAO extends MongoBaseDAO<MongoAttrs> {
@@ -33,6 +35,7 @@ public class MongoAttrsDAO extends MongoBaseDAO<MongoAttrs> {
         Query query = new Query();
         Criteria criteria = Criteria.where("_id").is(key);
         query.addCriteria(criteria);
+        //System.out.println(query);
         return mongoTemplate.findOne(query, MongoAttrs.class);
     }
 
@@ -40,6 +43,8 @@ public class MongoAttrsDAO extends MongoBaseDAO<MongoAttrs> {
     public List<MongoAttrs> findByArgs(MongoCondition mongoCondition) {
         return null;
     }
+
+
 
     @Override
     public boolean update(MongoCondition mongoCondition) {

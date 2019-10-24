@@ -19,12 +19,13 @@ public class MongoObject extends MongoBase{
 
     private HashMap<String, MongoAttr> attr;  //最新属性集合
 
-    public MongoObject(String id, String type, String template, String nodeId, HashMap<String, MongoAttr> attr) {
+    public MongoObject(String id, String type, String template, String nodeId, HashMap<String, MongoAttr> attr, HashMap<String, Date> objects) {
         this.id = id;
         this.type = type;
         this.template = template;
         this.nodeId = nodeId;
         this.attr = attr;
+        this.objects = objects;
     }
 
     public String getId() {
@@ -85,11 +86,13 @@ public class MongoObject extends MongoBase{
      * @param time 截止时间
      */
     public void cutObjects(Date time) {
-        Set<String> keySet = objects.keySet();
-        for (String key : keySet) {
-            Date bindTime = objects.get(key);
-            if (bindTime.after(time)) {
-                objects.remove(key);
+        if (this.objects != null) {
+            Set<String> keySet = this.objects.keySet();
+            for (String key : keySet) {
+                Date bindTime = this.objects.get(key);
+                if (bindTime.after(time)) {
+                    this.objects.remove(key);
+                }
             }
         }
     }
