@@ -65,4 +65,10 @@ public class testController {
     public MongoObject findObjByTime(@RequestParam String id, @RequestParam(value ="date") @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss") Date time) {
         return mongoObjectService.findObjectByTime(id, time);
     }
+
+    @GetMapping("se")
+    public List<MongoAttr> findByStartAndEnd(@RequestParam String id, @RequestParam String name, @RequestParam(value ="start") @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss") Date st, @RequestParam(value ="end") @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss") Date et) {
+        return mongoObjectService.findAttrByStartAndEnd(id, name ,st, et);
+    }
+
 }

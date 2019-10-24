@@ -37,7 +37,7 @@ public class MongoCondition {
     }
 
 
-    public Map<String, ?> getUpdateMap() {
+    public Map<String, Object> getUpdateMap() {
         return updateMap;
     }
 

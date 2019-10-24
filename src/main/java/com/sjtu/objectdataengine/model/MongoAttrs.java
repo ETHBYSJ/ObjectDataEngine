@@ -18,12 +18,14 @@ public class MongoAttrs extends MongoBase{
     private List<MongoAttr> attrs;
     public static int length=3; //规定长度
 
+    private int index; //位置
     private int size; //已有长度
 
-    public MongoAttrs(String id, List<MongoAttr> attrs) {
+    public MongoAttrs(String id, List<MongoAttr> attrs, int index) {
         this.id = id;
         this.attrs = attrs;
         this.size = attrs.size();
+        this.index = index;
     }
 
     public int getSize() {
@@ -56,5 +58,21 @@ public class MongoAttrs extends MongoBase{
 
     public boolean isNearlyFull() {
         return this.size >= length - 1;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
     }
 }
