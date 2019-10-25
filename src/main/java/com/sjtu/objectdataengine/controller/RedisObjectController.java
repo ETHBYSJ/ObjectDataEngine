@@ -16,10 +16,7 @@ import java.util.Set;
 @RequestMapping("/redisobject")
 @RestController
 public class RedisObjectController {
-    /*
-    @Autowired
-    private RedisDAO redisDAO;
-    */
+
     @GetMapping("zadd")
     public boolean Zadd(@RequestParam String id, @RequestParam String attr, @RequestParam String value, @RequestParam Date date) {
         return redisObjectService.Zadd(id, attr, value, date);
@@ -31,6 +28,10 @@ public class RedisObjectController {
     @GetMapping("get_by_time")
     public JSONObject getByTime(@RequestParam String id, @RequestParam Date date) {
         return redisObjectService.findObjectById(id, date);
+    }
+    @GetMapping("get_by_time_interval")
+    public List<JSONObject> getByTimeInterval(@RequestParam String id, @RequestParam Date startDate, @RequestParam Date endDate) {
+        return redisObjectService.findObjectBetweenTime(id, startDate, endDate);
     }
     @Autowired
     private RedisObjectService redisObjectService;
