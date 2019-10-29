@@ -735,6 +735,21 @@ public class RedisDAO {
             return null;
         }
     }
+    /*
+    public ZSetOperations.TypedTuple<Object> getIndexWithScores(String key, long index) {
+        try {
+            ZrangeWithScores(key, index, index);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    public Object getIndex(String key, long index) {
+        try {
+
+        } catch
+    }
+    */
 
     /**
      * 返回指定成员的下标
