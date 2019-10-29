@@ -42,9 +42,9 @@ public class MongoObjectService {
      * @param objects 关联对象集合
      * @return true or false
      */
-    public boolean create(String id, String template, HashMap<String, String> kv, HashMap<String, Date> objects) {
+    public boolean create(String id, String template, HashMap<String, String> kv, List<String> objects) {
         try {
-            Set<String> attrs = mongoTemplateDAO.findByKey(template).getAttr();
+            Set<String> attrs = mongoTemplateDAO.findByKey(template).getAttrs();
             HashMap<String, MongoAttr> hashMap = new HashMap<>();
             for (String attr : attrs) {
                 String value = kv.get(attr)==null ? "" : kv.get(attr);
@@ -61,11 +61,16 @@ public class MongoObjectService {
 
     }
 
-    private void createObject(String id, String template, HashMap<String, Date> objects, HashMap<String, MongoAttr> hashMap) {
+    private void createObject(String id, String template, List<String> objects, HashMap<String, MongoAttr> hashMap) {
         ObjectTemplate objectTemplate = mongoTemplateDAO.findByKey(template);
         String nodeId = objectTemplate.getNodeId();
         String type = objectTemplate.getType();
-        MongoObject mongoObject = new MongoObject(id, type, template, nodeId, hashMap, objects);
+        HashMap<String, Date> objs = new HashMap<>();
+        Date now = new Date();
+        for (String obj : objects) {
+            objs.put(obj, now);
+        }
+        MongoObject mongoObject = new MongoObject(id, type, template, nodeId, hashMap, objs);
         mongoObjectDAO.create(mongoObject);
     }
 

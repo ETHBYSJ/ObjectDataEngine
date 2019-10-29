@@ -28,7 +28,7 @@ public class testController {
         HashMap<String, String> hashMap = new HashMap<>();
         hashMap.put("id", "hh");
         hashMap.put("name", "go");
-        HashMap<String, Date> objects = new HashMap<>();
+        List<String> objects = new ArrayList<>();
         return mongoObjectService.create("2","4", hashMap, objects);
     }
 

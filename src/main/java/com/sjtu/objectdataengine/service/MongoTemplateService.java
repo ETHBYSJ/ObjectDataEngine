@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sjtu.objectdataengine.dao.MongoTemplateDAO;
+import com.sjtu.objectdataengine.dao.MongoTreeDAO;
 import com.sjtu.objectdataengine.model.ObjectTemplate;
 import com.sjtu.objectdataengine.utils.MongoCondition;
 import org.springframework.stereotype.Component;
@@ -23,6 +24,9 @@ public class MongoTemplateService {
     @Resource
     MongoTemplateDAO mongoTemplateDAO;
 
+    @Resource
+    MongoTreeDAO mongoTreeDAO;
+
     /**
      * 创建新的对象模板
      * @param request json请求体
@@ -39,10 +43,18 @@ public class MongoTemplateService {
         if (type == null) return false;
         String nodeId = jsonObject.getString("nodeId");
         if (nodeId == null) nodeId = "";
-        JSONArray jsonArray = jsonObject.getJSONArray("attr");
+        JSONArray jsonArray = jsonObject.getJSONArray("attrs");
         List<String> attr = jsonArray==null ? new ArrayList<>() : JSONObject.parseArray(jsonArray.toJSONString(), String.class);
         HashSet<String> attrSet = new HashSet<String>(attr);
         ObjectTemplate objectTemplate = new ObjectTemplate(id, name, attrSet, nodeId, type);
+
+        if (!nodeId.equals("")) {
+            MongoCondition mongoCondition = new MongoCondition();
+            mongoCondition.addQuery("id", nodeId);
+            mongoCondition.addUpdate("template", id);
+            mongoTreeDAO.update(mongoCondition);
+        }
+
         return mongoTemplateDAO.create(objectTemplate);
     }
 

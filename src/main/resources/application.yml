@@ -17,3 +17,9 @@ spring:
     mongodb:
       uri:
         mongodb://localhost:27017/test
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
