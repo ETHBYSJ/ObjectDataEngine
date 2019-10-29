@@ -10,14 +10,14 @@ public class ObjectTemplate extends MongoBase{
     @Id
     private String id;              //对象模板id
     private String name;            //对象模板name
-    private Set<String> attr;       //属性集合
+    private Set<String> attrs;       //属性集合
     private String nodeId;          //对应的结点id
     private String type;            //类型，有事件和实体
 
-    public ObjectTemplate(String id, String name, Set<String> attr, String nodeId, String type) {
+    public ObjectTemplate(String id, String name, Set<String> attrs, String nodeId, String type) {
         this.id = id;
         this.name = name;
-        this.attr = attr;
+        this.attrs = attrs;
         this.nodeId = nodeId;
         this.type = type;
     }
@@ -38,12 +38,12 @@ public class ObjectTemplate extends MongoBase{
         this.name = name;
     }
 
-    public Set<String> getAttr() {
-        return attr;
+    public Set<String> getAttrs() {
+        return attrs;
     }
 
-    public void setAttr(Set<String> attribute) {
-        this.attr = attribute;
+    public void setAttrs(Set<String> attribute) {
+        this.attrs = attribute;
     }
 
     public String getNodeId() {
@@ -63,16 +63,16 @@ public class ObjectTemplate extends MongoBase{
     }
 
     public boolean addAttr(String name) {
-        return this.attr.add(name);
+        return this.attrs.add(name);
     }
 
     public boolean delAttr(String name) {
-        return this.attr.remove(name);
+        return this.attrs.remove(name);
     }
 
     public boolean replaceAttr(String oldName, String newName) {
-        if (this.attr.remove(oldName)) {
-            return this.attr.add(newName);
+        if (this.attrs.remove(oldName)) {
+            return this.attrs.add(newName);
         } else {
             return false;
         }
@@ -80,6 +80,6 @@ public class ObjectTemplate extends MongoBase{
 
     @Override
     public String toString() {
-        return id + " " + name + " " + attr;
+        return id + " " + name + " " + attrs;
     }
 }
