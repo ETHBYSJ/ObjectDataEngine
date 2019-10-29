@@ -3,7 +3,9 @@ package com.sjtu.objectdataengine.service;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.sjtu.objectdataengine.model.MongoObject;
 import com.sjtu.objectdataengine.rabbitMQ.MongoSender;
+import com.sjtu.objectdataengine.rabbitMQ.RedisSender;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -19,8 +21,16 @@ public class DataService {
     MongoSender mongoSender;
 
     @Autowired
+    RedisSender redisSender;
+
+    @Autowired
     MongoTemplateService mongoTemplateService;
 
+    /**
+     * 创建对象
+     * @param request json请求
+     * @return String
+     */
     public String create(String request) {
         //解析JSON
         JSONObject jsonObject = JSON.parseObject(request);
@@ -39,7 +49,7 @@ public class DataService {
 
         JSONObject attrObject = jsonObject.getJSONObject("attrs");
         HashMap<String, String> attrs = new HashMap<>();
-        if (objects != null) {
+        if (attrObject != null) {
             for(Map.Entry entry : attrObject.entrySet()) {
                 String key = entry.getKey().toString();
                 String value = entry.getValue().toString();
@@ -56,8 +66,13 @@ public class DataService {
         message.put("attrs", attrs);
 
         mongoSender.send(message);
+        redisSender.send(message);
 
         return "创建成功！";
+    }
+
+    public void findObjectByKey(String id) {
+
     }
 
 }
