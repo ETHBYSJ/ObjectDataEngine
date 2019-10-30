@@ -19,28 +19,27 @@ import java.util.concurrent.TimeUnit;
 /**
  * redisTemplate封装
  */
-
 @Component
 public class RedisDAO {
-
-    @Autowired
-    private RedisTemplate<String, Object> objectRedisTemplate;
-    @Autowired
-    private RedisTemplate<String, Object> attrRedisTemplate;
     private RedisTemplate<String, Object> redisTemplate;
-    public RedisDAO(RedisTemplate<String, Object> objectRedisTemplate, RedisTemplate<String, Object> attrRedisTemplate) {
-        this.objectRedisTemplate = objectRedisTemplate;
-        this.attrRedisTemplate = attrRedisTemplate;
-        this.redisTemplate = attrRedisTemplate;
+    public void setTemplate(RedisTemplate<String, Object> redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
+    public RedisDAO() {
+
     }
     //切换到属性数据库
+    /*
     public void switchToAttrRedisTemplate() {
         this.redisTemplate = this.attrRedisTemplate;
     }
+    */
     //切换到对象数据库
+    /*
     public void switchToObjectRedisTemplate() {
         this.redisTemplate = this.objectRedisTemplate;
     }
+    */
     /**
      * 指定缓存失效时间
      * @param key 键
@@ -162,7 +161,12 @@ public class RedisDAO {
      * @return 值
      */
     public Object hget (String key, String item){
-        return redisTemplate.opsForHash().get(key, item);
+        try {
+            return redisTemplate.opsForHash().get(key, item);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /**
@@ -171,7 +175,12 @@ public class RedisDAO {
      * @return 对应的多个键值
      */
     public Map<Object,Object> hmget(String key){
-        return redisTemplate.opsForHash().entries(key);
+        try {
+            return redisTemplate.opsForHash().entries(key);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /**
@@ -288,6 +297,14 @@ public class RedisDAO {
     public double hdecr(String key, String item,double by){
         return redisTemplate.opsForHash().increment(key, item,-by);
     }
+    public long hsize(String key) {
+        try {
+            return redisTemplate.opsForHash().size(key);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
 
     //============================set=============================
     /**
@@ -381,6 +398,36 @@ public class RedisDAO {
         } catch (Exception e) {
             e.printStackTrace();
             return 0;
+        }
+    }
+
+    /**
+     * 从集合中随机移除一个元素并返回
+     * @param key 键
+     * @return 被移除的元素
+     */
+    public Object setPop(String key) {
+        try {
+            Object member = redisTemplate.opsForSet().pop(key);
+            return member;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    /**
+     * 从集合中移除指定数量的元素并返回
+     * @param key 键
+     * @param count 要移除元素的数量
+     * @return 被移除的元素
+     */
+    public List<Object> setPop(String key, long count) {
+        try {
+            List<Object> retList = redisTemplate.opsForSet().pop(key, count);
+            return retList;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
     //===============================list=================================

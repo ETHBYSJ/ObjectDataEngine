@@ -47,19 +47,14 @@ public class RedisConfig extends CachingConfigurerSupport {
     private int attrDB;
     @Value("${redis.database.objectDB}")
     private int objectDB;
+    @Value("${redis.database.templateDB}")
+    private int templateDB;
 
-    @Bean(name="attrRedisTemplate")
-    public RedisTemplate<String, Object> getAttrRedisTemplate() {
-        //创建客户端连接
-        LettuceConnectionFactory lettuceConnectionFactory = createLettuceConnectionFactory(attrDB, hostName, port, maxIdle, minIdle, maxActive, maxWait, timeout);
-        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<String, Object>();
-        redisTemplate.setConnectionFactory(lettuceConnectionFactory);
-
+    private void initRedisTemplate(RedisTemplate<String, Object> redisTemplate) {
         //使用String作为key的序列化器，使用Jackson作为Value的序列化器
         StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
         //使用Jackson2JsonRedisSerializer来序列化和反序列化redis的value值（默认使用JDK的序列化方式
         Jackson2JsonRedisSerializer jacksonRedisSerializer = new Jackson2JsonRedisSerializer(Object.class);
-
         ObjectMapper om = new ObjectMapper();
         //指定要序列化的域，field,get和set,以及修饰符范围，ANY是都有包括private和public
         om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
@@ -76,6 +71,15 @@ public class RedisConfig extends CachingConfigurerSupport {
         redisTemplate.setHashValueSerializer(jacksonRedisSerializer);
         redisTemplate.afterPropertiesSet();
 
+    }
+    @Bean(name="attrRedisTemplate")
+    public RedisTemplate<String, Object> getAttrRedisTemplate() {
+        //创建客户端连接
+        LettuceConnectionFactory lettuceConnectionFactory = createLettuceConnectionFactory(attrDB, hostName, port, maxIdle, minIdle, maxActive, maxWait, timeout);
+        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<String, Object>();
+        redisTemplate.setConnectionFactory(lettuceConnectionFactory);
+
+        initRedisTemplate(redisTemplate);
         return redisTemplate;
     }
     @Bean(name="objectRedisTemplate")
@@ -85,27 +89,17 @@ public class RedisConfig extends CachingConfigurerSupport {
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<String, Object>();
         redisTemplate.setConnectionFactory(lettuceConnectionFactory);
 
-        //使用String作为key的序列化器，使用Jackson作为Value的序列化器
-        StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
-        //使用Jackson2JsonRedisSerializer来序列化和反序列化redis的value值（默认使用JDK的序列化方式
-        Jackson2JsonRedisSerializer jacksonRedisSerializer = new Jackson2JsonRedisSerializer(Object.class);
+        initRedisTemplate(redisTemplate);
+        return redisTemplate;
+    }
+    @Bean(name="templateRedisTemplate")
+    public RedisTemplate<String, Object> getTemplateRedisTemplate() {
+        //创建客户端连接
+        LettuceConnectionFactory lettuceConnectionFactory = createLettuceConnectionFactory(templateDB, hostName, port, maxIdle, minIdle, maxActive, maxWait, timeout);
+        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<String, Object>();
+        redisTemplate.setConnectionFactory(lettuceConnectionFactory);
 
-        ObjectMapper om = new ObjectMapper();
-        //指定要序列化的域，field,get和set,以及修饰符范围，ANY是都有包括private和public
-        om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-        // 指定序列化输入的类型，类必须是非final修饰的，final修饰的类，比如String,Integer等会跑出异常
-        om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
-        jacksonRedisSerializer.setObjectMapper(om);
-        // 值采用json序列化
-        redisTemplate.setValueSerializer(jacksonRedisSerializer);
-        //使用StringRedisSerializer来序列化和反序列化redis的key值
-        redisTemplate.setKeySerializer(stringRedisSerializer);
-
-        // 设置hash key 和value序列化模式
-        redisTemplate.setHashKeySerializer(stringRedisSerializer);
-        redisTemplate.setHashValueSerializer(jacksonRedisSerializer);
-        redisTemplate.afterPropertiesSet();
-
+        initRedisTemplate(redisTemplate);
         return redisTemplate;
     }
     private LettuceConnectionFactory createLettuceConnectionFactory(int db, String hostName, int port, int maxIdle, int minIdle, int maxActive, long maxWait, long timeout) {
