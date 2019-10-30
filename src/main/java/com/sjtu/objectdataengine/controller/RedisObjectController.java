@@ -23,57 +23,66 @@ public class RedisObjectController {
     private RedisObjectService redisObjectService;
     @Autowired
     private RedisTemplateService redisTemplateService;
+    //-------------------------------template---------------------------------//
     @GetMapping("get_all_template")
     public List<ObjectTemplate> getAllTemplate() {
         return redisTemplateService.findAllTemplate();
     }
+
     @GetMapping("delete_template_by_id")
     public boolean deleteTemplateById(@RequestParam String id) {
         return redisTemplateService.deleteTemplateById(id);
     }
+
     @PostMapping("create_template")
     public boolean createTemplate(@RequestBody String request) {
         return redisTemplateService.createTemplate(request);
     }
+
     @GetMapping("get_template_by_id")
     public ObjectTemplate getTemplateById(@RequestParam String id) {
         return redisTemplateService.findTemplateById(id);
     }
-    @GetMapping("create_obj")
-    public boolean testCreateObject() throws Exception {
-        HashMap<String, Date> objects = new HashMap<String, Date>();
-        objects.put("11", new Date());
-        objects.put("22", new Date());
-        HashMap<String, MongoAttr> attrs = new HashMap<String, MongoAttr>();
-        MongoAttr name = new MongoAttr("a");
-        MongoAttr age = new MongoAttr("1");
-        name.setCreateTime(new Date());
-        name.setUpdateTime(new Date());
-        age.setCreateTime(new Date());
-        age.setUpdateTime(new Date());
-        attrs.put("name", name);
-        attrs.put("age", age);
-        Date createTime = new Date();
-        Date updateTime = new Date();
-        return redisObjectService.createObject("2", "4", "3", "object", createTime, updateTime, attrs, objects);
+
+    //------------------------------object------------------------------------//
+    @GetMapping("get_attr_by_time")
+    public MongoAttr getAttrByTime(@RequestParam String id, @RequestParam String attr, @RequestParam Date date) {
+        return redisObjectService.findAttrByTime(id, attr, date);
     }
+
+    @GetMapping("get_latest_attr")
+    public MongoAttr getLatestAttr(@RequestParam String id, @RequestParam String attr) {
+        return redisObjectService.findAttrByKey(id, attr);
+    }
+
+    @GetMapping("create_obj")
+    public boolean createObject() {
+        HashMap<String, String> hashMap = new HashMap<String, String>();
+        hashMap.put("age", "12");
+        hashMap.put("name", "jack");
+        List<String> objects = new ArrayList<>();
+        return redisObjectService.create("2", "1", objects, hashMap);
+    }
+
     @GetMapping("zadd")
     public boolean Zadd(@RequestParam String id, @RequestParam String attr, @RequestParam String value, @RequestParam Date date) {
         return redisObjectService.Zadd(id, attr, value, date);
     }
-    @GetMapping("get_latest")
+
+    @GetMapping("get_latest_obj")
     public MongoObject getLatest(@RequestParam String id) {
         return redisObjectService.findObjectById(id);
     }
-    @GetMapping("get_by_time")
+
+    @GetMapping("get_obj_by_time")
     public MongoObject getByTime(@RequestParam String id, @RequestParam Date date) {
         return redisObjectService.findObjectById(id, date);
     }
+
     @GetMapping("get_by_time_interval")
     public List<MongoObject> getByTimeInterval(@RequestParam String id, @RequestParam Date startDate, @RequestParam Date endDate) {
         return redisObjectService.findObjectBetweenTime(id, startDate, endDate);
     }
-
 
     @GetMapping("find_attr")
     public List<Object> findAttr(@RequestParam String id) {
