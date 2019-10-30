@@ -2,6 +2,9 @@ package com.sjtu.objectdataengine.service;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.sjtu.objectdataengine.dao.RedisAttrDAO;
+import com.sjtu.objectdataengine.dao.RedisObjectDAO;
+import com.sjtu.objectdataengine.dao.RedisTemplateDAO;
 import com.sjtu.objectdataengine.model.MongoAttr;
 import com.sjtu.objectdataengine.model.MongoObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,23 +30,31 @@ public class RedisObjectService {
     @Autowired
     private static ObjectMapper MAPPER;
     @Autowired
-    private RedisDAO redisDAO;
+    private RedisAttrDAO redisAttrDAO;
+    @Autowired
+    private RedisObjectDAO redisObjectDAO;
+
     private static final Logger logger = LoggerFactory.getLogger(RedisObjectService.class);
+
+    /*
+    public boolean createObject() {
+
+    }
+    */
 
     public boolean createObject(String id, String template, String nodeId, String type, Date createTime, Date updateTime, HashMap<String, MongoAttr> attrs, HashMap<String, Date> objects) {
         //存储对象基本信息
-        redisDAO.switchToAttrRedisTemplate();
-        redisDAO.hset(id + "#META", "template", template);
-        redisDAO.hset(id + "#META", "nodeId", nodeId);
-        redisDAO.hset(id + "#META", "type", type);
-        redisDAO.hset(id + "#META", "createTime", createTime);
-        redisDAO.hset(id + "#META", "updateTime", updateTime);
+        redisAttrDAO.hset(id + "#META", "template", template);
+        redisAttrDAO.hset(id + "#META", "nodeId", nodeId);
+        redisAttrDAO.hset(id + "#META", "type", type);
+        redisAttrDAO.hset(id + "#META", "createTime", createTime);
+        redisAttrDAO.hset(id + "#META", "updateTime", updateTime);
         //存储关联对象
         if(objects != null) {
             for(Map.Entry<String, Date> entry : objects.entrySet()) {
                 String objId = entry.getKey();
                 Date objDate = entry.getValue();
-                redisDAO.hset(id + "#object", objId, objDate);
+                redisAttrDAO.hset(id + "#object", objId, objDate);
             }
         }
         //存储属性基本信息
@@ -54,10 +65,9 @@ public class RedisObjectService {
                 Date attrCT = mongoAttr.getCreateTime();
                 Date attrUT = mongoAttr.getUpdateTime();
                 addAttrByObjectId(id, attrName);
-                redisDAO.switchToObjectRedisTemplate();
 
-                redisDAO.hset(id + '#' + attrName, "createTime", attrCT);
-                redisDAO.hset(id + '#' + attrName, "updateTime", attrUT);
+                redisObjectDAO.hset(id + '#' + attrName, "createTime", attrCT);
+                redisObjectDAO.hset(id + '#' + attrName, "updateTime", attrUT);
                 boolean addSucc = Zadd(id, attrName, mongoAttr.getValue(), updateTime);
                 if(!addSucc) {
                     return false;
@@ -72,8 +82,7 @@ public class RedisObjectService {
      * @return 对象属性集合
      */
     public List<Object> findAttrByObjectId(String id) {
-        redisDAO.switchToAttrRedisTemplate();
-        return redisDAO.lGet(id, 0, -1);
+        return redisAttrDAO.lGet(id, 0, -1);
     }
 
     /**
@@ -83,15 +92,14 @@ public class RedisObjectService {
      * @return true代表插入成功，false代表失败
      */
     public boolean addAttrByObjectId(String id, String attr) {
-        redisDAO.switchToAttrRedisTemplate();
         //如果属性已存在，插入失败
-        List<Object> attrList = redisDAO.lGet(id, 0, -1);
+        List<Object> attrList = redisAttrDAO.lGet(id, 0, -1);
         for(Object everyAttr : attrList) {
             if(everyAttr.equals(attr)) {
                 return false;
             }
         }
-        return redisDAO.lSet(id, attr);
+        return redisAttrDAO.lSet(id, attr);
     }
     /**
      * 删除指定对象的属性
@@ -100,8 +108,7 @@ public class RedisObjectService {
      * @return true代表删除成功，false代表失败
      */
     public boolean removeAttrByObjectId(String id, String attr) {
-        redisDAO.switchToAttrRedisTemplate();
-        return redisDAO.lRemove(id, 1, attr) > 0;
+        return redisAttrDAO.lRemove(id, 1, attr) > 0;
     }
     /**
      * 更新指定对象的属性
@@ -111,7 +118,6 @@ public class RedisObjectService {
      * @return true代表更新成功，false代表更新失败
      */
     public boolean updateAttrByObjectId(String id, String oldAttr, String newAttr) {
-        redisDAO.switchToAttrRedisTemplate();
         return removeAttrByObjectId(id, oldAttr) && addAttrByObjectId(id, newAttr);
     }
 
@@ -121,7 +127,6 @@ public class RedisObjectService {
      * @return true代表创建成功，false代表创建失败
      */
     public boolean createAttr(String request) {
-        redisDAO.switchToAttrRedisTemplate();
         JSONObject jsonObject =  JSON.parseObject(request);
         //必须传入id
         String id = jsonObject.getString("id");
@@ -129,7 +134,7 @@ public class RedisObjectService {
         JSONArray jsonArray = jsonObject.getJSONArray("attr");
         List<String> attr = jsonArray==null ? new ArrayList<>() : JSONObject.parseArray(jsonArray.toJSONString(), String.class);
         //这里传入的属性必须不能重复
-        return redisDAO.lSet(id, attr.toArray());
+        return redisAttrDAO.lSet(id, attr.toArray());
     }
     /**
      * 属性值表:
@@ -146,20 +151,18 @@ public class RedisObjectService {
      */
     public boolean Zadd(String id, String attr, String value, Date date) {
         //System.out.println(id + ' ' + attr + ' ' + value + ' ' + date);
-        redisDAO.switchToAttrRedisTemplate();
         if(id == null || attr == null || value == null) {
             //不允许任何一个参数为null值
             return false;
         }
-        List<Object> attrList = redisDAO.lGet(id, 0, -1);
+        List<Object> attrList = redisAttrDAO.lGet(id, 0, -1);
         if(attrList == null || attrList.size() == 0) {
             return false;
         }
-        redisDAO.switchToObjectRedisTemplate();
         //拼接成key
         String key = id + '#' + attr + '#' + "time";
         //检查表的大小
-        if(cacheSize <= redisDAO.Zcard(key)) {
+        if(cacheSize <= redisObjectDAO.Zcard(key)) {
             //超出了最大允许值,执行淘汰策略
             //淘汰策略:将当前属性表中最小元素删除,同时记录其时间戳,按照时间戳将同一对象中所有属性在此时间戳之前的值全部删除,
             // 同时添加一条新记录,值为被删除的最新记录的值,如:
@@ -174,30 +177,30 @@ public class RedisObjectService {
             //       | 11:00:00 |
             //为了提高效率,每次淘汰一批数据而不是一个数据,以避免频繁触发淘汰动作
             //记录最后被淘汰值的时间戳
-            Set<ZSetOperations.TypedTuple<Object>> tempSet = redisDAO.ZrangeWithScores(key, evictSize, evictSize);
+            Set<ZSetOperations.TypedTuple<Object>> tempSet = redisObjectDAO.ZrangeWithScores(key, evictSize, evictSize);
             Iterator<ZSetOperations.TypedTuple<Object>> it = tempSet.iterator();
             ZSetOperations.TypedTuple<Object> tuple = it.next();
             //时间戳
             double d = tuple.getScore();
             //执行淘汰策略
-            redisDAO.ZremoveRange(key, 0, evictSize - 1);
-            redisDAO.Zadd(key, value, (double)date.getTime());
+            redisObjectDAO.ZremoveRange(key, 0, evictSize - 1);
+            redisObjectDAO.Zadd(key, value, (double)date.getTime());
             for(Object everyAttr : attrList) {
                 if(!everyAttr.equals(attr)) {
                     String k = id + '#' + everyAttr + '#' + "time";
                     //删除
-                    long cnt = redisDAO.Zcount(k, 0.0, d);
-                    Set<Object> delSet = redisDAO.Zrange(k, cnt - 1, cnt - 1);
+                    long cnt = redisObjectDAO.Zcount(k, 0.0, d);
+                    Set<Object> delSet = redisObjectDAO.Zrange(k, cnt - 1, cnt - 1);
                     Iterator<Object> delIt = delSet.iterator();
                     Object lastValue = delIt.next();
-                    redisDAO.ZremoveRangeByScore(k, 0.0, d);
+                    redisObjectDAO.ZremoveRangeByScore(k, 0.0, d);
                     //添加
-                    redisDAO.Zadd(k, lastValue, d);
+                    redisObjectDAO.Zadd(k, lastValue, d);
                 }
             }
         }
         else {
-            redisDAO.Zadd(key, value, (double)date.getTime());
+            redisObjectDAO.Zadd(key, value, (double)date.getTime());
         }
         return true;
     }
@@ -208,28 +211,26 @@ public class RedisObjectService {
      * @return 对象最新值
      */
     public MongoObject findObjectById(String id) {
-        redisDAO.switchToAttrRedisTemplate();
         if(id == null) {
             return null;
         }
-        List<Object> attrList = redisDAO.lGet(id, 0, -1);
+        List<Object> attrList = redisAttrDAO.lGet(id, 0, -1);
         if(attrList == null || attrList.size() == 0) {
             return null;
         }
         MongoObject mongoObject = findById(id);
-        redisDAO.switchToObjectRedisTemplate();
         Date ut = new Date(0);
         for(Object everyAttr : attrList) {
             String key = id + '#' + everyAttr + '#' + "time";
             //获得属性最新值
-            long cnt = redisDAO.Zcard(key);
-            Set<Object> delSet = redisDAO.Zrange(key, cnt - 1, cnt - 1);
+            long cnt = redisObjectDAO.Zcard(key);
+            Set<Object> delSet = redisObjectDAO.Zrange(key, cnt - 1, cnt - 1);
             Iterator<Object> delIt = delSet.iterator();
             Object lastValue = delIt.next();
             //添加属性
             MongoAttr mongoAttr = new MongoAttr(lastValue.toString());
-            Date attrUpdateTime = (Date) redisDAO.hget(id + '#' + everyAttr, "updateTime");
-            Date attrCreateTime = (Date) redisDAO.hget(id + '#' + everyAttr, "createTime");
+            Date attrUpdateTime = (Date) redisObjectDAO.hget(id + '#' + everyAttr, "updateTime");
+            Date attrCreateTime = (Date) redisObjectDAO.hget(id + '#' + everyAttr, "createTime");
             mongoAttr.setUpdateTime(attrUpdateTime);
             mongoAttr.setCreateTime(attrCreateTime);
             mongoObject.putAttr(everyAttr.toString(), mongoAttr);
@@ -252,8 +253,7 @@ public class RedisObjectService {
      * @return 新的关联对象表
      */
     private HashMap<String, Date> cutObjects(Date ut, String id) {
-        redisDAO.switchToAttrRedisTemplate();
-        Map<Object, Object> objectMap = redisDAO.hmget(id + "#object");
+        Map<Object, Object> objectMap = redisAttrDAO.hmget(id + "#object");
         HashMap<String, Date> cutMap = new HashMap<String, Date>();
         for(Map.Entry<Object, Object> entry : objectMap.entrySet()) {
             String objId = entry.getKey().toString();
@@ -272,12 +272,11 @@ public class RedisObjectService {
      * @return 初始化的MongoObject对象
      */
     private MongoObject findById(String id) {
-        redisDAO.switchToAttrRedisTemplate();
-        String template = redisDAO.hget(id + "#META", "template").toString();
-        String nodeId = redisDAO.hget(id + "#META", "nodeId").toString();
-        String type = redisDAO.hget(id + "#META", "type").toString();
-        Date createTime = (Date) redisDAO.hget(id + "#META", "createTime");
-        Date updateTime = (Date) redisDAO.hget(id + "#META", "updateTime");
+        String template = redisAttrDAO.hget(id + "#META", "template").toString();
+        String nodeId = redisAttrDAO.hget(id + "#META", "nodeId").toString();
+        String type = redisAttrDAO.hget(id + "#META", "type").toString();
+        Date createTime = (Date) redisAttrDAO.hget(id + "#META", "createTime");
+        Date updateTime = (Date) redisAttrDAO.hget(id + "#META", "updateTime");
         MongoObject mongoObject = new MongoObject(id, type, template, nodeId, new HashMap<String, MongoAttr>(), new HashMap<String, Date>());
         mongoObject.setCreateTime(createTime);
         return mongoObject;
@@ -286,33 +285,32 @@ public class RedisObjectService {
      * 根据对象id和给定时间查找对象在某一时刻的值
      * @param id 对象id
      * @param date 日期
+     * @return 初始化的MongoObject对象
      */
     public MongoObject findObjectById(String id, Date date) {
-        redisDAO.switchToAttrRedisTemplate();
         if(id == null) {
             return null;
         }
-        List<Object> attrList = redisDAO.lGet(id, 0, -1);
+        List<Object> attrList = redisAttrDAO.lGet(id, 0, -1);
         if(attrList == null || attrList.size() == 0) {
             return null;
         }
         MongoObject mongoObject = findById(id);
-        redisDAO.switchToObjectRedisTemplate();
         Date ut = new Date(0);
         for(Object everyAttr : attrList) {
             String key = id + '#' + everyAttr + '#' + "time";
-            long cnt = redisDAO.Zcount(key, 0.0, (double)date.getTime());
+            long cnt = redisObjectDAO.Zcount(key, 0.0, (double)date.getTime());
             //如果没有符合条件的记录，说明给定时间的记录不存在或已被淘汰，需要去mongoDB中查找
             if(cnt == 0) {
                 //return null;
                 continue;
             }
             //此处如果给定时间大于数据库中所有记录对应的时间，则取数据库中最后一条记录
-            Set<ZSetOperations.TypedTuple<Object>> latestSet = redisDAO.ZrangeWithScores(key, cnt - 1, cnt - 1);
+            Set<ZSetOperations.TypedTuple<Object>> latestSet = redisObjectDAO.ZrangeWithScores(key, cnt - 1, cnt - 1);
             Iterator<ZSetOperations.TypedTuple<Object>> delIt = latestSet.iterator();
             ZSetOperations.TypedTuple<Object> lastValue = delIt.next();
             MongoAttr mongoAttr = new MongoAttr(lastValue.getValue().toString());
-            Date attrCreateTime = (Date) redisDAO.hget(id + '#' + everyAttr, "createTime");
+            Date attrCreateTime = (Date) redisObjectDAO.hget(id + '#' + everyAttr, "createTime");
             mongoAttr.setCreateTime(attrCreateTime);
             Date attrUpdateTime = new Date(lastValue.getScore().longValue());
             mongoAttr.setUpdateTime(attrUpdateTime);
@@ -335,22 +333,20 @@ public class RedisObjectService {
      * @return
      */
     public List<MongoObject> findObjectBetweenTime(String id, Date startDate, Date endDate) {
-        redisDAO.switchToAttrRedisTemplate();
         if(id == null) {
             return null;
         }
-        List<Object> attrList = redisDAO.lGet(id, 0, -1);
+        List<Object> attrList = redisAttrDAO.lGet(id, 0, -1);
 
         if(attrList == null || attrList.size() == 0) {
             return null;
         }
-        redisDAO.switchToObjectRedisTemplate();
         List<ArrayList<ZSetOperations.TypedTuple<Object>>> arr = new ArrayList<ArrayList<ZSetOperations.TypedTuple<Object>>>();
         int i = 0;
         for(Object everyAttr : attrList) {
             String key = id + '#' + everyAttr + '#' + "time";
             //System.out.println(key);
-            Set<ZSetOperations.TypedTuple<Object>> tempSet = redisDAO.ZrangeByScoreWithScores(key, (double)startDate.getTime(), (double)endDate.getTime());
+            Set<ZSetOperations.TypedTuple<Object>> tempSet = redisObjectDAO.ZrangeByScoreWithScores(key, (double)startDate.getTime(), (double)endDate.getTime());
             arr.add(new ArrayList<ZSetOperations.TypedTuple<Object>>(tempSet));
             //按时间排序
             Collections.sort(arr.get(i), new Comparator<ZSetOperations.TypedTuple<Object>>() {
@@ -385,16 +381,16 @@ public class RedisObjectService {
         for(i = 0; i < attrList.size(); i++) {
             String key = id + '#' + attrList.get(i) + '#' + "time";
             //获得小于或等于起始时间的最大的数
-            long cnt = redisDAO.Zcount(key, 0.0, (double)startDate.getTime());
+            long cnt = redisObjectDAO.Zcount(key, 0.0, (double)startDate.getTime());
             if(cnt > 0) {
-                Set<ZSetOperations.TypedTuple<Object>> delSet = redisDAO.ZrangeWithScores(key, cnt - 1, cnt - 1);
+                Set<ZSetOperations.TypedTuple<Object>> delSet = redisObjectDAO.ZrangeWithScores(key, cnt - 1, cnt - 1);
                 Iterator<ZSetOperations.TypedTuple<Object>> delIt = delSet.iterator();
                 ZSetOperations.TypedTuple<Object> lastValue = delIt.next();
                 pre.set(i, lastValue);
             }
             else {
                 //如果全部大于起始时间
-                Set<ZSetOperations.TypedTuple<Object>> delSet = redisDAO.ZrangeWithScores(key, 0,  0);
+                Set<ZSetOperations.TypedTuple<Object>> delSet = redisObjectDAO.ZrangeWithScores(key, 0,  0);
                 Iterator<ZSetOperations.TypedTuple<Object>> delIt = delSet.iterator();
                 ZSetOperations.TypedTuple<Object> lastValue = delIt.next();
                 pre.set(i, lastValue);
@@ -425,10 +421,9 @@ public class RedisObjectService {
                 //设置更新时间
                 mongoObject.setUpdateTime(new Date(new Double(minTime).longValue()));
                 for(i = 0; i < attrList.size(); i++) {
-                    redisDAO.switchToObjectRedisTemplate();
                     //属性名
                     String attrName = attrList.get(i).toString();
-                    Date attrCreateTime = (Date) redisDAO.hget(id + '#' + attrName, "createTime");
+                    Date attrCreateTime = (Date) redisObjectDAO.hget(id + '#' + attrName, "createTime");
                     Date attrUpdateTime;
                     MongoAttr mongoAttr;
                     if(indexList.get(i) < arr.get(i).size()) {

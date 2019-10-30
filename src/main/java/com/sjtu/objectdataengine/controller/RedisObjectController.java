@@ -4,7 +4,9 @@ import com.alibaba.fastjson.JSONObject;
 import com.sjtu.objectdataengine.dao.RedisDAO;
 import com.sjtu.objectdataengine.model.MongoAttr;
 import com.sjtu.objectdataengine.model.MongoObject;
+import com.sjtu.objectdataengine.model.ObjectTemplate;
 import com.sjtu.objectdataengine.service.RedisObjectService;
+import com.sjtu.objectdataengine.service.RedisTemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.DefaultTypedTuple;
 import org.springframework.data.redis.core.ZSetOperations;
@@ -19,6 +21,24 @@ import java.util.*;
 public class RedisObjectController {
     @Autowired
     private RedisObjectService redisObjectService;
+    @Autowired
+    private RedisTemplateService redisTemplateService;
+    @GetMapping("get_all_template")
+    public List<ObjectTemplate> getAllTemplate() {
+        return redisTemplateService.findAllTemplate();
+    }
+    @GetMapping("delete_template_by_id")
+    public boolean deleteTemplateById(@RequestParam String id) {
+        return redisTemplateService.deleteTemplateById(id);
+    }
+    @PostMapping("create_template")
+    public boolean createTemplate(@RequestBody String request) {
+        return redisTemplateService.createTemplate(request);
+    }
+    @GetMapping("get_template_by_id")
+    public ObjectTemplate getTemplateById(@RequestParam String id) {
+        return redisTemplateService.findTemplateById(id);
+    }
     @GetMapping("create_obj")
     public boolean testCreateObject() throws Exception {
         HashMap<String, Date> objects = new HashMap<String, Date>();
