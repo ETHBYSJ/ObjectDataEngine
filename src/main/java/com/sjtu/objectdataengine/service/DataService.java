@@ -3,14 +3,14 @@ package com.sjtu.objectdataengine.service;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.mongodb.Mongo;
+import com.sjtu.objectdataengine.model.MongoObject;
 import com.sjtu.objectdataengine.rabbitMQ.MongoSender;
+import com.sjtu.objectdataengine.rabbitMQ.RedisSender;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class DataService {
@@ -19,8 +19,22 @@ public class DataService {
     MongoSender mongoSender;
 
     @Autowired
+    RedisSender redisSender;
+
+    @Autowired
+    MongoObjectService mongoObjectService;
+
+    @Autowired
+    RedisObjectService redisObjectService;
+
+    @Autowired
     MongoTemplateService mongoTemplateService;
 
+    /**
+     * 创建对象
+     * @param request json请求
+     * @return String
+     */
     public String create(String request) {
         //解析JSON
         JSONObject jsonObject = JSON.parseObject(request);
@@ -39,7 +53,7 @@ public class DataService {
 
         JSONObject attrObject = jsonObject.getJSONObject("attrs");
         HashMap<String, String> attrs = new HashMap<>();
-        if (objects != null) {
+        if (attrObject != null) {
             for(Map.Entry entry : attrObject.entrySet()) {
                 String key = entry.getKey().toString();
                 String value = entry.getValue().toString();
@@ -56,8 +70,46 @@ public class DataService {
         message.put("attrs", attrs);
 
         mongoSender.send(message);
+        redisSender.send(message);
 
         return "创建成功！";
     }
 
+    /**
+     * 根据key获取最新object
+     * @param id 对象id
+     * @return 对象
+     */
+    public MongoObject findObjectByKey(String id) {
+        MongoObject redisResult = redisObjectService.findObjectById(id);
+        if (redisResult == null) {
+            return mongoObjectService.findLatestObjectByKey(id);
+        }
+        return redisResult;
+    }
+
+    /**
+     * 根据key获取对应time的object
+     * @param id 对象id
+     * @param time 时间
+     * @return 对象
+     */
+    public MongoObject findObjectByTime(String id, Date time) {
+        MongoObject redisResult = redisObjectService.findObjectById(id, time);
+        if (redisResult == null) {
+            return mongoObjectService.findObjectByTime(id, time);
+        }
+        return redisResult;
+    }
+
+    /**
+     * 根据key获取对应时间段的object列表
+     * @param id 对象id
+     * @param start 开始时间
+     * @param end 结束时间
+     * @return 对象列表
+     */
+    public List<MongoObject> findObjectByTimes(String id, Date start, Date end) {
+        return mongoObjectService.findObjectByStartAndEnd(id, start, end);
+    }
 }
