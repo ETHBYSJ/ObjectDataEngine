@@ -96,7 +96,7 @@ public class RedisObjectService {
 
             redisObjectDAO.hset(id + '#' + attrName, "createTime", attrCT);
             redisObjectDAO.hset(id + '#' + attrName, "updateTime", attrUT);
-            boolean addSucc = Zadd(id, attrName, mongoAttr.getValue(), date);
+            boolean addSucc = addAttr(id, attrName, mongoAttr.getValue(), date);
             if(!addSucc) {
                 return false;
             }
@@ -154,7 +154,7 @@ public class RedisObjectService {
      * @return true代表创建成功，false代表创建失败
      */
     public boolean createAttr(String request) {
-        JSONObject jsonObject =  JSON.parseObject(request);
+        JSONObject jsonObject = JSON.parseObject(request);
         //必须传入id
         String id = jsonObject.getString("id");
         if(id == null) return false;
@@ -162,6 +162,16 @@ public class RedisObjectService {
         List<String> attr = jsonArray==null ? new ArrayList<>() : JSONObject.parseArray(jsonArray.toJSONString(), String.class);
         //这里传入的属性必须不能重复
         return redisAttrDAO.lSet(id, attr.toArray());
+    }
+
+    /**
+     * 向属性值表中插入一条记录
+     * @param id 对象id
+     * @param mongoAttr 属性
+     * @return true代表插入成功，false代表插入失败
+     */
+    private boolean addAttr(String id, String name, MongoAttr mongoAttr) {
+        return addAttr(id, name, mongoAttr.getValue(), mongoAttr.getUpdateTime());
     }
     /**
      * 属性值表:
@@ -176,7 +186,7 @@ public class RedisObjectService {
      * @param date 日期，精确到秒，格式为:yyyy-MM-dd HH:mm:ss，如:2019-06-01
      * @return true代表插入成功，false代表插入失败
      */
-    public boolean Zadd(String id, String attr, String value, Date date) {
+    private boolean addAttr(String id, String attr, String value, Date date) {
         //System.out.println(id + ' ' + attr + ' ' + value + ' ' + date);
         if(id == null || attr == null || value == null) {
             //不允许任何一个参数为null值
@@ -186,6 +196,14 @@ public class RedisObjectService {
         if(attrList == null || attrList.size() == 0) {
             return false;
         }
+        //将属性加入属性表中
+        addAttrByObjectId(id, attr);
+        //更新时间
+        redisAttrDAO.hset(id + "#META", "updateTime", date);
+        if(redisObjectDAO.hget(id + '#' + attr, "createTime") == null) {
+            redisObjectDAO.hset(id + '#' + attr, "createTime", date);
+        }
+        redisObjectDAO.hset(id + '#' + attr, "updateTime", date);
         //拼接成key
         String key = id + '#' + attr + '#' + "time";
         //检查表的大小
