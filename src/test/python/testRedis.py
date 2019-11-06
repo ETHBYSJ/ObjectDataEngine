@@ -8,11 +8,11 @@ def transDate(date):
 if __name__ == "__main__":
     #pool = redis.ConnectionPool(host = 'localhost', port = 6379, password = None)
     #r = redis.StrictRedis(connection_pool = pool)
-    id = '2'
+    id = '4'
     attrs = ['age', 'name']
     r = redis.Redis(host = 'localhost', port = 6379, db = 0, password = None)
-    #r.lpush(id, '\"name\"')
-    #r.lpush(id, '\"age\"')
+    r.lpush(id, '\"name\"')
+    r.lpush(id, '\"age\"')
 
     r = redis.Redis(host = 'localhost', port = 6379, db = 1, password = None)
     #zset

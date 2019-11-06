@@ -29,6 +29,7 @@ public class RedisTemplateService {
         if(id == null || name == null || type == null || nodeId == null) {
             return false;
         }
+        Date now = new Date();
         //创建模板
         //id索引表
         String indexKey = "index";
@@ -48,10 +49,12 @@ public class RedisTemplateService {
             redisTemplateDAO.sSet(attrsKey, attrs.toArray());
         }
         //存储基本信息
-        redisTemplateDAO.hset(id + '#' + "base", "id", id);
-        redisTemplateDAO.hset(id + '#' + "base", "name", name);
-        redisTemplateDAO.hset(id + '#' + "base", "type", type);
-        redisTemplateDAO.hset(id + '#' + "base", "nodeId", nodeId);
+        redisTemplateDAO.hset(baseKey, "id", id);
+        redisTemplateDAO.hset(baseKey, "name", name);
+        redisTemplateDAO.hset(baseKey, "type", type);
+        redisTemplateDAO.hset(baseKey, "nodeId", nodeId);
+        redisTemplateDAO.hset(baseKey, "createTime", now);
+        redisTemplateDAO.hset(baseKey, "updateTime", now);
         return true;
     }
 

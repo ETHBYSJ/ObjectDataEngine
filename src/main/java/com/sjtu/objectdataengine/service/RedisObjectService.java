@@ -41,6 +41,39 @@ public class RedisObjectService {
 
     /**
      * 创建新对象
+     * @param request json请求体
+     * @return true代表创建成功，false代表创建失败
+     * json请求体结构：
+     * {
+     *     "id": "1",
+     *     "template": "1",
+     *     "objects": ["2", "3", "5"],
+     *      "attrs": {
+     *          "name": "Tony",
+     *          "age": "18",
+     *          "friends": [
+     *              {
+     *                  "id": "2",
+     *                  "template": "1",
+     *                  "objects": ["1"],
+     *                  "attrs": {
+     *                      "name": "Jack",
+     *                      "age": "18",
+     *                      "friends": [
+     *
+     *                      ],
+     *                  }
+     *              }
+     *           ],
+     *      }
+     * }
+     */
+    public boolean create(String request) {
+
+        return true;
+    }
+    /**
+     * 创建新对象
      * @param id 对象id
      * @param template 模板id
      * @param objects 关联对象集合
@@ -170,7 +203,7 @@ public class RedisObjectService {
      * @param mongoAttr 属性
      * @return true代表插入成功，false代表插入失败
      */
-    private boolean addAttr(String id, String name, MongoAttr mongoAttr) {
+    public boolean addAttr(String id, String name, MongoAttr mongoAttr) {
         return addAttr(id, name, mongoAttr.getValue(), mongoAttr.getUpdateTime());
     }
     /**
@@ -186,7 +219,7 @@ public class RedisObjectService {
      * @param date 日期，精确到秒，格式为:yyyy-MM-dd HH:mm:ss，如:2019-06-01
      * @return true代表插入成功，false代表插入失败
      */
-    private boolean addAttr(String id, String attr, String value, Date date) {
+    public boolean addAttr(String id, String attr, String value, Date date) {
         //System.out.println(id + ' ' + attr + ' ' + value + ' ' + date);
         if(id == null || attr == null || value == null) {
             //不允许任何一个参数为null值
@@ -208,33 +241,51 @@ public class RedisObjectService {
         String key = id + '#' + attr + '#' + "time";
         //检查表的大小
         if(cacheSize <= redisObjectDAO.Zcard(key)) {
-            //超出了最大允许值,执行淘汰策略
-            //淘汰策略:将当前属性表中最小元素删除,同时记录其时间戳,按照时间戳将同一对象中所有属性在此时间戳之前的值全部删除,
-            // 同时添加一条新记录,值为被删除的最新记录的值,如:
-            //attr A:| 08:00:00 |      attr B:| 07:00:00 |
-            //       | 09:00:00 |             | 07:30:00 |
-            //       | 10:00:00 |             | 09:30:00 |
-            //此时向A中插入一条新纪录:| 2019-10-21 | 11:00:00 |,触发了淘汰动作,A中第一条记录被删除
-            //为了查询一致性考虑,相应必须删除B中第一条记录和第二条记录,并插入一条新记录| 09:00:00 |,对应值与| 07:30:00 |的值相同。
-            //最后表的情况如下图所示:
-            //attr A:| 09:00:00 |      attr B:| 09:00:00 |
-            //       | 10:00:00 |             | 09:30:00 |
-            //       | 11:00:00 |
-            //为了提高效率,每次淘汰一批数据而不是一个数据,以避免频繁触发淘汰动作
-            //记录最后被淘汰值的时间戳
-            Set<ZSetOperations.TypedTuple<Object>> tempSet = redisObjectDAO.ZrangeWithScores(key, evictSize, evictSize);
-            Iterator<ZSetOperations.TypedTuple<Object>> it = tempSet.iterator();
-            ZSetOperations.TypedTuple<Object> tuple = it.next();
-            //时间戳
-            double d = tuple.getScore();
-            //执行淘汰策略
-            redisObjectDAO.ZremoveRange(key, 0, evictSize - 1);
+            doEvict(id, attr);
             redisObjectDAO.Zadd(key, value, (double)date.getTime());
-            for(Object everyAttr : attrList) {
-                if(!everyAttr.equals(attr)) {
-                    String k = id + '#' + everyAttr + '#' + "time";
-                    //删除
-                    long cnt = redisObjectDAO.Zcount(k, 0.0, d);
+        }
+        else {
+            redisObjectDAO.Zadd(key, value, (double)date.getTime());
+        }
+        return true;
+    }
+
+    /**
+     * 执行淘汰策略
+     * @param id 对象id
+     * @param attr 属性名
+     */
+    private void doEvict(String id, String attr) {
+        String key = id + '#' + attr + '#' + "time";
+        //超出了最大允许值,执行淘汰策略
+        //淘汰策略:将当前属性表中最小元素删除,同时记录其时间戳,按照时间戳将同一对象中所有属性在此时间戳之前的值全部删除,
+        // 同时添加一条新记录,值为被删除的最新记录的值,如:
+        //attr A:| 08:00:00 |      attr B:| 07:00:00 |
+        //       | 09:00:00 |             | 07:30:00 |
+        //       | 10:00:00 |             | 09:30:00 |
+        //此时向A中插入一条新纪录:| 2019-10-21 | 11:00:00 |,触发了淘汰动作,A中第一条记录被删除
+        //为了查询一致性考虑,相应必须删除B中第一条记录和第二条记录,并插入一条新记录| 09:00:00 |,对应值与| 07:30:00 |的值相同。
+        //最后表的情况如下图所示:
+        //attr A:| 09:00:00 |      attr B:| 09:00:00 |
+        //       | 10:00:00 |             | 09:30:00 |
+        //       | 11:00:00 |
+        //为了提高效率,每次淘汰一批数据而不是一个数据,以避免频繁触发淘汰动作
+        //记录最后被淘汰值的时间戳
+        Set<ZSetOperations.TypedTuple<Object>> tempSet = redisObjectDAO.ZrangeWithScores(key, evictSize, evictSize);
+        Iterator<ZSetOperations.TypedTuple<Object>> it = tempSet.iterator();
+        ZSetOperations.TypedTuple<Object> tuple = it.next();
+        //时间戳
+        double d = tuple.getScore();
+        //执行淘汰策略
+        redisObjectDAO.ZremoveRange(key, 0, evictSize - 1);
+        //redisObjectDAO.Zadd(key, value, (double)date.getTime());
+        List<Object> attrList = redisAttrDAO.lGet(id, 0, -1);
+        for(Object everyAttr : attrList) {
+            if(!everyAttr.equals(attr)) {
+                String k = id + '#' + everyAttr + '#' + "time";
+                //删除
+                long cnt = redisObjectDAO.Zcount(k, 0.0, d);
+                if(cnt > 0) {
                     Set<Object> delSet = redisObjectDAO.Zrange(k, cnt - 1, cnt - 1);
                     Iterator<Object> delIt = delSet.iterator();
                     Object lastValue = delIt.next();
@@ -244,10 +295,6 @@ public class RedisObjectService {
                 }
             }
         }
-        else {
-            redisObjectDAO.Zadd(key, value, (double)date.getTime());
-        }
-        return true;
     }
 
     /**
