@@ -84,7 +84,7 @@ public class RedisObjectController {
         hashMap.put("age", "12");
         hashMap.put("name", "jack");
         List<String> objects = new ArrayList<>();
-        return redisObjectService.create("2", "1", objects, hashMap);
+        return redisObjectService.create("2", "1", "2", objects, hashMap);
     }
 
     @GetMapping("addAttr")

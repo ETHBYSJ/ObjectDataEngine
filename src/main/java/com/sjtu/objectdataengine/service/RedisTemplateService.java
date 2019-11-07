@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sjtu.objectdataengine.dao.RedisTemplateDAO;
+import com.sjtu.objectdataengine.dao.RedisTreeDAO;
 import com.sjtu.objectdataengine.model.ObjectTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -15,6 +16,8 @@ import java.util.*;
 public class RedisTemplateService {
     @Autowired
     private RedisTemplateDAO redisTemplateDAO;
+    @Autowired
+    private RedisTreeDAO redisTreeDAO;
     private static ObjectMapper MAPPER = new ObjectMapper();
     /**
      * 创建模板
@@ -60,6 +63,12 @@ public class RedisTemplateService {
         redisTemplateDAO.hset(baseKey, "createTime", now);
         redisTemplateDAO.hset(baseKey, "updateTime", now);
         //待修改：更新树节点
+        Set<Object> nodes = redisTreeDAO.sGet("index");
+        for(Object node : nodes) {
+            if(redisTreeDAO.hget(node + "#base", "id").equals(nodeId)) {
+                redisTreeDAO.hset(node + "#base", "template", id);
+            }
+        }
         return true;
     }
 

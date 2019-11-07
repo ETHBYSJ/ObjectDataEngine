@@ -431,7 +431,7 @@ public class RedisObjectService {
             String template = redisAttrDAO.hget(id + "#META", "template").toString();
             String nodeId = redisAttrDAO.hget(id + "#META", "nodeId").toString();
             String type = redisAttrDAO.hget(id + "#META", "type").toString();
-            String intro = redisAttrDAO.hget(id + "#META", "intro").toString();
+            String intro = redisAttrDAO.hget(id + "#META", "intro") != null ? redisAttrDAO.hget(id + "#META", "intro").toString(): "";
             Date createTime = (Date) redisAttrDAO.hget(id + "#META", "createTime");
             Date updateTime = (Date) redisAttrDAO.hget(id + "#META", "updateTime");
             MongoObject mongoObject = new MongoObject(id, intro, type, template, nodeId, new HashMap<String, MongoAttr>(), new HashMap<String, Date>());

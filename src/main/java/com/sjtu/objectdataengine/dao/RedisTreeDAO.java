@@ -59,12 +59,24 @@ public class RedisTreeDAO extends RedisDAO {
         Date createTime = (Date) hget(baseKey, "createTime");
         Date updateTime = (Date) hget(baseKey, "updateTime");
         //孩子节点列表
+        /*
         List<String> children = new ArrayList<String>();
         List<Object> childrenList = lGet(childrenKey, 0, -1);
         //类型转换
         if(childrenList != null) {
             for(Object child : childrenList) {
                 children.add(child.toString());
+            }
+        }
+        */
+        List<KnowledgeTreeNode> children = new ArrayList<KnowledgeTreeNode>();
+        List<Object> childrenList = lGet(childrenKey, 0, -1);
+        if(childrenList == null || childrenList.size() == 0) {
+
+        }
+        else {
+            for(Object child : childrenList) {
+                KnowledgeTreeNode childNode = findByKey(child.toString());
             }
         }
         //父节点列表
