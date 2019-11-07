@@ -24,6 +24,10 @@ public class MongoTreeService {
     MongoTreeDAO mongoTreeDAO;
 
     /**
+     * public
+     */
+
+    /**
      * 创建结点
      * @param request 请求json
      * @return true表示成功，false反之

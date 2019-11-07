@@ -1,5 +1,6 @@
 package com.sjtu.objectdataengine;
 
+import com.sjtu.objectdataengine.service.StartService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -7,8 +8,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class ObjectdataengineApplication {
 
     public static void main(String[] args) {
-        System.out.println(Thread.currentThread().getId());
         SpringApplication.run(ObjectdataengineApplication.class, args);
     }
-
 }

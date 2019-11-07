@@ -35,10 +35,11 @@ public class MongoReceiver {
          */
         if(op.equals("CREATE")) {
             String id = message.get("id").toString();
+            String intro = message.get("intro").toString();
             String template = message.get("template").toString();
             List<String> objects = (List<String>) message.get("objects");
             HashMap<String, String> attrs = (HashMap<String, String>) message.get("attrs");
-            mongoObjectService.create(id, template, attrs, objects);
+            mongoObjectService.create(id, intro, template, attrs, objects);
         }
 
 

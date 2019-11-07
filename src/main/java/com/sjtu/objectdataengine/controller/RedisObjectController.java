@@ -83,8 +83,6 @@ public class RedisObjectController {
         return redisObjectService.create("2", "1", objects, hashMap);
     }
 
-	}
-
     @GetMapping("addAttr")
     public boolean addAttr(@RequestParam String id, @RequestParam String attr, @RequestParam String value, @RequestParam Date date) {
         return redisObjectService.addAttr(id, attr, value, date);

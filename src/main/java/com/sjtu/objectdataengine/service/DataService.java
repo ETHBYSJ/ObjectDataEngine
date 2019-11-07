@@ -41,6 +41,9 @@ public class DataService {
         String id = jsonObject.getString("id");
         if (id == null) return "ID不能为空！";
 
+        String intro = jsonObject.getString("intro");
+        if (intro == null) intro = "";
+
         String template = jsonObject.getString("template");
         if(template == null) return "template不能为空！";
         else if (mongoTemplateService.findTemplateById(template)==null) return "template不存在";
@@ -65,6 +68,7 @@ public class DataService {
         HashMap<String, Object> message = new HashMap<>();
         message.put("op", "CREATE");
         message.put("id", id);
+        message.put("intro", intro);
         message.put("template", template);
         message.put("objects", objects);
         message.put("attrs", attrs);

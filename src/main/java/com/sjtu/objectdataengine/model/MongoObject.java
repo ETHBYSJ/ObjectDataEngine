@@ -9,7 +9,7 @@ import java.util.Set;
 @Document(collection = "mongoObjects")
 public class MongoObject extends MongoBase{
     private String id;              //对象id
-
+    private String intro;           //描述
     private String type;            //类型，event或entity
     private String template;        //模板id
     private String nodeId;          //标签id
@@ -18,8 +18,9 @@ public class MongoObject extends MongoBase{
 
     private HashMap<String, MongoAttr> attr;  //最新属性集合
 
-    public MongoObject(String id, String type, String template, String nodeId, HashMap<String, MongoAttr> attr, HashMap<String, Date> objects) {
+    public MongoObject(String id, String intro, String type, String template, String nodeId, HashMap<String, MongoAttr> attr, HashMap<String, Date> objects) {
         this.id = id;
+        this.intro = intro;
         this.type = type;
         this.template = template;
         this.nodeId = nodeId;
@@ -33,6 +34,14 @@ public class MongoObject extends MongoBase{
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getIntro() {
+        return intro;
+    }
+
+    public void setIntro(String intro) {
+        this.intro = intro;
     }
 
     public String getType() {

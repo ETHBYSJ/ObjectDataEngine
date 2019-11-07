@@ -42,7 +42,7 @@ public class MongoObjectService {
      * @param objects 关联对象集合
      * @return true or false
      */
-    public boolean create(String id, String template, HashMap<String, String> kv, List<String> objects) {
+    public boolean create(String id, String intro, String template, HashMap<String, String> kv, List<String> objects) {
         try {
             Set<String> attrs = mongoTemplateDAO.findByKey(template).getAttrs();
             HashMap<String, MongoAttr> hashMap = new HashMap<>();
@@ -52,7 +52,7 @@ public class MongoObjectService {
                 MongoAttr mongoAttr = createAttr(id, attr, value, 1);
                 hashMap.put(attr, mongoAttr);
             }
-            createObject(id, template, objects, hashMap);
+            createObject(id, intro, template, objects, hashMap);
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -61,7 +61,7 @@ public class MongoObjectService {
 
     }
 
-    private void createObject(String id, String template, List<String> objects, HashMap<String, MongoAttr> hashMap) {
+    private void createObject(String id, String intro, String template, List<String> objects, HashMap<String, MongoAttr> hashMap) {
         ObjectTemplate objectTemplate = mongoTemplateDAO.findByKey(template);
         String nodeId = objectTemplate.getNodeId();
         String type = objectTemplate.getType();
@@ -70,7 +70,7 @@ public class MongoObjectService {
         for (String obj : objects) {
             objs.put(obj, now);
         }
-        MongoObject mongoObject = new MongoObject(id, type, template, nodeId, hashMap, objs);
+        MongoObject mongoObject = new MongoObject(id, intro, type, template, nodeId, hashMap, objs);
         mongoObjectDAO.create(mongoObject); //创建object
         //更新标签树
         mongoTreeDAO.addNewObject(nodeId, id);

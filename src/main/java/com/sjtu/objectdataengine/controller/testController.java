@@ -29,7 +29,7 @@ public class testController {
         hashMap.put("id", "hh");
         hashMap.put("name", "go");
         List<String> objects = new ArrayList<>();
-        return mongoObjectService.create("2","4", hashMap, objects);
+        return mongoObjectService.create("2", "123","4", hashMap, objects);
     }
 
     @GetMapping("find")
