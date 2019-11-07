@@ -2,10 +2,7 @@ package com.sjtu.objectdataengine.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.Mongo;
-import com.sjtu.objectdataengine.dao.MongoHeaderDAO;
-import com.sjtu.objectdataengine.dao.MongoAttrsDAO;
-import com.sjtu.objectdataengine.dao.MongoObjectDAO;
-import com.sjtu.objectdataengine.dao.MongoTemplateDAO;
+import com.sjtu.objectdataengine.dao.*;
 import com.sjtu.objectdataengine.model.*;
 import com.sjtu.objectdataengine.utils.MongoCondition;
 import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
@@ -31,6 +28,9 @@ public class MongoObjectService {
 
     @Autowired
     MongoObjectDAO mongoObjectDAO;
+
+    @Autowired
+    MongoTreeDAO mongoTreeDAO;
 
     /**
      * 这里分为三步，首先创建对象链的头结点，名为对象id+属性名称+0，头结点内含当前长度等属性
@@ -71,7 +71,9 @@ public class MongoObjectService {
             objs.put(obj, now);
         }
         MongoObject mongoObject = new MongoObject(id, type, template, nodeId, hashMap, objs);
-        mongoObjectDAO.create(mongoObject);
+        mongoObjectDAO.create(mongoObject); //创建object
+        //更新标签树
+        mongoTreeDAO.addNewObject(nodeId, id);
     }
 
     /**

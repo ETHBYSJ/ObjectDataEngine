@@ -66,7 +66,8 @@ public class RedisObjectController {
 
     @GetMapping("zadd")
     public boolean Zadd(@RequestParam String id, @RequestParam String attr, @RequestParam String value, @RequestParam Date date) {
-        return redisObjectService.Zadd(id, attr, value, date);
+        //return redisObjectService.Zadd(id, attr, value, date);
+        return true;
     }
 
     @GetMapping("get_latest_obj")

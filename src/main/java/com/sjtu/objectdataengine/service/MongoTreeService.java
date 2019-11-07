@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sjtu.objectdataengine.dao.MongoTreeDAO;
 import com.sjtu.objectdataengine.model.KnowledgeTreeNode;
 import com.sjtu.objectdataengine.utils.MongoCondition;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -263,4 +264,6 @@ public class MongoTreeService {
 
         return mongoTreeDAO.update(mongoCondition);
     }
+
+
 }

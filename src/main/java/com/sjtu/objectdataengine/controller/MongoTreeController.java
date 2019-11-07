@@ -28,6 +28,7 @@ public class MongoTreeController {
 
     @GetMapping("/find_node")
     public KnowledgeTreeNode findNode(@RequestParam String key) {
+        System.out.println("get find request , key = " + key);
         return mongoTreeService.findNodeByKey(key);
     }
 
