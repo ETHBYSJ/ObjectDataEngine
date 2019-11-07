@@ -55,12 +55,12 @@ public class MongoTreeDAO extends MongoBaseDAO<KnowledgeTreeNode> {
         return mongoTemplate.findAllAndRemove(query, KnowledgeTreeNode.class);
     }
 
-    public void addNewObject(String nodeId, String obj) {
+    public void addNewObject(String nodeId, String obj, String intro) {
         Query query = new Query();
         Criteria criteria = Criteria.where("id").is(nodeId);
         query.addCriteria(criteria);
         Update update = new Update();
-        update.addToSet("objects", obj);
+        update.set("objects." + obj, intro);
         mongoTemplate.updateMulti(query, update, KnowledgeTreeNode.class);
     }
 }

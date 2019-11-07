@@ -42,7 +42,7 @@ public class DataService {
         if (id == null) return "ID不能为空！";
 
         String intro = jsonObject.getString("intro");
-        if (intro == null) intro = "";
+        if (intro == null) return "intro不能为空！";
 
         String template = jsonObject.getString("template");
         if(template == null) return "template不能为空！";

@@ -12,9 +12,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Component
 public class MongoTreeService {
@@ -44,22 +42,22 @@ public class MongoTreeService {
         if (template == null) template = "";
         JSONArray parentsArray = jsonObject.getJSONArray("parents");
         JSONArray childrenArray = jsonObject.getJSONArray("children");
-        JSONArray objectsArray = jsonObject.getJSONArray("objects");
+        JSONObject objectsMap = jsonObject.getJSONObject("objects");
         //要判断是否有空的
         List<String> parents = parentsArray==null ? new ArrayList<>() : JSONObject.parseArray(parentsArray.toJSONString(), String.class);
         List<String> children =childrenArray==null ? new ArrayList<>() : JSONObject.parseArray(childrenArray.toJSONString(), String.class);
-        List<String> objects = objectsArray==null ? new ArrayList<>() : JSONObject.parseArray(objectsArray.toJSONString(), String.class);
+        HashMap<String, String> objects = objectsMap==null ? new HashMap<>() : JSONObject.toJavaObject(objectsMap, HashMap.class);
         KnowledgeTreeNode knowledgeTreeNode = new KnowledgeTreeNode(id, name, template, parents, children, objects);
 
-
         if(mongoTreeDAO.create(knowledgeTreeNode)) {
-            if(parents.get(0) == "root") {
+            if(parents.get(0).equals("root")) {
                 mongoRootDAO.addNewRoot(id , name);
+            } else {
+                //为其父结点添加关系
+                opParents(id, parents, true);
+                //为其子结点添加关系
+                opChildren(id, children, true);
             }
-            //为其父结点添加关系
-            opParents(id, parents, true);
-            //为其子结点添加关系
-            opChildren(id, children, true);
             return true;
         } else{
             return false;
