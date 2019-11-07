@@ -61,6 +61,14 @@ public class MongoObjectService {
 
     }
 
+    /**
+     *
+     * @param id 对象id
+     * @param intro 简介
+     * @param template 对象模板
+     * @param objects 对象关联
+     * @param hashMap kv对
+     */
     private void createObject(String id, String intro, String template, List<String> objects, HashMap<String, MongoAttr> hashMap) {
         ObjectTemplate objectTemplate = mongoTemplateDAO.findByKey(template);
         String nodeId = objectTemplate.getNodeId();
@@ -71,9 +79,8 @@ public class MongoObjectService {
             objs.put(obj, now);
         }
         MongoObject mongoObject = new MongoObject(id, intro, type, template, nodeId, hashMap, objs);
-        mongoObjectDAO.create(mongoObject); //创建object
-        //更新标签树
-        mongoTreeDAO.addNewObject(nodeId, id);
+        mongoObjectDAO.create(mongoObject);             //创建object
+        mongoTreeDAO.addNewObject(nodeId, id, intro);   //更新标签树
     }
 
     /**

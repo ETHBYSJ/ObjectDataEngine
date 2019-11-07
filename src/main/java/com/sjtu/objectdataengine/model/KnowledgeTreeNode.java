@@ -3,6 +3,7 @@ package com.sjtu.objectdataengine.model;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -16,9 +17,9 @@ public class KnowledgeTreeNode extends MongoBase{
     //private Map<String, String> events; //事件
     private List<String> parents; //父节点
     private List<String> children;
-    private List<String> objects;
+    private HashMap<String, String> objects;
 
-    public KnowledgeTreeNode(String id, String name, String template, List<String> parents, List<String> children, List<String> objects) {
+    public KnowledgeTreeNode(String id, String name, String template, List<String> parents, List<String> children, HashMap<String, String> objects) {
         this.id = id;
         this.name = name;
         this.template = template;
@@ -67,11 +68,11 @@ public class KnowledgeTreeNode extends MongoBase{
         this.children = children;
     }
 
-    public List<String> getObjects() {
+    public HashMap<String, String> getObjects() {
         return objects;
     }
 
-    public void setObjects(List<String> objects) {
+    public void setObjects(HashMap<String, String> objects) {
         this.objects = objects;
     }
 }
