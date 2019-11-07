@@ -2,11 +2,13 @@ package com.sjtu.objectdataengine.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.sjtu.objectdataengine.dao.RedisDAO;
+import com.sjtu.objectdataengine.dao.RedisTreeDAO;
 import com.sjtu.objectdataengine.model.MongoAttr;
 import com.sjtu.objectdataengine.model.MongoObject;
 import com.sjtu.objectdataengine.model.ObjectTemplate;
 import com.sjtu.objectdataengine.service.RedisObjectService;
 import com.sjtu.objectdataengine.service.RedisTemplateService;
+import com.sjtu.objectdataengine.service.RedisTreeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.DefaultTypedTuple;
 import org.springframework.data.redis.core.ZSetOperations;
@@ -23,6 +25,23 @@ public class RedisObjectController {
     private RedisObjectService redisObjectService;
     @Autowired
     private RedisTemplateService redisTemplateService;
+    @Autowired
+    private RedisTreeService redisTreeService;
+    @Autowired
+    private RedisTreeDAO redisTreeDAO;
+    @GetMapping("trim")
+    public boolean testTrim(@RequestParam String key, @RequestParam long start, @RequestParam long end) {
+        return redisTreeDAO.lTrim(key, start, end);
+    }
+    //-------------------------------tree-------------------------------------//
+    @PostMapping("create_tree")
+    public boolean createTree(@RequestBody String request) {
+        return redisTreeService.createTreeNode(request);
+    }
+    @GetMapping("del_node")
+    public boolean delTreeNode(@RequestParam String id) {
+        return redisTreeService.deleteWholeNodeByKey(id);
+    }
     //-------------------------------template---------------------------------//
     @GetMapping("get_all_template")
     public List<ObjectTemplate> getAllTemplate() {
@@ -64,10 +83,11 @@ public class RedisObjectController {
         return redisObjectService.create("2", "1", objects, hashMap);
     }
 
-    @GetMapping("zadd")
-    public boolean Zadd(@RequestParam String id, @RequestParam String attr, @RequestParam String value, @RequestParam Date date) {
-        //return redisObjectService.Zadd(id, attr, value, date);
-        return true;
+	}
+
+    @GetMapping("addAttr")
+    public boolean addAttr(@RequestParam String id, @RequestParam String attr, @RequestParam String value, @RequestParam Date date) {
+        return redisObjectService.addAttr(id, attr, value, date);
     }
 
     @GetMapping("get_latest_obj")

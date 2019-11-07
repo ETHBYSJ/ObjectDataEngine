@@ -142,7 +142,6 @@ public class MongoTreeService {
         return mongoTreeDAO.update(mongoCondition);
     }
 
-
     /**
      * 删除父结点->子结点有向边，首先删除父结点children中的子结点id，然后删除子结点中的parents列表
      * 注意这里只删除边，子结点依旧存在，子结点的删除在deleteNode中

@@ -449,6 +449,21 @@ public class RedisDAO {
     }
 
     /**
+     * 判断列表中是否有指定项
+     * @param key 键
+     * @param value 指定项
+     * @return true代表含有指定项，false代表不含有指定项
+     */
+    public boolean lHasValue(String key, Object value) {
+        List<Object> l = lGet(key, 0, -1);
+        for(Object o : l) {
+            if(o.equals(value)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    /**
      * 获取list缓存的长度
      * @param key 键
      * @return
@@ -486,6 +501,15 @@ public class RedisDAO {
     public boolean lSet(String key, Object value) {
         try {
             redisTemplate.opsForList().rightPush(key, value);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    public boolean lTrim(String key, long start, long end) {
+        try {
+            redisTemplate.opsForList().trim(key, start, end);
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -597,6 +621,7 @@ public class RedisDAO {
             return 0;
         }
     }
+
 
     /**
      * 模糊查询获取key值

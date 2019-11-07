@@ -49,6 +49,8 @@ public class RedisConfig extends CachingConfigurerSupport {
     private int objectDB;
     @Value("${redis.database.templateDB}")
     private int templateDB;
+    @Value("${redis.database.treeDB}")
+    private int treeDB;
 
     private void initRedisTemplate(RedisTemplate<String, Object> redisTemplate) {
         //使用String作为key的序列化器，使用Jackson作为Value的序列化器
@@ -78,7 +80,6 @@ public class RedisConfig extends CachingConfigurerSupport {
         LettuceConnectionFactory lettuceConnectionFactory = createLettuceConnectionFactory(attrDB, hostName, port, maxIdle, minIdle, maxActive, maxWait, timeout);
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<String, Object>();
         redisTemplate.setConnectionFactory(lettuceConnectionFactory);
-
         initRedisTemplate(redisTemplate);
         return redisTemplate;
     }
@@ -88,7 +89,6 @@ public class RedisConfig extends CachingConfigurerSupport {
         LettuceConnectionFactory lettuceConnectionFactory = createLettuceConnectionFactory(objectDB, hostName, port, maxIdle, minIdle, maxActive, maxWait, timeout);
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<String, Object>();
         redisTemplate.setConnectionFactory(lettuceConnectionFactory);
-
         initRedisTemplate(redisTemplate);
         return redisTemplate;
     }
@@ -98,7 +98,15 @@ public class RedisConfig extends CachingConfigurerSupport {
         LettuceConnectionFactory lettuceConnectionFactory = createLettuceConnectionFactory(templateDB, hostName, port, maxIdle, minIdle, maxActive, maxWait, timeout);
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<String, Object>();
         redisTemplate.setConnectionFactory(lettuceConnectionFactory);
-
+        initRedisTemplate(redisTemplate);
+        return redisTemplate;
+    }
+    @Bean(name="treeRedisTemplate")
+    public RedisTemplate<String, Object> getTreeRedisTemplate() {
+        //创建客户端连接
+        LettuceConnectionFactory lettuceConnectionFactory = createLettuceConnectionFactory(treeDB, hostName, port, maxIdle, minIdle, maxActive, maxWait, timeout);
+        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<String, Object>();
+        redisTemplate.setConnectionFactory(lettuceConnectionFactory);
         initRedisTemplate(redisTemplate);
         return redisTemplate;
     }

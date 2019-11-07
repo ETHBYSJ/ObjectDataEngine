@@ -5,10 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Component
 public class RedisTemplateDAO extends RedisDAO {
@@ -51,6 +48,8 @@ public class RedisTemplateDAO extends RedisDAO {
         if(type == null) return null;
         Object nodeId = hget(baseKey, "nodeId");
         if(nodeId == null) return null;
+        Object createTime = hget(baseKey, "createTime");
+        Object updateTime = hget(baseKey, "updateTime");
 
         Set<Object> attrs = sGet(attrsKey);
         //类型转换
@@ -59,6 +58,8 @@ public class RedisTemplateDAO extends RedisDAO {
             attrSet.add(attr.toString());
         }
         ObjectTemplate objectTemplate = new ObjectTemplate(id, name.toString(), attrSet, nodeId.toString(), type.toString());
+        objectTemplate.setCreateTime((Date) createTime);
+        objectTemplate.setUpdateTime((Date) updateTime);
         return objectTemplate;
     }
 
@@ -75,7 +76,7 @@ public class RedisTemplateDAO extends RedisDAO {
             //如果在索引表中存在此id，则删除
             setRemove(indexKey, id);
             //删除模板数据
-            hdel(baseKey, "id", "name", "type", "nodeId");
+            hdel(baseKey, "id", "name", "type", "nodeId", "createTime", "updateTime");
             long size = sGetSetSize(attrsKey);
             setPop(attrsKey, size);
             return true;
