@@ -24,7 +24,7 @@ public class RedisTreeDAO extends RedisDAO {
             String objectsKey = key + '#' + "objects";
             String indexKey = "index";
             //如果已经删除，直接返回即可
-            if(sHasKey(indexKey, key)) {
+            if(!sHasKey(indexKey, key)) {
                 return true;
             }
             //删除基本信息
@@ -37,7 +37,6 @@ public class RedisTreeDAO extends RedisDAO {
             lTrim(objectsKey, 1, 0);
             //从索引表中删除
             long l = setRemove(indexKey, key);
-            System.out.println("index = " + l);
             return true;
         } catch (Exception e) {
             e.printStackTrace();

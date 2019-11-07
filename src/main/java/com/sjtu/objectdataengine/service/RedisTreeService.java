@@ -83,12 +83,18 @@ public class RedisTreeService {
         redisTreeDAO.hset(baseKey, "template", template);
         redisTreeDAO.hset(baseKey, "createTime", now);
         redisTreeDAO.hset(baseKey, "updateTime", now);
-        //存储父节点列表
-        redisTreeDAO.lSet(parentsKey, parents.toArray());
-        //存储子节点列表
-        redisTreeDAO.lSet(childrenKey, children.toArray());
-        //存储关联对象列表
-        redisTreeDAO.lSet(objectsKey, objects.toArray());
+        if(parents != null && parents.size() != 0) {
+            //存储父节点列表
+            redisTreeDAO.lSet(parentsKey, parents.toArray());
+        }
+        if(children != null && children.size() != 0) {
+            //存储子节点列表
+            redisTreeDAO.lSet(childrenKey, children.toArray());
+        }
+        if(objects != null && objects.size() != 0) {
+            //存储关联对象列表
+            redisTreeDAO.lSet(objectsKey, objects.toArray());
+        }
         //ops
         opParents(id, parents, true);
         opChildren(id, children, true);
@@ -105,6 +111,7 @@ public class RedisTreeService {
     private boolean opParents(String child, List<String> parents, boolean flag) {
         try {
             if(flag) {
+                //添加
                 for(String parent : parents) {
                     //List<Object> childrenList = redisTreeDAO.lGet(parent + "#children", 0, -1);
                     if(!redisTreeDAO.lHasValue(parent + "#children", child)) {
@@ -113,11 +120,14 @@ public class RedisTreeService {
                 }
             }
             else {
+                //删除
                 for(String parent : parents) {
-                    //List<Object> childrenList = redisTreeDAO.lGet(parent + "#children", 0, -1);
+                    /*
                     if(!redisTreeDAO.lHasValue(parent + "#children", child)) {
                         redisTreeDAO.lSet(parent + "#children", child);
                     }
+                    */
+                    redisTreeDAO.lRemove(parent + "#children", 1, child);
                 }
             }
             return true;
@@ -137,20 +147,23 @@ public class RedisTreeService {
     private boolean opChildren(String parent, List<String> children, boolean flag) {
         try {
             if(flag) {
+                //添加
                 for(String child : children) {
                     //List<Object> parentsList = redisTreeDAO.lGet(child + "#parents", 0, -1);
                     if(!redisTreeDAO.lHasValue(child + "#parents", parent)) {
-
                         redisTreeDAO.lSet(child + "#parents", parent);
                     }
                 }
             }
             else {
+                //删除
                 for(String child : children) {
-                    //List<Object> parentsList = redisTreeDAO.lGet(child + "#parents", 0, -1);
+                    /*
                     if(!redisTreeDAO.lHasValue(child + "#parents", parent)) {
                         redisTreeDAO.lSet(child + "#parents", parent);
                     }
+                    */
+                    redisTreeDAO.lRemove(child + "#parents", 1, parent);
                 }
             }
             return true;
@@ -171,8 +184,10 @@ public class RedisTreeService {
             String parentsKey = child + "#parents";
             //清空父节点列表
             redisTreeDAO.lTrim(parentsKey, 1, 0);
-            //更新父节点列表
-            redisTreeDAO.lSet(parentsKey, parents.toArray());
+            if(parents != null && parents.size() != 0) {
+                //更新父节点列表
+                redisTreeDAO.lSet(parentsKey, parents.toArray());
+            }
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -192,8 +207,10 @@ public class RedisTreeService {
             String childrenKey = parent + "#children";
             //清空子节点列表
             redisTreeDAO.lTrim(childrenKey, 1, 0);
-            //更新子节点列表
-            redisTreeDAO.lSet(childrenKey, children.toArray());
+            if(children != null && children.size() != 0) {
+                //更新子节点列表
+                redisTreeDAO.lSet(childrenKey, children.toArray());
+            }
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -257,10 +274,12 @@ public class RedisTreeService {
      */
     public boolean deleteWholeNodeByKey(String key) {
         try {
+            if(!redisTreeDAO.sHasKey("index", key)) {
+                return true;
+            }
             String parentsKey = key + "#parents";
             String childrenKey = key + "#children";
             List<Object> parentsList = redisTreeDAO.lGet(parentsKey, 0, -1);
-            System.out.println(parentsList);
             List<String> parents = new ArrayList<String>();
             if(parentsList != null) {
                 for(Object parent : parentsList) {
@@ -268,7 +287,6 @@ public class RedisTreeService {
                 }
             }
             List<Object> childrenList = redisTreeDAO.lGet(childrenKey, 0, -1);
-            System.out.println(childrenList);
             List<String> children = new ArrayList<String>();
             if(childrenList != null) {
                 for(Object child : childrenList) {
