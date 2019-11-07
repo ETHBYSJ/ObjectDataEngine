@@ -3,6 +3,7 @@ package com.sjtu.objectdataengine.service;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sjtu.objectdataengine.dao.RedisTemplateDAO;
 import com.sjtu.objectdataengine.model.ObjectTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +15,7 @@ import java.util.*;
 public class RedisTemplateService {
     @Autowired
     private RedisTemplateDAO redisTemplateDAO;
-
+    private static ObjectMapper MAPPER = new ObjectMapper();
     /**
      * 创建模板
      * @param id 模板id
@@ -37,10 +38,13 @@ public class RedisTemplateService {
         String baseKey = id + '#' +"base";
         //判断是否是第一次创建
         if(redisTemplateDAO.sHasKey(indexKey, id)) {
+            /*
             //不是第一次创建,之前的模板将被修改
             long size = redisTemplateDAO.sGetSetSize(attrsKey);
             redisTemplateDAO.setPop(attrsKey, size);
             redisTemplateDAO.sSet(attrsKey, attrs.toArray());
+            */
+            return false;
         }
         else {
             //首先存入id索引表
@@ -55,6 +59,7 @@ public class RedisTemplateService {
         redisTemplateDAO.hset(baseKey, "nodeId", nodeId);
         redisTemplateDAO.hset(baseKey, "createTime", now);
         redisTemplateDAO.hset(baseKey, "updateTime", now);
+        //待修改：更新树节点
         return true;
     }
 
@@ -105,5 +110,16 @@ public class RedisTemplateService {
     public boolean deleteTemplateById(String id) {
         return redisTemplateDAO.deleteById(id);
     }
+
+    /**
+     * 更新类模板
+     * @param request 更新请求
+     * @return true代表成功，false代表失败
+     */
+    /*
+    public boolean updateTemplate(String request) {
+        return false;
+    }
+    */
 
 }

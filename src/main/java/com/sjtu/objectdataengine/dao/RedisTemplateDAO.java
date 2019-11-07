@@ -79,11 +79,13 @@ public class RedisTemplateDAO extends RedisDAO {
             hdel(baseKey, "id", "name", "type", "nodeId", "createTime", "updateTime");
             long size = sGetSetSize(attrsKey);
             setPop(attrsKey, size);
-            return true;
         }
+        return true;
+        /*
         else {
             //索引表中不存在此id，删除失败
             return false;
         }
+        */
     }
 }
