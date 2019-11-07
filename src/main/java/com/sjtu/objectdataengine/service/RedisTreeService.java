@@ -279,6 +279,7 @@ public class RedisTreeService {
             }
             String parentsKey = key + "#parents";
             String childrenKey = key + "#children";
+            //cast
             List<Object> parentsList = redisTreeDAO.lGet(parentsKey, 0, -1);
             List<String> parents = new ArrayList<String>();
             if(parentsList != null) {
@@ -286,6 +287,7 @@ public class RedisTreeService {
                     parents.add(parent.toString());
                 }
             }
+            //cast
             List<Object> childrenList = redisTreeDAO.lGet(childrenKey, 0, -1);
             List<String> children = new ArrayList<String>();
             if(childrenList != null) {
@@ -308,44 +310,79 @@ public class RedisTreeService {
      * @param query 更新请求
      * @return true代表更新成功，false代表更新失败
      */
-    /*
+
     public boolean updateNodeByKey(String query) {
-        JSONObject queryObject = JSON.parseObject(query);
-        //读id
-        String id = queryObject.getString("id");
-        if(id==null) return false;
-        String baseKey = id + '#' + "base";
-        String childrenKey = id + '#' + "children";
-        String parentsKey = id + '#' + "parents";
-        String objectsKey = id + '#' + "objects";
-        String indexKey = id + '#' + "index";
-        //读update体
-        JSONObject update = queryObject.getJSONObject("update");
-        //改名字
-        String name = update.getString("name");
-        if(name != null) {
-            redisTreeDAO.hset(baseKey, "name", name);
+        try {
+            JSONObject queryObject = JSON.parseObject(query);
+            //读id
+            String id = queryObject.getString("id");
+            if(id == null) return false;
+            String indexKey = "index";
+            if(!redisTreeDAO.sHasKey(indexKey, id)) {
+                //不存在
+                return false;
+            }
+            String baseKey = id + '#' + "base";
+            String childrenKey = id + '#' + "children";
+            String parentsKey = id + '#' + "parents";
+            String objectsKey = id + '#' + "objects";
+            //读update体
+            JSONObject update = queryObject.getJSONObject("update");
+            //改名字
+            String name = update.getString("name");
+
+            if(name != null) {
+                redisTreeDAO.hset(baseKey, "name", name);
+            }
+            String template = update.getString("template");
+            if(template!=null) {
+                redisTreeDAO.hset(baseKey, "template", template);
+            }
+            JSONArray objectsArray = update.getJSONArray("objects");
+            if (objectsArray!=null) {
+                List<String> objects = JSONObject.parseArray(objectsArray.toJSONString(), String.class);
+                redisTreeDAO.lTrim(objectsKey, 1, 0);
+                //避免异常
+                if(objectsArray.size() != 0) {
+                    redisTreeDAO.lSet(objectsKey, objects.toArray());
+                }
+            }
+            JSONArray parentsArray = update.getJSONArray("parents");
+            if (parentsArray!=null) {
+                List<String> parents = JSONObject.parseArray(parentsArray.toJSONString(), String.class);
+                List<Object> oldParentsList = redisTreeDAO.lGet(parentsKey, 0, -1);
+                List<String> oldParents = new ArrayList<String>();
+                for(Object o : oldParentsList) {
+                    oldParents.add(o.toString());
+                }
+                //切断与旧父节点的关联
+                deleteParentsEdge(id, oldParents);
+                //新父节点建立关联
+                opParents(id, parents, true);
+                //更新父节点
+                updateParentsList(id, parents);
+            }
+            JSONArray childrenArray = update.getJSONArray("children");
+            if (childrenArray!=null) {
+                List<String> children = JSONObject.parseArray(childrenArray.toJSONString(), String.class);
+                List<Object> oldChildrenList = redisTreeDAO.lGet(childrenKey, 0, -1);
+                List<String> oldChildren = new ArrayList<String>();
+                for(Object o : oldChildrenList) {
+                    oldChildren.add(o.toString());
+                }
+                //切断与旧子节点的关联
+                deleteChildrenEdge(id, oldChildren);
+                //新子节点建立关联
+                opChildren(id, children, true);
+                //更新子节点
+                updateChildrenList(id, children);
+            }
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
-        String template = update.getString("template");
-        if(template!=null) {
-            redisTreeDAO.hset(baseKey, "template", template);
-        }
-        JSONArray objectsArray = update.getJSONArray("objects");
-        if (objectsArray!=null) {
-            List<String> objects = JSONObject.parseArray(objectsArray.toJSONString(), String.class);
-            redisTreeDAO.lTrim(objectsKey, 1, 0);
-            redisTreeDAO.lSet(objectsKey, objects.toArray());
-        }
-        JSONArray parentsArray = update.getJSONArray("parents");
-        if (parentsArray!=null) {
-            List<String> parents = JSONObject.parseArray(parentsArray.toJSONString(), String.class);
-        }
-        JSONArray childrenArray = update.getJSONArray("children");
-        if (childrenArray!=null) {
-            List<String> children = JSONObject.parseArray(childrenArray.toJSONString(), String.class);
-        }
-        return true;
+
     }
-    */
 
 }

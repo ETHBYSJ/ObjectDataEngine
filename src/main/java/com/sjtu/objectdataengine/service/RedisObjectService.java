@@ -68,19 +68,22 @@ public class RedisObjectService {
      *      }
      * }
      */
+    /*
     public boolean create(String request) {
 
         return true;
     }
+    */
     /**
      * 创建新对象
      * @param id 对象id
+     * @param intro 描述信息
      * @param template 模板id
      * @param objects 关联对象集合
      * @param attrMap 属性集合
      * @return true代表创建成功，false代表创建失败
      */
-    public boolean create(String id, String template, List<String> objects, HashMap<String, String> attrMap) {
+    public boolean create(String id, String intro, String template, List<String> objects, HashMap<String, String> attrMap) {
         ObjectTemplate objectTemplate = redisTemplateDAO.findById(template);
         //没有找到模板，返回false
         if(objectTemplate == null) return false;
@@ -94,13 +97,24 @@ public class RedisObjectService {
             mongoAttr.setUpdateTime(date);
             hashMap.put(attr, mongoAttr);
         }
-        return createObject(id, objectTemplate, objects, hashMap);
+        return createObject(id, intro, objectTemplate, objects, hashMap);
     }
-    public boolean createObject(String id, ObjectTemplate objectTemplate, List<String> objects, HashMap<String, MongoAttr> hashMap) {
+
+    /**
+     * 创建新对象
+     * @param id 对象id
+     * @param intro 描述信息
+     * @param objectTemplate 模板
+     * @param objects 关联对象
+     * @param hashMap 属性集合
+     * @return true代表创建成功，false代表创建失败
+     */
+    public boolean createObject(String id, String intro, ObjectTemplate objectTemplate, List<String> objects, HashMap<String, MongoAttr> hashMap) {
         if(redisAttrDAO.hsize(id + '#' + "META") != 0) {
             //说明对象已存在，创建失败
             return false;
         }
+        if(intro == null) intro = "";
         String templateId = objectTemplate.getId();
         String nodeId = objectTemplate.getNodeId();
         String type = objectTemplate.getType();
@@ -111,6 +125,7 @@ public class RedisObjectService {
         redisAttrDAO.hset(id + "#META", "type", type);
         redisAttrDAO.hset(id + "#META", "createTime", date);
         redisAttrDAO.hset(id + "#META", "updateTime", date);
+        redisAttrDAO.hset(id + "#META", "intro", intro);
 
         //存储关联对象
         if(objects != null) {
@@ -416,9 +431,10 @@ public class RedisObjectService {
             String template = redisAttrDAO.hget(id + "#META", "template").toString();
             String nodeId = redisAttrDAO.hget(id + "#META", "nodeId").toString();
             String type = redisAttrDAO.hget(id + "#META", "type").toString();
+            String intro = redisAttrDAO.hget(id + "#META", "intro").toString();
             Date createTime = (Date) redisAttrDAO.hget(id + "#META", "createTime");
             Date updateTime = (Date) redisAttrDAO.hget(id + "#META", "updateTime");
-            MongoObject mongoObject = new MongoObject(id, type, template, nodeId, new HashMap<String, MongoAttr>(), new HashMap<String, Date>());
+            MongoObject mongoObject = new MongoObject(id, intro, type, template, nodeId, new HashMap<String, MongoAttr>(), new HashMap<String, Date>());
             mongoObject.setCreateTime(createTime);
             mongoObject.setUpdateTime(updateTime);
             return mongoObject;

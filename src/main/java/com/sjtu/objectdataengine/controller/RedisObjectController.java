@@ -42,6 +42,10 @@ public class RedisObjectController {
     public boolean delTreeNode(@RequestParam String id) {
         return redisTreeService.deleteWholeNodeByKey(id);
     }
+    @PostMapping("update_tree")
+    public boolean updateTree(@RequestBody String request) {
+        return redisTreeService.updateNodeByKey(request);
+    }
     //-------------------------------template---------------------------------//
     @GetMapping("get_all_template")
     public List<ObjectTemplate> getAllTemplate() {
