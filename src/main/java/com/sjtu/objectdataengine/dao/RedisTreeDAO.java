@@ -97,10 +97,11 @@ public class RedisTreeDAO extends RedisDAO {
                 objects.add(obj.toString());
             }
         }
-        KnowledgeTreeNode knowledgeTreeNode = new KnowledgeTreeNode(id, name, template, parents, children, objects);
+        //KnowledgeTreeNode knowledgeTreeNode = new KnowledgeTreeNode(id, name, template, parents, children, objects);
         //设置时间属性
-        knowledgeTreeNode.setCreateTime(createTime);
-        knowledgeTreeNode.setUpdateTime(updateTime);
-        return knowledgeTreeNode;
+        //knowledgeTreeNode.setCreateTime(createTime);
+        //knowledgeTreeNode.setUpdateTime(updateTime);
+        //return knowledgeTreeNode;
+        return null;
     }
 }

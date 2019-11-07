@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 @Service
@@ -35,13 +36,14 @@ public class RedisTreeService {
         if(template == null) template = "";
         JSONArray parentsArray = jsonObject.getJSONArray("parents");
         JSONArray childrenArray = jsonObject.getJSONArray("children");
-        JSONArray objectsArray = jsonObject.getJSONArray("objects");
+        //JSONArray objectsArray = jsonObject.getJSONArray("objects");
+        JSONObject objectsMap = jsonObject.getJSONObject("objects");
 
         //要判断是否有空的
         List<String> parents = parentsArray==null ? new ArrayList<>() : JSONObject.parseArray(parentsArray.toJSONString(), String.class);
         List<String> children =childrenArray==null ? new ArrayList<>() : JSONObject.parseArray(childrenArray.toJSONString(), String.class);
-        List<String> objects = objectsArray==null ? new ArrayList<>() : JSONObject.parseArray(objectsArray.toJSONString(), String.class);
-
+        //List<String> objects = objectsArray==null ? new ArrayList<>() : JSONObject.parseArray(objectsArray.toJSONString(), String.class);
+        HashMap<String, String> objects = objectsMap==null ? new HashMap<>() : JSONObject.toJavaObject(objectsMap, HashMap.class);
         return createTreeNode(id, name, template, parents, children, objects);
 
     }
@@ -56,14 +58,14 @@ public class RedisTreeService {
      * @param objects 关联对象列表
      * @return true代表创建成功，false代表创建失败
      */
-    public boolean createTreeNode(String id, String name, String template, List<String> parents, List<String> children, List<String> objects) {
+    public boolean createTreeNode(String id, String name, String template, List<String> parents, List<String> children, HashMap<String, String> objects) {
         //id不可为空
         if(id == null) return false;
         if(name == null) name = "";
         if(template == null) template = "";
         if(parents == null) parents = new ArrayList<String>();
         if(children == null) children = new ArrayList<String>();
-        if(objects == null) objects = new ArrayList<String>();
+        if(objects == null) objects = new HashMap<>();
 
         //创建树节点
         String baseKey = id + '#' + "base";
@@ -93,7 +95,8 @@ public class RedisTreeService {
         }
         if(objects != null && objects.size() != 0) {
             //存储关联对象列表
-            redisTreeDAO.lSet(objectsKey, objects.toArray());
+            //redisTreeDAO.lSet(objectsKey, objects.toArray());
+            redisTreeDAO.hmset(objectsKey, objects);
         }
         //ops
         opParents(id, parents, true);
