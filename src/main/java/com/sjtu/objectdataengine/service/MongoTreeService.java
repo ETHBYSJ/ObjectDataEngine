@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sjtu.objectdataengine.dao.MongoRootDAO;
 import com.sjtu.objectdataengine.dao.MongoTreeDAO;
 import com.sjtu.objectdataengine.model.KnowledgeTreeNode;
 import com.sjtu.objectdataengine.utils.MongoCondition;
@@ -23,9 +24,8 @@ public class MongoTreeService {
     @Resource
     MongoTreeDAO mongoTreeDAO;
 
-    /**
-     * public
-     */
+    @Resource
+    MongoRootDAO mongoRootDAO;
 
     /**
      * 创建结点
@@ -50,7 +50,12 @@ public class MongoTreeService {
         List<String> children =childrenArray==null ? new ArrayList<>() : JSONObject.parseArray(childrenArray.toJSONString(), String.class);
         List<String> objects = objectsArray==null ? new ArrayList<>() : JSONObject.parseArray(objectsArray.toJSONString(), String.class);
         KnowledgeTreeNode knowledgeTreeNode = new KnowledgeTreeNode(id, name, template, parents, children, objects);
+
+
         if(mongoTreeDAO.create(knowledgeTreeNode)) {
+            if(parents.get(0) == "root") {
+                mongoRootDAO.addNewRoot(id , name);
+            }
             //为其父结点添加关系
             opParents(id, parents, true);
             //为其子结点添加关系
