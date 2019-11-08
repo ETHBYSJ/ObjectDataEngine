@@ -6,6 +6,7 @@ import com.sjtu.objectdataengine.dao.RedisTreeDAO;
 import com.sjtu.objectdataengine.model.MongoAttr;
 import com.sjtu.objectdataengine.model.MongoObject;
 import com.sjtu.objectdataengine.model.ObjectTemplate;
+import com.sjtu.objectdataengine.model.TreeNodeReturn;
 import com.sjtu.objectdataengine.service.RedisObjectService;
 import com.sjtu.objectdataengine.service.RedisTemplateService;
 import com.sjtu.objectdataengine.service.RedisTreeService;
@@ -29,6 +30,24 @@ public class RedisObjectController {
     private RedisTreeService redisTreeService;
     @Autowired
     private RedisTreeDAO redisTreeDAO;
+    //------------------------------redisDAO test--------------------------------//
+
+    @GetMapping("delete")
+    public void delete(@RequestParam String key) {
+        redisTreeDAO.del(key);
+    }
+
+    @GetMapping("test_type")
+    public List<String> testType(@RequestParam String key) {
+        return (List<String>) redisTreeDAO.lGet(key, 0, -1);
+    }
+    @GetMapping("hmset")
+    public boolean hmset(@RequestParam String key) {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("1", "1");
+        map.put("2", "2");
+        return redisTreeDAO.hmset(key, map);
+    }
     @GetMapping("trim")
     public boolean testTrim(@RequestParam String key, @RequestParam long start, @RequestParam long end) {
         return redisTreeDAO.lTrim(key, start, end);
@@ -45,6 +64,10 @@ public class RedisObjectController {
     @PostMapping("update_tree")
     public boolean updateTree(@RequestBody String request) {
         return redisTreeService.updateNodeByKey(request);
+    }
+    @GetMapping("get_node_by_id")
+    public TreeNodeReturn getNodeById(@RequestParam String id) {
+        return redisTreeService.findNodeByKey(id);
     }
     //-------------------------------template---------------------------------//
     @GetMapping("get_all_template")
@@ -108,7 +131,7 @@ public class RedisObjectController {
     }
 
     @GetMapping("find_attr")
-    public List<Object> findAttr(@RequestParam String id) {
+    public List<String> findAttr(@RequestParam String id) {
         return redisObjectService.findAttrByObjectId(id);
     }
 

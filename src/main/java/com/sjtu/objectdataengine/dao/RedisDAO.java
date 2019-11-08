@@ -9,10 +9,7 @@ import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -28,18 +25,6 @@ public class RedisDAO {
     public RedisDAO() {
 
     }
-    //切换到属性数据库
-    /*
-    public void switchToAttrRedisTemplate() {
-        this.redisTemplate = this.attrRedisTemplate;
-    }
-    */
-    //切换到对象数据库
-    /*
-    public void switchToObjectRedisTemplate() {
-        this.redisTemplate = this.objectRedisTemplate;
-    }
-    */
     /**
      * 指定缓存失效时间
      * @param key 键
@@ -174,7 +159,7 @@ public class RedisDAO {
      * @param key 键
      * @return 对应的多个键值
      */
-    public Map<Object,Object> hmget(String key){
+    public Map<?, ?> hmget(String key){
         try {
             return redisTemplate.opsForHash().entries(key);
         } catch (Exception e) {
@@ -189,7 +174,7 @@ public class RedisDAO {
      * @param map 对应多个键值
      * @return true 成功 false 失败
      */
-    public boolean hmset(String key, Map<String, ?> map){
+    public boolean hmset(String key, Map<?, ?> map){
         try {
             redisTemplate.opsForHash().putAll(key, map);
             return true;
@@ -312,7 +297,7 @@ public class RedisDAO {
      * @param key 键
      * @return
      */
-    public Set<Object> sGet(String key){
+    public Set<?> sGet(String key){
         try {
             return redisTemplate.opsForSet().members(key);
         } catch (Exception e) {
@@ -421,9 +406,9 @@ public class RedisDAO {
      * @param count 要移除元素的数量
      * @return 被移除的元素
      */
-    public List<Object> setPop(String key, long count) {
+    public List<?> setPop(String key, long count) {
         try {
-            List<Object> retList = redisTemplate.opsForSet().pop(key, count);
+            List<?> retList = redisTemplate.opsForSet().pop(key, count);
             return retList;
         } catch (Exception e) {
             e.printStackTrace();
@@ -439,7 +424,7 @@ public class RedisDAO {
      * @param end 结束  0 到 -1代表所有值
      * @return
      */
-    public List<Object> lGet(String key, long start, long end){
+    public List<?> lGet(String key, long start, long end){
         try {
             return redisTemplate.opsForList().range(key, start, end);
         } catch (Exception e) {
@@ -455,7 +440,7 @@ public class RedisDAO {
      * @return true代表含有指定项，false代表不含有指定项
      */
     public boolean lHasValue(String key, Object value) {
-        List<Object> l = lGet(key, 0, -1);
+        List l = lGet(key, 0, -1);
         for(Object o : l) {
             if(o.equals(value)) {
                 return true;

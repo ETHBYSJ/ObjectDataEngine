@@ -156,8 +156,8 @@ public class RedisObjectService {
      * @param id 对象id
      * @return 对象属性集合
      */
-    public List<Object> findAttrByObjectId(String id) {
-        return redisAttrDAO.lGet(id, 0, -1);
+    public List<String> findAttrByObjectId(String id) {
+        return (List<String>) redisAttrDAO.lGet(id, 0, -1);
     }
 
     /**
@@ -167,12 +167,8 @@ public class RedisObjectService {
      * @return true代表插入成功，false代表失败
      */
     public boolean addAttrByObjectId(String id, String attr) {
-        //如果属性已存在，插入失败
-        List<Object> attrList = redisAttrDAO.lGet(id, 0, -1);
-        for(Object everyAttr : attrList) {
-            if(everyAttr.equals(attr)) {
-                return false;
-            }
+        if(redisAttrDAO.lHasValue(id, attr)) {
+            return false;
         }
         return redisAttrDAO.lSet(id, attr);
     }
@@ -235,12 +231,11 @@ public class RedisObjectService {
      * @return true代表插入成功，false代表插入失败
      */
     public boolean addAttr(String id, String attr, String value, Date date) {
-        //System.out.println(id + ' ' + attr + ' ' + value + ' ' + date);
         if(id == null || attr == null || value == null) {
             //不允许任何一个参数为null值
             return false;
         }
-        List<Object> attrList = redisAttrDAO.lGet(id, 0, -1);
+        List<String> attrList = (List<String>) redisAttrDAO.lGet(id, 0, -1);
         if(attrList == null || attrList.size() == 0) {
             return false;
         }
@@ -294,7 +289,7 @@ public class RedisObjectService {
         //执行淘汰策略
         redisObjectDAO.ZremoveRange(key, 0, evictSize - 1);
         //redisObjectDAO.Zadd(key, value, (double)date.getTime());
-        List<Object> attrList = redisAttrDAO.lGet(id, 0, -1);
+        List<String> attrList = (List<String>) redisAttrDAO.lGet(id, 0, -1);
         for(Object everyAttr : attrList) {
             if(!everyAttr.equals(attr)) {
                 String k = id + '#' + everyAttr + '#' + "time";
@@ -376,7 +371,7 @@ public class RedisObjectService {
         if(id == null) {
             return null;
         }
-        List<Object> attrList = redisAttrDAO.lGet(id, 0, -1);
+        List<String> attrList = (List<String>) redisAttrDAO.lGet(id, 0, -1);
         if(attrList == null || attrList.size() == 0) {
             return null;
         }
@@ -409,7 +404,8 @@ public class RedisObjectService {
      * @return 新的关联对象表
      */
     private HashMap<String, Date> cutObjects(Date ut, String id) {
-        Map<Object, Object> objectMap = redisAttrDAO.hmget(id + "#object");
+        HashMap<String, Date> cutMap = (HashMap<String, Date>) redisAttrDAO.hmget(id + "#object");
+        /*
         HashMap<String, Date> cutMap = new HashMap<String, Date>();
         for(Map.Entry<Object, Object> entry : objectMap.entrySet()) {
             String objId = entry.getKey().toString();
@@ -418,6 +414,7 @@ public class RedisObjectService {
                 cutMap.put(objId, objDate);
             }
         }
+        */
         return cutMap;
     }
     /**
@@ -451,7 +448,7 @@ public class RedisObjectService {
         if(id == null) {
             return null;
         }
-        List<Object> attrList = redisAttrDAO.lGet(id, 0, -1);
+        List<String> attrList = (List<String>) redisAttrDAO.lGet(id, 0, -1);
         if(attrList == null || attrList.size() == 0) {
             return null;
         }
@@ -486,7 +483,7 @@ public class RedisObjectService {
         if(id == null) {
             return null;
         }
-        List<Object> attrList = redisAttrDAO.lGet(id, 0, -1);
+        List<String> attrList = (List<String>) redisAttrDAO.lGet(id, 0, -1);
 
         if(attrList == null || attrList.size() == 0) {
             return null;

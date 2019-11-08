@@ -63,8 +63,8 @@ public class RedisTemplateService {
         redisTemplateDAO.hset(baseKey, "createTime", now);
         redisTemplateDAO.hset(baseKey, "updateTime", now);
         //待修改：更新树节点
-        Set<Object> nodes = redisTreeDAO.sGet("index");
-        for(Object node : nodes) {
+        Set<String> nodes = (Set<String>) redisTreeDAO.sGet("index");
+        for(String node : nodes) {
             if(redisTreeDAO.hget(node + "#base", "id").equals(nodeId)) {
                 redisTreeDAO.hset(node + "#base", "template", id);
             }
