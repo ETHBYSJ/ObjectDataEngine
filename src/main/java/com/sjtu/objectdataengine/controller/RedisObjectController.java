@@ -29,6 +29,24 @@ public class RedisObjectController {
     private RedisTreeService redisTreeService;
     @Autowired
     private RedisTreeDAO redisTreeDAO;
+    //------------------------------redisDAO test--------------------------------//
+
+    @GetMapping("delete")
+    public void delete(@RequestParam String key) {
+        redisTreeDAO.del(key);
+    }
+
+    @GetMapping("test_type")
+    public List<String> testType(@RequestParam String key) {
+        return (List<String>) redisTreeDAO.lGet(key, 0, -1);
+    }
+    @GetMapping("hmset")
+    public boolean hmset(@RequestParam String key) {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("1", "1");
+        map.put("2", "2");
+        return redisTreeDAO.hmset(key, map);
+    }
     @GetMapping("trim")
     public boolean testTrim(@RequestParam String key, @RequestParam long start, @RequestParam long end) {
         return redisTreeDAO.lTrim(key, start, end);
@@ -108,7 +126,7 @@ public class RedisObjectController {
     }
 
     @GetMapping("find_attr")
-    public List<Object> findAttr(@RequestParam String id) {
+    public List<String> findAttr(@RequestParam String id) {
         return redisObjectService.findAttrByObjectId(id);
     }
 

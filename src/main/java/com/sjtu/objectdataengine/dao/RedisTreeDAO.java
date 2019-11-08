@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 @Component
@@ -28,15 +29,15 @@ public class RedisTreeDAO extends RedisDAO {
                 return true;
             }
             //删除基本信息
-            hdel(baseKey, "id", "name", "template", "createTime", "updateTime");
+            del(baseKey);
             //删除子节点列表
-            lTrim(childrenKey, 1, 0);
+            del(childrenKey);
             //删除父节点列表
-            lTrim(parentsKey, 1, 0);
+            del(parentsKey);
             //删除关联对象列表
-            lTrim(objectsKey, 1, 0);
+            del(objectsKey);
             //从索引表中删除
-            long l = setRemove(indexKey, key);
+            setRemove(indexKey, key);
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -59,49 +60,23 @@ public class RedisTreeDAO extends RedisDAO {
         Date createTime = (Date) hget(baseKey, "createTime");
         Date updateTime = (Date) hget(baseKey, "updateTime");
         //孩子节点列表
-        /*
-        List<String> children = new ArrayList<String>();
-        List<Object> childrenList = lGet(childrenKey, 0, -1);
-        //类型转换
-        if(childrenList != null) {
-            for(Object child : childrenList) {
-                children.add(child.toString());
-            }
-        }
-        */
-        List<KnowledgeTreeNode> children = new ArrayList<KnowledgeTreeNode>();
-        List<Object> childrenList = lGet(childrenKey, 0, -1);
-        if(childrenList == null || childrenList.size() == 0) {
+        List<String> children = (List<String>) lGet(childrenKey, 0, -1);
+        if(children == null || children.size() == 0) {
 
         }
         else {
-            for(Object child : childrenList) {
-                KnowledgeTreeNode childNode = findByKey(child.toString());
+            for(String child : children) {
+                KnowledgeTreeNode childNode = findByKey(child);
             }
         }
         //父节点列表
-        List<String> parents = new ArrayList<String>();
-        List<Object> parentsList = lGet(parentsKey, 0, -1);
-        //类型转换
-        if(parentsList != null) {
-            for(Object parent : parentsList) {
-                parents.add(parent.toString());
-            }
-        }
+        List<String> parents = (List<String>) lGet(parentsKey, 0, -1);
         //关联对象列表
-        List<String> objects = new ArrayList<String>();
-        List<Object> objectsList = lGet(objectsKey, 0, -1);
-        //类型转换
-        if(objectsList != null) {
-            for(Object obj : objectsList) {
-                objects.add(obj.toString());
-            }
-        }
-        //KnowledgeTreeNode knowledgeTreeNode = new KnowledgeTreeNode(id, name, template, parents, children, objects);
+        HashMap<String, String> objects = (HashMap<String, String>) hmget(objectsKey);
+        KnowledgeTreeNode knowledgeTreeNode = new KnowledgeTreeNode(id, name, template, parents, children, objects);
         //设置时间属性
-        //knowledgeTreeNode.setCreateTime(createTime);
-        //knowledgeTreeNode.setUpdateTime(updateTime);
-        //return knowledgeTreeNode;
-        return null;
+        knowledgeTreeNode.setCreateTime(createTime);
+        knowledgeTreeNode.setUpdateTime(updateTime);
+        return knowledgeTreeNode;
     }
 }

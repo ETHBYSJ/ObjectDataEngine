@@ -21,11 +21,11 @@ public class RedisTemplateDAO extends RedisDAO {
      */
     public List<ObjectTemplate> findAll() {
         String indexKey = "index";
-        Set<Object> indexSet = sGet(indexKey);
+        Set<String> indexSet = (Set<String>) sGet(indexKey);
         List<ObjectTemplate> retList = new ArrayList<ObjectTemplate>();
-        for(Object id : indexSet) {
+        for(String id : indexSet) {
             //依次根据id查询
-            ObjectTemplate objectTemplate = findById(id.toString());
+            ObjectTemplate objectTemplate = findById(id);
             if(objectTemplate != null) {
                 retList.add(objectTemplate);
             }
@@ -50,13 +50,7 @@ public class RedisTemplateDAO extends RedisDAO {
         if(nodeId == null) return null;
         Object createTime = hget(baseKey, "createTime");
         Object updateTime = hget(baseKey, "updateTime");
-
-        Set<Object> attrs = sGet(attrsKey);
-        //类型转换
-        Set<String> attrSet = new HashSet<String>();
-        for(Object attr : attrs) {
-            attrSet.add(attr.toString());
-        }
+        Set<String> attrSet = (Set<String>) sGet(attrsKey);
         ObjectTemplate objectTemplate = new ObjectTemplate(id, name.toString(), attrSet, nodeId.toString(), type.toString());
         objectTemplate.setCreateTime((Date) createTime);
         objectTemplate.setUpdateTime((Date) updateTime);
@@ -76,9 +70,8 @@ public class RedisTemplateDAO extends RedisDAO {
             //如果在索引表中存在此id，则删除
             setRemove(indexKey, id);
             //删除模板数据
-            hdel(baseKey, "id", "name", "type", "nodeId", "createTime", "updateTime");
-            long size = sGetSetSize(attrsKey);
-            setPop(attrsKey, size);
+            del(baseKey);
+            del(attrsKey);
         }
         return true;
         /*
