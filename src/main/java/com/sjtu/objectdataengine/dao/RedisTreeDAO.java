@@ -1,6 +1,7 @@
 package com.sjtu.objectdataengine.dao;
 
 import com.sjtu.objectdataengine.model.KnowledgeTreeNode;
+import com.sjtu.objectdataengine.model.TreeNodeReturn;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -49,7 +50,12 @@ public class RedisTreeDAO extends RedisDAO {
      * @param key 树节点id
      * @return 树节点
      */
-    public KnowledgeTreeNode findByKey(String key) {
+    public TreeNodeReturn findByKey(String key) {
+        String indexKey = "index";
+        //如果没有找到，直接返回
+        if(!sHasKey(indexKey, key)) {
+            return null;
+        }
         String baseKey = key + '#' + "base";
         String childrenKey = key + '#' + "children";
         String parentsKey = key + '#' + "parents";
@@ -60,23 +66,25 @@ public class RedisTreeDAO extends RedisDAO {
         Date createTime = (Date) hget(baseKey, "createTime");
         Date updateTime = (Date) hget(baseKey, "updateTime");
         //孩子节点列表
-        List<String> children = (List<String>) lGet(childrenKey, 0, -1);
-        if(children == null || children.size() == 0) {
+        List<String> childrenList = (List<String>) lGet(childrenKey, 0, -1);
+        List<TreeNodeReturn> children = new ArrayList<TreeNodeReturn>();
+        if(childrenList == null || childrenList.size() == 0) {
 
         }
         else {
-            for(String child : children) {
-                KnowledgeTreeNode childNode = findByKey(child);
+            for(String child : childrenList) {
+                TreeNodeReturn childNode = findByKey(child);
+                children.add(childNode);
             }
         }
         //父节点列表
         List<String> parents = (List<String>) lGet(parentsKey, 0, -1);
         //关联对象列表
         HashMap<String, String> objects = (HashMap<String, String>) hmget(objectsKey);
-        KnowledgeTreeNode knowledgeTreeNode = new KnowledgeTreeNode(id, name, template, parents, children, objects);
+        TreeNodeReturn treeNodeReturn = new TreeNodeReturn(id, name, template, parents, children, objects);
         //设置时间属性
-        knowledgeTreeNode.setCreateTime(createTime);
-        knowledgeTreeNode.setUpdateTime(updateTime);
-        return knowledgeTreeNode;
+        treeNodeReturn.setCreateTime(createTime);
+        treeNodeReturn.setUpdateTime(updateTime);
+        return treeNodeReturn;
     }
 }

@@ -6,7 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sjtu.objectdataengine.dao.RedisTreeDAO;
-import com.sjtu.objectdataengine.model.KnowledgeTreeNode;
+import com.sjtu.objectdataengine.model.TreeNodeReturn;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -256,7 +256,7 @@ public class RedisTreeService {
      * @param key 树节点id
      * @return 树节点
      */
-    public KnowledgeTreeNode findNodeByKey(String key) {
+    public TreeNodeReturn findNodeByKey(String key) {
         return redisTreeDAO.findByKey(key);
     }
 
@@ -289,7 +289,6 @@ public class RedisTreeService {
      * @param query 更新请求
      * @return true代表更新成功，false代表更新失败
      */
-
     public boolean updateNodeByKey(String query) {
         try {
             JSONObject queryObject = JSON.parseObject(query);
@@ -309,7 +308,6 @@ public class RedisTreeService {
             JSONObject update = queryObject.getJSONObject("update");
             //改名字
             String name = update.getString("name");
-
             if(name != null) {
                 redisTreeDAO.hset(baseKey, "name", name);
             }
@@ -317,9 +315,14 @@ public class RedisTreeService {
             if(template!=null) {
                 redisTreeDAO.hset(baseKey, "template", template);
             }
-            JSONObject objectsMap = queryObject.getJSONObject("objects");
+            JSONObject objectsMap = update.getJSONObject("objects");
             if (objectsMap!=null) {
-                HashMap<String, String> objectsHashMap = JSONObject.toJavaObject(objectsMap, HashMap.class);
+                //待修改
+                HashMap<String, String> objectsHashMap = new HashMap<String, String>();
+                if(objectsMap != null) {
+                    //暂无更好解决方案
+                    objectsHashMap = JSON.parseObject(objectsMap.toString(), new TypeReference<HashMap<String, String>>(){});
+                }
                 //清空之前的关联对象
                 redisTreeDAO.del(objectsKey);
                 if(objectsHashMap.size() != 0) {
