@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sjtu.objectdataengine.dao.RedisRootDAO;
 import com.sjtu.objectdataengine.dao.RedisTemplateDAO;
 import com.sjtu.objectdataengine.dao.RedisTreeDAO;
+import com.sjtu.objectdataengine.model.KnowledgeTreeNode;
 import com.sjtu.objectdataengine.model.TreeNodeReturn;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -287,6 +288,14 @@ public class RedisTreeService {
      */
     public TreeNodeReturn findNodeByKey(String key) {
         return redisTreeDAO.findByKey(key);
+    }
+    /**
+     * 根据id返回指定树节点
+     * @param key 树节点id
+     * @return 树节点(无嵌套)
+     */
+    public KnowledgeTreeNode findNodeByKey0(String key) {
+        return redisTreeDAO.findByKey0(key);
     }
 
     /**

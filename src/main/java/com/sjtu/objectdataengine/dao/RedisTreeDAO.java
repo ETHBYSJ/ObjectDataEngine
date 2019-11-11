@@ -45,6 +45,38 @@ public class RedisTreeDAO extends RedisDAO {
             return false;
         }
     }
+
+    /**
+     * 根据id返回指定树节点
+     * @param key 树节点id
+     * @return 树节点(无嵌套)
+     */
+    public KnowledgeTreeNode findByKey0(String key) {
+        String indexKey = "index";
+        //如果没有找到，直接返回
+        if(!sHasKey(indexKey, key)) {
+            return null;
+        }
+        String baseKey = key + '#' + "base";
+        String childrenKey = key + '#' + "children";
+        String parentsKey = key + '#' + "parents";
+        String objectsKey = key + '#' + "objects";
+        String id = hget(baseKey, "id").toString();
+        String name = hget(baseKey, "name") == null ? "" : hget(baseKey, "name").toString();
+        String template = hget(baseKey, "template") == null ? "" : hget(baseKey, "template").toString();
+        Date createTime = (Date) hget(baseKey, "createTime");
+        Date updateTime = (Date) hget(baseKey, "updateTime");
+        //孩子节点列表
+        List<String> children = (List<String>) lGet(childrenKey, 0, -1);
+        //父节点列表
+        List<String> parents = (List<String>) lGet(parentsKey, 0, -1);
+        //关联对象列表
+        HashMap<String, String> objects = (HashMap<String, String>) hmget(objectsKey);
+        KnowledgeTreeNode knowledgeTreeNode = new KnowledgeTreeNode(id, name, template, parents, children, objects);
+        knowledgeTreeNode.setCreateTime(createTime);
+        knowledgeTreeNode.setUpdateTime(updateTime);
+        return knowledgeTreeNode;
+    }
     /**
      * 根据id返回指定树节点
      * @param key 树节点id

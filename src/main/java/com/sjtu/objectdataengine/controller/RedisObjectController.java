@@ -3,10 +3,7 @@ package com.sjtu.objectdataengine.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.sjtu.objectdataengine.dao.RedisDAO;
 import com.sjtu.objectdataengine.dao.RedisTreeDAO;
-import com.sjtu.objectdataengine.model.MongoAttr;
-import com.sjtu.objectdataengine.model.MongoObject;
-import com.sjtu.objectdataengine.model.ObjectTemplate;
-import com.sjtu.objectdataengine.model.TreeNodeReturn;
+import com.sjtu.objectdataengine.model.*;
 import com.sjtu.objectdataengine.service.RedisObjectService;
 import com.sjtu.objectdataengine.service.RedisTemplateService;
 import com.sjtu.objectdataengine.service.RedisTreeService;
@@ -68,6 +65,10 @@ public class RedisObjectController {
     @GetMapping("get_node_by_id")
     public TreeNodeReturn getNodeById(@RequestParam String id) {
         return redisTreeService.findNodeByKey(id);
+    }
+    @GetMapping("get_node_by_id0")
+    public KnowledgeTreeNode getNodeById0(@RequestParam String id) {
+        return redisTreeService.findNodeByKey0(id);
     }
     //-------------------------------template---------------------------------//
     @GetMapping("get_all_template")
