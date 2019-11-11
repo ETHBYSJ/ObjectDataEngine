@@ -134,18 +134,22 @@ public class RedisTreeService {
      */
     private boolean opParents(String child, List<String> parents, boolean flag) {
         try {
+            Date now = new Date();
+            redisTreeDAO.hset(child + "#base", "updateTime", now);
             if(flag) {
                 //添加
                 for(String parent : parents) {
                     if(!redisTreeDAO.lHasValue(parent + "#children", child)) {
                         redisTreeDAO.lSet(parent + "#children", child);
                     }
+                    redisTreeDAO.hset(parent + "#base", "updateTime", now);
                 }
             }
             else {
                 //删除
                 for(String parent : parents) {
                     redisTreeDAO.lRemove(parent + "#children", 1, child);
+                    redisTreeDAO.hset(parent + "#base", "updateTime", now);
                 }
             }
             return true;
@@ -164,18 +168,22 @@ public class RedisTreeService {
      */
     private boolean opChildren(String parent, List<String> children, boolean flag) {
         try {
+            Date now = new Date();
+            redisTreeDAO.hset(parent + "#base", "updateTime", now);
             if(flag) {
                 //添加
                 for(String child : children) {
                     if(!redisTreeDAO.lHasValue(child + "#parents", parent)) {
                         redisTreeDAO.lSet(child + "#parents", parent);
                     }
+                    redisTreeDAO.hset(child + "#base", "updateTime", now);
                 }
             }
             else {
                 //删除
                 for(String child : children) {
                     redisTreeDAO.lRemove(child + "#parents", 1, parent);
+                    redisTreeDAO.hset(child + "#base", "updateTime", new Date());
                 }
             }
             return true;
@@ -193,6 +201,7 @@ public class RedisTreeService {
      */
     private boolean updateParentsList(String child, List<String> parents) {
         try {
+            redisTreeDAO.hset(child + "#base", "updateTime", new Date());
             String parentsKey = child + "#parents";
             //清空父节点列表
             redisTreeDAO.del(parentsKey);
@@ -216,6 +225,7 @@ public class RedisTreeService {
      */
     private boolean updateChildrenList(String parent, List<String> children) {
         try {
+            redisTreeDAO.hset(parent + "#base", "updateTime", new Date());
             String childrenKey = parent + "#children";
             //清空子节点列表
             redisTreeDAO.del(childrenKey);
@@ -296,6 +306,7 @@ public class RedisTreeService {
             deleteChildrenEdge(key, children);
             deleteParentsEdge(key, parents);
             deleteNodeByKey(key);
+            redisTreeDAO.hset(key + "#base", "updateTime", new Date());
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -370,6 +381,8 @@ public class RedisTreeService {
                 //更新子节点
                 updateChildrenList(id, children);
             }
+            //更新时间
+            redisTreeDAO.hset(baseKey, "updateTime", new Date());
             return true;
         } catch (Exception e) {
             e.printStackTrace();
