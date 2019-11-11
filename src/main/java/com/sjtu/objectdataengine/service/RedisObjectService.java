@@ -243,9 +243,12 @@ public class RedisObjectService {
         addAttrByObjectId(id, attr);
         //更新时间
         redisAttrDAO.hset(id + "#META", "updateTime", date);
+        /*
         if(redisObjectDAO.hget(id + '#' + attr, "createTime") == null) {
             redisObjectDAO.hset(id + '#' + attr, "createTime", date);
         }
+        */
+        redisObjectDAO.hset(id + '#' + attr, "createTime", date);
         redisObjectDAO.hset(id + '#' + attr, "updateTime", date);
         //拼接成key
         String key = id + '#' + attr + '#' + "time";
@@ -404,17 +407,15 @@ public class RedisObjectService {
      * @return 新的关联对象表
      */
     private HashMap<String, Date> cutObjects(Date ut, String id) {
-        HashMap<String, Date> cutMap = (HashMap<String, Date>) redisAttrDAO.hmget(id + "#object");
-        /*
+        HashMap<String, Date> objectMap = (HashMap<String, Date>) redisAttrDAO.hmget(id + "#object");
         HashMap<String, Date> cutMap = new HashMap<String, Date>();
-        for(Map.Entry<Object, Object> entry : objectMap.entrySet()) {
-            String objId = entry.getKey().toString();
-            Date objDate = (Date) entry.getValue();
+        for(Map.Entry<String, Date> entry : objectMap.entrySet()) {
+            String objId = entry.getKey();
+            Date objDate = entry.getValue();
             if(!objDate.after(ut)) {
                 cutMap.put(objId, objDate);
             }
         }
-        */
         return cutMap;
     }
     /**

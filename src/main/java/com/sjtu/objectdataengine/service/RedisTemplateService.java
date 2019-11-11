@@ -52,8 +52,10 @@ public class RedisTemplateService {
         else {
             //首先存入id索引表
             redisTemplateDAO.sSet(indexKey, id);
-            //存储属性列表
-            redisTemplateDAO.sSet(attrsKey, attrs.toArray());
+            if(attrs != null && attrs.size() > 0) {
+                //存储属性列表
+                redisTemplateDAO.sSet(attrsKey, attrs.toArray());
+            }
         }
         //存储基本信息
         redisTemplateDAO.hset(baseKey, "id", id);

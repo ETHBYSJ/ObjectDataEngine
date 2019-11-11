@@ -5,6 +5,8 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sjtu.objectdataengine.dao.RedisRootDAO;
+import com.sjtu.objectdataengine.dao.RedisTemplateDAO;
 import com.sjtu.objectdataengine.dao.RedisTreeDAO;
 import com.sjtu.objectdataengine.model.TreeNodeReturn;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +19,10 @@ public class RedisTreeService {
     private static ObjectMapper MAPPER = new ObjectMapper();
     @Autowired
     private RedisTreeDAO redisTreeDAO;
+    @Autowired
+    private RedisRootDAO redisRootDAO;
+    @Autowired
+    private RedisTemplateDAO redisTemplateDAO;
 
     /**
      * 创建一个树节点
@@ -76,7 +82,13 @@ public class RedisTreeService {
         String parentsKey = id + '#' + "parents";
         String objectsKey = id + '#' + "objects";
         String indexKey = "index";
-
+        //检查template合法性
+        if(redisTemplateDAO.sHasKey("index", template)) {
+            redisTreeDAO.hset(baseKey, "template", template);
+        }
+        else {
+            return false;
+        }
         //判断已经创建过
         if(redisTreeDAO.sHasKey(indexKey, id)) return false;
         Date now = new Date();
@@ -85,7 +97,7 @@ public class RedisTreeService {
         //存储基本信息
         redisTreeDAO.hset(baseKey, "id", id);
         redisTreeDAO.hset(baseKey, "name", name);
-        redisTreeDAO.hset(baseKey, "template", template);
+
         redisTreeDAO.hset(baseKey, "createTime", now);
         redisTreeDAO.hset(baseKey, "updateTime", now);
         if(parents != null && parents.size() != 0) {
@@ -100,9 +112,16 @@ public class RedisTreeService {
             //存储关联对象列表
             redisTreeDAO.hmset(objectsKey, objects);
         }
-        //ops
-        opParents(id, parents, true);
-        opChildren(id, children, true);
+        //更新根节点列表
+        if(parents.size() > 0 && parents.get(0).equals("root")) {
+            redisRootDAO.addNewRoot(id, name);
+            opChildren(id, children, true);
+        }
+        else {
+            //ops
+            opParents(id, parents, true);
+            opChildren(id, children, true);
+        }
         return true;
     }
 
