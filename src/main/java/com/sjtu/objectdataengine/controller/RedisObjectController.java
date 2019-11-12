@@ -107,8 +107,10 @@ public class RedisObjectController {
         HashMap<String, String> hashMap = new HashMap<String, String>();
         hashMap.put("age", "12");
         hashMap.put("name", "jack");
-        List<String> objects = new ArrayList<>();
-        return redisObjectService.create("2", "1123", "1",objects, hashMap);
+        List<String> objects = new ArrayList<String>();
+        objects.add("1");
+        objects.add("2");
+        return redisObjectService.create("1", "test_obj", "2",objects, hashMap);
     }
 
     @GetMapping("addAttr")
@@ -125,7 +127,10 @@ public class RedisObjectController {
     public MongoObject getByTime(@RequestParam String id, @RequestParam Date date) {
         return redisObjectService.findObjectById(id, date);
     }
-
+    @GetMapping("get_attr_by_time_interval")
+    public List<MongoAttr> getAttrByTimeInterval(@RequestParam String id, @RequestParam String name, @RequestParam Date startDate, @RequestParam Date endDate) {
+        return redisObjectService.findAttrBetweenTime(id, name, startDate, endDate);
+    }
     @GetMapping("get_by_time_interval")
     public List<MongoObject> getByTimeInterval(@RequestParam String id, @RequestParam Date startDate, @RequestParam Date endDate) {
         return redisObjectService.findObjectBetweenTime(id, startDate, endDate);
