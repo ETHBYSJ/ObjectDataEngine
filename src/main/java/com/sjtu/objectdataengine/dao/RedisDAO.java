@@ -252,6 +252,15 @@ public class RedisDAO {
     }
 
     /**
+     * 返回哈希表中的键集合
+     * @param key
+     * @return
+     */
+    public Set<?> hKeys(String key) {
+        return redisTemplate.opsForHash().keys(key);
+    }
+
+    /**
      * 判断hash表中是否有该项的值
      * @param key 键 不能为null
      * @param item 项 不能为null

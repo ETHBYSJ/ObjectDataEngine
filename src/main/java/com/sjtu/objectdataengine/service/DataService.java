@@ -28,7 +28,12 @@ public class DataService {
     RedisObjectService redisObjectService;
 
     @Autowired
+    RedisTreeService redisTreeService;
+
+    @Autowired
     MongoTemplateService mongoTemplateService;
+
+
 
     /**
      * 创建对象

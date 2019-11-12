@@ -5,10 +5,9 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sjtu.objectdataengine.dao.RedisRootDAO;
-import com.sjtu.objectdataengine.dao.RedisTemplateDAO;
-import com.sjtu.objectdataengine.dao.RedisTreeDAO;
+import com.sjtu.objectdataengine.dao.*;
 import com.sjtu.objectdataengine.model.KnowledgeTreeNode;
+import com.sjtu.objectdataengine.model.MongoObject;
 import com.sjtu.objectdataengine.model.TreeNodeReturn;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,6 +23,44 @@ public class RedisTreeService {
     private RedisRootDAO redisRootDAO;
     @Autowired
     private RedisTemplateDAO redisTemplateDAO;
+    @Autowired
+    private RedisObjectService redisObjectService;
+    @Autowired
+    private RedisAttrDAO redisAttrDAO;
+    /**
+     *
+     * @param eventId 事件id
+     * @param nodeId 树节点id
+     * @return
+     */
+    public List<MongoObject> findRelatedObjects(String eventId, String nodeId) {
+        //根据事件id查询关联对象
+        List<MongoObject> retList = new ArrayList<MongoObject>();
+        //此对象必须存在且类型为事件
+        HashSet<String> eObjectSet;
+        HashSet<String> nObjectSet;
+        if(redisAttrDAO.hasKey(eventId) && redisAttrDAO.hget(eventId + "#META", "type").equals("event")) {
+            eObjectSet = (HashSet<String>) redisAttrDAO.hKeys(eventId + "#object");
+        }
+        else {
+            //否则返回空列表
+            return retList;
+        }
+        //根据树节点id查询关联对象
+        if(redisTreeDAO.hasKey(nodeId + "#objects")) {
+            nObjectSet = (HashSet<String>) redisTreeDAO.hKeys(nodeId + "#objects");
+        }
+        else {
+            return retList;
+        }
+        eObjectSet.retainAll(nObjectSet);
+        for(String objId : eObjectSet) {
+            MongoObject mongoObject = redisObjectService.findObjectById(objId);
+            retList.add(mongoObject);
+        }
+
+        return retList;
+    }
 
     /**
      * 创建一个树节点

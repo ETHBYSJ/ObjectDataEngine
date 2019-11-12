@@ -137,10 +137,7 @@ public class RedisObjectService {
         //存储属性基本信息
         for(Map.Entry<String, MongoAttr> entry : hashMap.entrySet()) {
             String attrName = entry.getKey();
-
             MongoAttr mongoAttr = entry.getValue();
-            //Date attrCT = mongoAttr.getCreateTime();
-            //Date attrUT = mongoAttr.getUpdateTime();
             Date attrCT = date;
             Date attrUT = date;
             mongoAttr.setCreateTime(attrCT);
@@ -150,8 +147,6 @@ public class RedisObjectService {
 
             redisObjectDAO.hset(id + '#' + attrName, "createTime", attrCT);
             redisObjectDAO.hset(id + '#' + attrName, "updateTime", attrUT);
-            System.out.println(attrCT);
-            System.out.println(attrUT);
             boolean addSucc = addAttr(id, attrName, mongoAttr.getValue(), date);
             //最早可以获得的时间
             redisObjectDAO.hset(id + '#' + attrName, "time", attrUT);
@@ -424,10 +419,15 @@ public class RedisObjectService {
                 }
             }
         }
+        System.out.println("ut = " + ut);
         //关联对象
+        HashMap<String, Date> objectMap = (HashMap<String, Date>) redisAttrDAO.hmget(id + "#object");
+        mongoObject.setObjects(objectMap);
+        /*
         mongoObject.setUpdateTime(ut);
         HashMap<String, Date> cutMap = cutObjects(ut, id);
         mongoObject.setObjects(cutMap);
+        */
         return mongoObject;
     }
 

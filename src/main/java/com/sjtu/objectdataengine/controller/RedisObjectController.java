@@ -33,7 +33,10 @@ public class RedisObjectController {
     public void delete(@RequestParam String key) {
         redisTreeDAO.del(key);
     }
-
+    @GetMapping("hkeys")
+    public Set<?> hKeys() {
+        return redisTreeDAO.hKeys("1#base");
+    }
     @GetMapping("test_type")
     public List<String> testType(@RequestParam String key) {
         return (List<String>) redisTreeDAO.lGet(key, 0, -1);
@@ -50,6 +53,10 @@ public class RedisObjectController {
         return redisTreeDAO.lTrim(key, start, end);
     }
     //-------------------------------tree-------------------------------------//
+    @GetMapping("find_related_obj")
+    public List<MongoObject> findRelatedObj(@RequestParam String eventId, @RequestParam String nodeId) {
+        return redisTreeService.findRelatedObjects(eventId, nodeId);
+    }
     @PostMapping("create_tree")
     public boolean createTree(@RequestBody String request) {
         return redisTreeService.createTreeNode(request);
@@ -105,12 +112,12 @@ public class RedisObjectController {
     @GetMapping("create_obj")
     public boolean createObject() {
         HashMap<String, String> hashMap = new HashMap<String, String>();
-        hashMap.put("age", "12");
-        hashMap.put("name", "jack");
+        hashMap.put("time", "2019-11-12");
+        hashMap.put("position", "xxx");
         List<String> objects = new ArrayList<String>();
+        //objects.add("2");
         objects.add("1");
-        objects.add("2");
-        return redisObjectService.create("1", "test_obj", "2",objects, hashMap);
+        return redisObjectService.create("2", "test_obj", "1",objects, hashMap);
     }
 
     @GetMapping("addAttr")
