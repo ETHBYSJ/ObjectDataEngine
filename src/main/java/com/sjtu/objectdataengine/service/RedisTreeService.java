@@ -282,20 +282,20 @@ public class RedisTreeService {
     }
 
     /**
-     * 根据id返回指定树节点
+     * sss
      * @param key 树节点id
      * @return 树节点
      */
-    public TreeNodeReturn findNodeByKey(String key) {
-        return redisTreeDAO.findByKey(key);
+    public TreeNodeReturn findTreeByRoot(String key) {
+        return redisTreeDAO.findTreeByRoot(key);
     }
     /**
      * 根据id返回指定树节点
      * @param key 树节点id
      * @return 树节点(无嵌套)
      */
-    public KnowledgeTreeNode findNodeByKey0(String key) {
-        return redisTreeDAO.findByKey0(key);
+    public KnowledgeTreeNode findNodeByKey(String key) {
+        return redisTreeDAO.findByKey(key);
     }
 
     /**

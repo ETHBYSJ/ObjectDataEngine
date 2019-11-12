@@ -51,7 +51,7 @@ public class RedisTreeDAO extends RedisDAO {
      * @param key 树节点id
      * @return 树节点(无嵌套)
      */
-    public KnowledgeTreeNode findByKey0(String key) {
+    public KnowledgeTreeNode findByKey(String key) {
         String indexKey = "index";
         //如果没有找到，直接返回
         if(!sHasKey(indexKey, key)) {
@@ -82,7 +82,7 @@ public class RedisTreeDAO extends RedisDAO {
      * @param key 树节点id
      * @return 树节点
      */
-    public TreeNodeReturn findByKey(String key) {
+    public TreeNodeReturn findTreeByRoot(String key) {
         String indexKey = "index";
         //如果没有找到，直接返回
         if(!sHasKey(indexKey, key)) {
@@ -105,7 +105,7 @@ public class RedisTreeDAO extends RedisDAO {
         }
         else {
             for(String child : childrenList) {
-                TreeNodeReturn childNode = findByKey(child);
+                TreeNodeReturn childNode = findTreeByRoot(child);
                 children.add(childNode);
             }
         }

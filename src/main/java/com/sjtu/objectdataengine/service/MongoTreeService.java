@@ -3,6 +3,7 @@ package com.sjtu.objectdataengine.service;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sjtu.objectdataengine.dao.MongoRootDAO;
 import com.sjtu.objectdataengine.dao.MongoTreeDAO;
@@ -46,9 +47,13 @@ public class MongoTreeService {
         //要判断是否有空的
         List<String> parents = parentsArray==null ? new ArrayList<>() : JSONObject.parseArray(parentsArray.toJSONString(), String.class);
         List<String> children =childrenArray==null ? new ArrayList<>() : JSONObject.parseArray(childrenArray.toJSONString(), String.class);
-        HashMap<String, String> objects = objectsMap==null ? new HashMap<>() : JSONObject.toJavaObject(objectsMap, HashMap.class);
-        KnowledgeTreeNode knowledgeTreeNode = new KnowledgeTreeNode(id, name, template, parents, children, objects);
+        HashMap<String, String> objects = new HashMap<String, String>();
+        if(objectsMap != null) {
+            //暂无更好解决方案
+            objects = JSON.parseObject(objectsMap.toString(), new TypeReference<HashMap<String, String>>(){});
+        }
 
+        KnowledgeTreeNode knowledgeTreeNode = new KnowledgeTreeNode(id, name, template, parents, children, objects);
         if(mongoTreeDAO.create(knowledgeTreeNode)) {
             if(parents.get(0).equals("root")) {
                 mongoRootDAO.addNewRoot(id , name);

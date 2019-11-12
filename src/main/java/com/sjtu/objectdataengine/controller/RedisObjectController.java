@@ -62,13 +62,13 @@ public class RedisObjectController {
     public boolean updateTree(@RequestBody String request) {
         return redisTreeService.updateNodeByKey(request);
     }
-    @GetMapping("get_node_by_id")
-    public TreeNodeReturn getNodeById(@RequestParam String id) {
-        return redisTreeService.findNodeByKey(id);
+    @GetMapping("get_tree_by_root")
+    public TreeNodeReturn findTreeByRoot(@RequestParam String id) {
+        return redisTreeService.findTreeByRoot(id);
     }
-    @GetMapping("get_node_by_id0")
-    public KnowledgeTreeNode getNodeById0(@RequestParam String id) {
-        return redisTreeService.findNodeByKey0(id);
+    @GetMapping("get_node_by_id")
+    public KnowledgeTreeNode getNodeById(@RequestParam String id) {
+        return redisTreeService.findNodeByKey(id);
     }
     //-------------------------------template---------------------------------//
     @GetMapping("get_all_template")
