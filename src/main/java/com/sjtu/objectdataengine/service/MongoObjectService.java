@@ -176,7 +176,10 @@ public class MongoObjectService {
 
         updateObject(id, name, mongoAttr);
 
-        if (mongoAttrs.isFull()) {
+        if (mongoAttrs == null) {
+            return false;
+        }
+        else if (mongoAttrs.isFull()) {
             int newSize = size + 1;
             String key0 = id + name + "0";
             String newKey = id + name + newSize;
