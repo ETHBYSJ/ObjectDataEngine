@@ -75,4 +75,13 @@ public class MongoRootDAO extends MongoBaseDAO<RootMessage>{
         update.set("roots." + id , name);
         mongoTemplate.updateMulti(query, update, RootMessage.class);
     }
+
+    public void deleteRoot(String id) {
+        Query query = new Query();
+        Criteria criteria = Criteria.where("id").is("root");
+        query.addCriteria(criteria);
+        Update update = new Update();
+        update.unset("roots." + id);
+        mongoTemplate.updateMulti(query, update, RootMessage.class);
+    }
 }

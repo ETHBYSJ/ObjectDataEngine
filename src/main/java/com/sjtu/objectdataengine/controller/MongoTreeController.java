@@ -1,12 +1,12 @@
 package com.sjtu.objectdataengine.controller;
 
 import com.sjtu.objectdataengine.model.KnowledgeTreeNode;
-import com.sjtu.objectdataengine.service.MongoTreeService;
+import com.sjtu.objectdataengine.service.mongodb.MongoTreeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-
+/*
 @Slf4j
 @RequestMapping("/tree")
 @RestController
@@ -37,4 +37,4 @@ public class MongoTreeController {
     public boolean updateNode(@RequestBody String request) {
         return mongoTreeService.updateNodeByKey(request);
     }
-}
+}*/

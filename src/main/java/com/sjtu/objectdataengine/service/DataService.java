@@ -3,10 +3,13 @@ package com.sjtu.objectdataengine.service;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.mongodb.Mongo;
 import com.sjtu.objectdataengine.model.MongoObject;
 import com.sjtu.objectdataengine.rabbitMQ.MongoSender;
 import com.sjtu.objectdataengine.rabbitMQ.RedisSender;
+import com.sjtu.objectdataengine.service.mongodb.MongoObjectService;
+import com.sjtu.objectdataengine.service.mongodb.MongoTemplateService;
+import com.sjtu.objectdataengine.service.redis.RedisObjectService;
+import com.sjtu.objectdataengine.service.redis.RedisTreeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

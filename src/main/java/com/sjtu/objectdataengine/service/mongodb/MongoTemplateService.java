@@ -1,4 +1,4 @@
-package com.sjtu.objectdataengine.service;
+package com.sjtu.objectdataengine.service.mongodb;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;

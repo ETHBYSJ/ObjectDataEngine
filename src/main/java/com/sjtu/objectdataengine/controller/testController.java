@@ -1,10 +1,9 @@
 package com.sjtu.objectdataengine.controller;
 
-import com.mongodb.Mongo;
 import com.sjtu.objectdataengine.model.MongoAttr;
 import com.sjtu.objectdataengine.model.MongoAttrs;
 import com.sjtu.objectdataengine.model.MongoObject;
-import com.sjtu.objectdataengine.service.MongoObjectService;
+import com.sjtu.objectdataengine.service.mongodb.MongoObjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;

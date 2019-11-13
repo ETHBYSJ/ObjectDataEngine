@@ -1,7 +1,6 @@
 package com.sjtu.objectdataengine.rabbitMQ;
 
-import com.sjtu.objectdataengine.service.MongoObjectService;
-import com.sjtu.objectdataengine.service.RedisObjectService;
+import com.sjtu.objectdataengine.service.redis.RedisObjectService;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,10 +32,11 @@ public class RedisReceiver {
          */
         if (op.equals("CREATE")) {
             String id = message.get("id").toString();
+            String intro = message.get("intro").toString();
             String template = message.get("template").toString();
             List<String> objects = (List<String>) message.get("objects");
             HashMap<String, String> attrs = (HashMap<String, String>) message.get("attrs");
-            //redisObjectService.createObject(id, template, attrs, objects);
+            redisObjectService.create(id, intro, template, objects, attrs);
         }
     }
 }

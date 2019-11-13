@@ -1,23 +1,24 @@
 package com.sjtu.objectdataengine.rabbitMQ;
 
-import com.sjtu.objectdataengine.model.MongoObject;
-import com.sjtu.objectdataengine.service.MongoObjectService;
+import com.sjtu.objectdataengine.service.mongodb.MongoObjectService;
+import com.sjtu.objectdataengine.service.mongodb.MongoTreeService;
+import com.sjtu.objectdataengine.utils.DeleteWarning;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import javax.annotation.Resource;
+import java.util.*;
 
 @Component
 @RabbitListener(queues = "MongoQueue")//监听的队列名称 MongoQueue
 public class MongoReceiver {
 
-    @Autowired
+    @Resource
     private MongoObjectService mongoObjectService;
+
+    @Resource
+    private MongoTreeService mongoTreeService;
 
     @RabbitHandler
     public void process(Map message) {
@@ -37,60 +38,31 @@ public class MongoReceiver {
             String id = message.get("id").toString();
             String intro = message.get("intro").toString();
             String template = message.get("template").toString();
-            List<String> objects = (List<String>) message.get("objects");
-            HashMap<String, String> attrs = (HashMap<String, String>) message.get("attrs");
+            List<String> objects = DeleteWarning.cast(message.get("objects"));
+            HashMap<String, String> attrs = DeleteWarning.cast(message.get("attrs"));
             mongoObjectService.create(id, intro, template, attrs, objects);
         }
 
 
         /**
-         * find_key表示，根据object的id查询到最新的object状态
-         * find_key中需要的信息有：
-         * op ： FIND_KEY
-         * id ： 对象id（即key）
+         * 创建知识树节点
          */
-        else if (op.equals("FIND_KEY")) {
+        else if (op.equals("NODE_CREATE")) {
             String id = message.get("id").toString();
-            mongoObjectService.findLatestObjectByKey(id);
+            String name = message.get("id").toString();
+            String template = message.get("template").toString();
+            List<String> parents =  DeleteWarning.cast(message.get("parents"));
+            List<String> children = new ArrayList<>();
+            HashMap<String, String> objects = new HashMap<>();
+            mongoTreeService.createTreeNode(id, name, template, parents, children, objects);
         }
 
         /**
-         * find_time表示，根据时间和object的id查询此对象对应时间的状态
-         * find_time中需要的信息有：
-         * op ： FIND_TIME
-         * id ： 对象id
-         * time ： 查询时间
+         * 删除知识树节点
          */
-        else if (op.equals("FIND_TIME")) {
+        else if (op.equals("NODE_DELETE")) {
             String id = message.get("id").toString();
-            Date time = (Date) message.get("time");
-            mongoObjectService.findObjectByTime(id, time);
-        }
-
-        /**
-         * find_times表示，根据时间和object的id查询此对象对应时间段的状态变化
-         * find_time中需要的信息有：
-         * op ： FIND_TIMES
-         * id ： 对象id
-         * start ： 开始时间
-         * end ： 结束时间
-         */
-        else if (op.equals("FIND_TIMES")) {
-            String id = message.get("id").toString();
-            Date start = (Date) message.get("start");
-            Date end = (Date) message.get("end");
-            mongoObjectService.findObjectByStartAndEnd(id, start, end);
-        }
-
-        /**
-         *
-         */
-        else if (op.equals("FIND_ATTR_KEY")) {
-
-        }
-
-        else if (op.equals("FIND_ATTR_TIME")) {
-
+            mongoTreeService.deleteWholeNodeByKey(id);
         }
 
         else if (op.equals("FIND_ATTR_TIMES")) {

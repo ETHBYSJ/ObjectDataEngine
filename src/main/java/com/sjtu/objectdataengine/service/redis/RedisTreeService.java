@@ -1,4 +1,4 @@
-package com.sjtu.objectdataengine.service;
+package com.sjtu.objectdataengine.service.redis;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -60,39 +60,6 @@ public class RedisTreeService {
         }
 
         return retList;
-    }
-
-    /**
-     * 创建一个树节点
-     * @param request 请求体
-     * @return true代表创建成功，false代表创建失败
-     */
-    public boolean createTreeNode(String request) {
-        try {
-            JSONObject jsonObject = JSON.parseObject(request);
-            String id = jsonObject.getString("id");
-            //id不可为空
-            if(id == null) return false;
-            String name = jsonObject.getString("name");
-            if(name == null) name = "";
-            String template = jsonObject.getString("template");
-            if(template == null) template = "";
-            JSONArray parentsArray = jsonObject.getJSONArray("parents");
-            JSONArray childrenArray = jsonObject.getJSONArray("children");
-            JSONObject objectsMap = jsonObject.getJSONObject("objects");
-            HashMap<String, String> objects = new HashMap<String, String>();
-            if(objectsMap != null) {
-                //暂无更好解决方案
-                objects = JSON.parseObject(objectsMap.toString(), new TypeReference<HashMap<String, String>>(){});
-            }
-            //要判断是否有空的
-            List<String> parents = parentsArray==null ? new ArrayList<>() : JSONObject.parseArray(parentsArray.toJSONString(), String.class);
-            List<String> children =childrenArray==null ? new ArrayList<>() : JSONObject.parseArray(childrenArray.toJSONString(), String.class);
-            return createTreeNode(id, name, template, parents, children, objects);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
     }
 
     /**
