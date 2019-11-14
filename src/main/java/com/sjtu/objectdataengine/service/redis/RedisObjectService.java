@@ -1,4 +1,4 @@
-package com.sjtu.objectdataengine.service;
+package com.sjtu.objectdataengine.service.redis;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -10,16 +10,12 @@ import com.sjtu.objectdataengine.model.MongoObject;
 import com.sjtu.objectdataengine.model.ObjectTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.DefaultTypedTuple;
 import org.springframework.data.redis.core.ZSetOperations;
-import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sjtu.objectdataengine.dao.RedisDAO;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
@@ -109,7 +105,7 @@ public class RedisObjectService {
      * @param hashMap 属性集合
      * @return true代表创建成功，false代表创建失败
      */
-    public boolean createObject(String id, String intro, ObjectTemplate objectTemplate, List<String> objects, HashMap<String, MongoAttr> hashMap) {
+    private boolean createObject(String id, String intro, ObjectTemplate objectTemplate, List<String> objects, HashMap<String, MongoAttr> hashMap) {
         if(redisAttrDAO.hsize(id + '#' + "META") != 0) {
             //说明对象已存在，创建失败
             return false;
@@ -163,7 +159,7 @@ public class RedisObjectService {
      * @param objects 关联的对象id列表
      * @return true代表关联成功，false代表关联失败
      */
-    public boolean relateObject(String id, List<String> objects) {
+    private boolean relateObject(String id, List<String> objects) {
         try {
             Date now = new Date();
             for(String o : objects) {
@@ -244,6 +240,7 @@ public class RedisObjectService {
     public boolean addAttr(String id, String name, MongoAttr mongoAttr) {
         return addAttr(id, name, mongoAttr.getValue(), mongoAttr.getUpdateTime());
     }
+
     /**
      * 属性值表:
      * key=id+name+time->|time1|value1|

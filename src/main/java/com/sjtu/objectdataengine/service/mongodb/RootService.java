@@ -1,4 +1,4 @@
-package com.sjtu.objectdataengine.service;
+package com.sjtu.objectdataengine.service.mongodb;
 
 import com.sjtu.objectdataengine.dao.MongoRootDAO;
 import com.sjtu.objectdataengine.dao.RedisRootDAO;

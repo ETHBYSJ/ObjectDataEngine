@@ -1,5 +1,6 @@
 package com.sjtu.objectdataengine.service;
 
+import com.sjtu.objectdataengine.service.mongodb.RootService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

@@ -1,4 +1,4 @@
-package com.sjtu.objectdataengine.service;
+package com.sjtu.objectdataengine.service.mongodb;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -28,31 +28,15 @@ public class MongoTreeService {
 
     /**
      * 创建结点
-     * @param request 请求json
+     * @param id 节点id
+     * @param name 名称（简介）
+     * @param template 模板id
+     * @param parents 父节点id
+     * @param children 子节点id
+     * @param objects 已经创建的关联object
      * @return true表示成功，false反之
      */
-    public boolean createTreeNode(String request) {
-        //解析
-        JSONObject jsonObject = JSON.parseObject(request);
-        //id必须要有
-        String id = jsonObject.getString("id");
-        if(id == null) return false;
-        String name = jsonObject.getString("name");
-        if (name == null) name = "";
-        String template = jsonObject.getString("template");
-        if (template == null) template = "";
-        JSONArray parentsArray = jsonObject.getJSONArray("parents");
-        JSONArray childrenArray = jsonObject.getJSONArray("children");
-        JSONObject objectsMap = jsonObject.getJSONObject("objects");
-        //要判断是否有空的
-        List<String> parents = parentsArray==null ? new ArrayList<>() : JSONObject.parseArray(parentsArray.toJSONString(), String.class);
-        List<String> children =childrenArray==null ? new ArrayList<>() : JSONObject.parseArray(childrenArray.toJSONString(), String.class);
-        HashMap<String, String> objects = new HashMap<String, String>();
-        if(objectsMap != null) {
-            //暂无更好解决方案
-            objects = JSON.parseObject(objectsMap.toString(), new TypeReference<HashMap<String, String>>(){});
-        }
-
+    public boolean createTreeNode(String id, String name, String template, List<String> parents, List<String> children, HashMap<String, String> objects) {
         KnowledgeTreeNode knowledgeTreeNode = new KnowledgeTreeNode(id, name, template, parents, children, objects);
         if(mongoTreeDAO.create(knowledgeTreeNode)) {
             if(parents.get(0).equals("root")) {
@@ -61,7 +45,7 @@ public class MongoTreeService {
                 //为其父结点添加关系
                 opParents(id, parents, true);
                 //为其子结点添加关系
-                opChildren(id, children, true);
+                // opChildren(id, children, true);
             }
             return true;
         } else{
@@ -215,7 +199,11 @@ public class MongoTreeService {
             List<String> parents = knowledgeTreeNode.getParents();
             List<String> children = knowledgeTreeNode.getChildren();
             deleteChildrenEdge(key, children);
-            deleteParentsEdge(key, parents);
+            if (!parents.get(0).equals("root")) {
+                deleteParentsEdge(key, parents);
+            } else {
+                deleteRootEdges(key);
+            }
             deleteNodeByKey(key);
             return true;
         } catch (Exception e) {
@@ -276,5 +264,11 @@ public class MongoTreeService {
         return mongoTreeDAO.update(mongoCondition);
     }
 
-
+    /**
+     * 如果是根节点，删除root内的备份
+     * @param key id
+     */
+    private void deleteRootEdges(String key) {
+        mongoRootDAO.deleteRoot(key);
+    }
 }
