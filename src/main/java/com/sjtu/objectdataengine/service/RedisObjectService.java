@@ -89,7 +89,7 @@ public class RedisObjectService {
         if(objectTemplate == null) return false;
         Set<String> attrs = objectTemplate.getAttrs();
         HashMap<String, MongoAttr> hashMap = new HashMap<String, MongoAttr>();
-        Date date = new Date();
+        //Date date = new Date();
         for(String attr : attrs) {
             String value = attrMap.get(attr) == null ? "" : attrMap.get(attr);
             MongoAttr mongoAttr = new MongoAttr(value);
