@@ -247,8 +247,13 @@ public class RedisDAO {
      * @param key 键 不能为null
      * @param item 项 可以使多个 不能为null
      */
-    public void hdel(String key, Object... item){
-        redisTemplate.opsForHash().delete(key,item);
+    public long hdel(String key, Object... item){
+        try {
+            return redisTemplate.opsForHash().delete(key,item);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     /**

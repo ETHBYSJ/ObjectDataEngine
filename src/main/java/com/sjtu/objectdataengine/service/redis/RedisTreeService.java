@@ -125,7 +125,7 @@ public class RedisTreeService {
         else {
             //ops
             opParents(id, parents, true);
-            opChildren(id, children, true);
+            //opChildren(id, children, true);
         }
         return true;
     }
@@ -303,6 +303,14 @@ public class RedisTreeService {
     }
 
     /**
+     * 删除根节点的备份
+     * @param key 树节点id
+     * @return true代表删除成功，false代表删除失败
+     */
+    private boolean deleteRootEdge(String key) {
+        return redisRootDAO.deleteRoot(key);
+    }
+    /**
      * 彻底删除
      * @param key 节点id
      * @return true代表成功，false代表失败
@@ -317,9 +325,16 @@ public class RedisTreeService {
             List<String> parents = (List<String>) redisTreeDAO.lGet(parentsKey, 0, -1);
             List<String> children = (List<String>) redisTreeDAO.lGet(childrenKey, 0, -1);
             deleteChildrenEdge(key, children);
-            deleteParentsEdge(key, parents);
+            if(parents.size() > 0 && parents.get(0).equals("root")) {
+                //是根节点
+                deleteRootEdge(key);
+            }
+            else {
+                //非根节点
+                deleteParentsEdge(key, parents);
+            }
             deleteNodeByKey(key);
-            redisTreeDAO.hset(key + "#base", "updateTime", new Date());
+            //redisTreeDAO.hset(key + "#base", "updateTime", new Date());//?
             return true;
         } catch (Exception e) {
             e.printStackTrace();

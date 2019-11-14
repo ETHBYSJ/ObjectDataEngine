@@ -65,6 +65,7 @@ public class RedisRootDAO extends RedisDAO {
      */
     public void addNewRoot(String id, String name) {
         hset("root#roots", id, name);
+        hset("root#base", "updateTime", new Date());
     }
 
     /**
@@ -74,6 +75,10 @@ public class RedisRootDAO extends RedisDAO {
      */
     public boolean hasRoot(String id) {
         return hHasKey("root#roots", id);
+    }
+    public boolean deleteRoot(String id) {
+        hset("root#base", "updateTime", new Date());
+        return hdel("root#roots", id) > 0;
     }
 }
 
