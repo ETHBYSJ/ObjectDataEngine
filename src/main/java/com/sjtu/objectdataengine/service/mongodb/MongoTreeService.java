@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sjtu.objectdataengine.dao.MongoRootDAO;
+import com.sjtu.objectdataengine.dao.MongoTemplateDAO;
 import com.sjtu.objectdataengine.dao.MongoTreeDAO;
 import com.sjtu.objectdataengine.model.KnowledgeTreeNode;
 import com.sjtu.objectdataengine.utils.MongoCondition;
@@ -26,6 +27,9 @@ public class MongoTreeService {
     @Resource
     MongoRootDAO mongoRootDAO;
 
+    @Resource
+    MongoTemplateDAO mongoTemplateDAO;
+
     /**
      * 创建结点
      * @param id 节点id
@@ -33,11 +37,10 @@ public class MongoTreeService {
      * @param template 模板id
      * @param parents 父节点id
      * @param children 子节点id
-     * @param objects 已经创建的关联object
      * @return true表示成功，false反之
      */
-    public boolean createTreeNode(String id, String name, String template, List<String> parents, List<String> children, HashMap<String, String> objects) {
-        KnowledgeTreeNode knowledgeTreeNode = new KnowledgeTreeNode(id, name, template, parents, children, objects);
+    public boolean createTreeNode(String id, String name, String template, List<String> parents, List<String> children) {
+        KnowledgeTreeNode knowledgeTreeNode = new KnowledgeTreeNode(id, name, template, parents, children);
         if(mongoTreeDAO.create(knowledgeTreeNode)) {
             if(parents.get(0).equals("root")) {
                 mongoRootDAO.addNewRoot(id , name);
@@ -214,53 +217,27 @@ public class MongoTreeService {
 
     /**
      * 修改指定key的结点的属性
-     * @param query 结点key+修改
+     * @param id ID
      * @return true表示成功，false反之
      */
-    public boolean updateNodeByKey(String query) {
+    public boolean updateNodeByKey(String id, String name, String template, List<String> parents) {
         MongoCondition mongoCondition = new MongoCondition();
-        JSONObject queryObject = JSON.parseObject(query);
-        //读id
-        String id = queryObject.getString("id");
-        if(id==null) return false;
         mongoCondition.addQuery("id", id);
-        //读update体
-        JSONObject update = queryObject.getJSONObject("update");
         //改名字
-        String name = update.getString("name");
         if (name!=null) mongoCondition.addUpdate("name", name);
         //改模板
-        String template = update.getString("template");
-        if (template!=null) mongoCondition.addUpdate("template", template);
-        //改对象列表
-        JSONArray objectsArray = update.getJSONArray("objects");
-        if (objectsArray!=null) {
-            List<String> objects = JSONObject.parseArray(objectsArray.toJSONString(), String.class);
-            mongoCondition.addUpdate("objects", objects);
-        }
+        if (template!=null && mongoTemplateDAO.findByKey(template)!=null)
+            mongoCondition.addUpdate("template", template);
+
         //改parents 算法可改进 目前是删掉所有的再重新添加
-        JSONArray parentsArray = update.getJSONArray("parents");
-        if (parentsArray!=null) {
-            List<String> parents = JSONObject.parseArray(parentsArray.toJSONString(), String.class);
+        if (parents!=null) {
             List<String> oldParents = mongoTreeDAO.findByKey(id).getParents();
             opParents(id, oldParents, false);
             opParents(id, parents, true);
             mongoCondition.addUpdate("parents", parents);
         }
-        //改children
-        JSONArray childrenArray = update.getJSONArray("children");
-        if (childrenArray!=null) {
-            List<String> children = JSONObject.parseArray(childrenArray.toJSONString(), String.class);
-            List<String> oldChildren = mongoTreeDAO.findByKey(id).getChildren();
-            opChildren(id, oldChildren, false);
-            opChildren(id, children, true);
-            mongoCondition.addUpdate("children", children);
-        }
 
         mongoCondition.addUpdate("updateTime", new Date());
-
-        //System.out.println(mongoCondition.getUpdate());
-
         return mongoTreeDAO.update(mongoCondition);
     }
 

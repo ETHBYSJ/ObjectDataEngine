@@ -72,7 +72,7 @@ public class RedisTreeDAO extends RedisDAO {
         List<String> parents = (List<String>) lGet(parentsKey, 0, -1);
         //关联对象列表
         HashMap<String, String> objects = (HashMap<String, String>) hmget(objectsKey);
-        KnowledgeTreeNode knowledgeTreeNode = new KnowledgeTreeNode(id, name, template, parents, children, objects);
+        KnowledgeTreeNode knowledgeTreeNode = new KnowledgeTreeNode(id, name, template, parents, children);
         knowledgeTreeNode.setCreateTime(createTime);
         knowledgeTreeNode.setUpdateTime(updateTime);
         return knowledgeTreeNode;

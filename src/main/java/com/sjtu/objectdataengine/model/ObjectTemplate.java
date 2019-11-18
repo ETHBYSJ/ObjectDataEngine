@@ -3,6 +3,7 @@ package com.sjtu.objectdataengine.model;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.HashMap;
 import java.util.Set;
 
 @Document(collection="objectTemplate")
@@ -13,13 +14,15 @@ public class ObjectTemplate extends MongoBase{
     private Set<String> attrs;       //属性集合
     private String nodeId;          //对应的结点id
     private String type;            //类型，有事件和实体
+    private HashMap<String, String> objects;
 
-    public ObjectTemplate(String id, String name, Set<String> attrs, String nodeId, String type) {
+    public ObjectTemplate(String id, String name, Set<String> attrs, String nodeId, String type/*, HashMap<String, String> objects*/) {
         this.id = id;
         this.name = name;
         this.attrs = attrs;
         this.nodeId = nodeId;
         this.type = type;
+        //this.objects = objects;
     }
 
     public String getId() {
@@ -78,6 +81,25 @@ public class ObjectTemplate extends MongoBase{
         }
     }
 
+    public HashMap<String, String> getObjects() {
+        return objects;
+    }
+
+    public void setObjects(HashMap<String, String> objects) {
+        this.objects = objects;
+    }
+
+    public void putObject(String key, String name) {
+        this.objects.put(key, name);
+    }
+
+    public void removeObject(String key) {
+        this.objects.remove(key);
+    }
+
+    public void getObject(String key) {
+        this.objects.get(key);
+    }
     @Override
     public String toString() {
         return id + " " + name + " " + attrs;
