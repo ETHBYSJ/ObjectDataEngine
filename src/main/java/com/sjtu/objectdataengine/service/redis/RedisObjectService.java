@@ -8,6 +8,7 @@ import com.sjtu.objectdataengine.dao.RedisTemplateDAO;
 import com.sjtu.objectdataengine.model.MongoAttr;
 import com.sjtu.objectdataengine.model.MongoObject;
 import com.sjtu.objectdataengine.model.ObjectTemplate;
+import com.sjtu.objectdataengine.rabbitMQ.RedisSender;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.ZSetOperations;
@@ -32,6 +33,9 @@ public class RedisObjectService {
     private RedisObjectDAO redisObjectDAO;
     @Autowired
     private RedisTemplateDAO redisTemplateDAO;
+    @Autowired
+    private RedisSender redisSender;
+
 
     private static final Logger logger = LoggerFactory.getLogger(RedisObjectService.class);
 
@@ -273,21 +277,41 @@ public class RedisObjectService {
         String key = id + '#' + attr + '#' + "time";
         //检查表的大小
         if(cacheSize <= redisObjectDAO.Zcard(key)) {
-            doEvict(id, attr);
-            redisObjectDAO.Zadd(key, value, (double)date.getTime());
+            Map<String, Object> evictAndAddMsg = new HashMap<String, Object>();
+            evictAndAddMsg.put("op", "EVICT_AND_ADD");
+            evictAndAddMsg.put("id", id);
+            evictAndAddMsg.put("attr", attr);
+            evictAndAddMsg.put("key", key);
+            evictAndAddMsg.put("value", value);
+            evictAndAddMsg.put("date", date);
+            redisSender.send(evictAndAddMsg);
         }
         else {
-            redisObjectDAO.Zadd(key, value, (double)date.getTime());
+            Map<String, Object> addMsg = new HashMap<String, Object>();
+            addMsg.put("op", "ADD_ATTR");
+            addMsg.put("key", key);
+            addMsg.put("value", value);
+            addMsg.put("date", date);
+            redisSender.send(addMsg);
         }
         return true;
     }
 
     /**
+     * 工具函数，向redis中直接存入一条属性数据
+     * @param key 键
+     * @param value 值
+     * @param date 日期
+     */
+    public void addAttr(String key, String value, Date date) {
+        redisObjectDAO.Zadd(key, value, (double)date.getTime());
+    }
+    /**
      * 执行淘汰策略
      * @param id 对象id
      * @param attr 属性名
      */
-    private void doEvict(String id, String attr) {
+    public void doEvict(String id, String attr) {
         String key = id + '#' + attr + '#' + "time";
         //超出了最大允许值,执行淘汰策略
         //淘汰策略:将当前属性表中最小元素删除,同时记录其时间戳,按照时间戳将同一对象中所有属性在此时间戳之前的值全部删除,
