@@ -28,7 +28,7 @@ public class RedisTemplateService {
      * @param attrs 属性列表
      * @return true代表创建成功，false代表创建失败
      */
-    public boolean createTemplate(String id, String name, String type, String nodeId, List<String> attrs) {
+    public boolean createTemplate(String id, String name, String type, String nodeId, HashMap<String, String> attrs, HashMap<String, String> objects) {
         //基本属性不能为空
         if(id == null || name == null || type == null || nodeId == null) {
             return false;
@@ -39,23 +39,20 @@ public class RedisTemplateService {
         String indexKey = "index";
         String attrsKey = id + '#' + "attrs";
         String baseKey = id + '#' +"base";
+        String objectskey = id + '#' + "objects";
         //判断是否是第一次创建
         if(redisTemplateDAO.sHasKey(indexKey, id)) {
-            /*
-            //不是第一次创建,之前的模板将被修改
-            long size = redisTemplateDAO.sGetSetSize(attrsKey);
-            redisTemplateDAO.setPop(attrsKey, size);
-            redisTemplateDAO.sSet(attrsKey, attrs.toArray());
-            */
             return false;
         }
-        else {
-            //首先存入id索引表
-            redisTemplateDAO.sSet(indexKey, id);
-            if(attrs != null && attrs.size() > 0) {
-                //存储属性列表
-                redisTemplateDAO.sSet(attrsKey, attrs.toArray());
-            }
+        //首先存入id索引表
+        redisTemplateDAO.sSet(indexKey, id);
+        if(attrs != null && attrs.size() > 0) {
+            //存储属性列表
+            redisTemplateDAO.hmset(attrsKey, attrs);
+        }
+        if(objects != null && objects.size() > 0) {
+            //存储关联对象列表
+            redisTemplateDAO.hmset(objectskey, objects);
         }
         //存储基本信息
         redisTemplateDAO.hset(baseKey, "id", id);

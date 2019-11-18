@@ -39,14 +39,14 @@ public class TemplateService {
     }
 
     public String delete() {
-
+        return null;
     }
 
     public String modify() {
-
+        return null;
     }
 
     public String bindNode(String NodeId, String template) {
-
+        return null;
     }
 }
