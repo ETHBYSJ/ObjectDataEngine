@@ -17,7 +17,6 @@ public class TreeNodeReturn extends MongoBase{
     //private Map<String, String> events; //事件
     private List<String> parents; //父节点
     private List<TreeNodeReturn> children;
-    private HashMap<String, String> objects;
 
     public TreeNodeReturn(String id, String name, String template, List<String> parents, List<TreeNodeReturn> children, HashMap<String, String> objects) {
         this.id = id;
@@ -25,7 +24,6 @@ public class TreeNodeReturn extends MongoBase{
         this.template = template;
         this.parents = parents;
         this.children = children;
-        this.objects = objects;
     }
 
     public String getId() {
@@ -66,13 +64,5 @@ public class TreeNodeReturn extends MongoBase{
 
     public void setChildren(List<TreeNodeReturn> children) {
         this.children = children;
-    }
-
-    public HashMap<String, String> getObjects() {
-        return objects;
-    }
-
-    public void setObjects(HashMap<String, String> objects) {
-        this.objects = objects;
     }
 }

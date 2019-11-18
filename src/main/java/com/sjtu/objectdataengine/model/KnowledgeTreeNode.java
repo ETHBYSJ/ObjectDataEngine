@@ -17,15 +17,13 @@ public class KnowledgeTreeNode extends MongoBase{
     //private Map<String, String> events; //事件
     private List<String> parents; //父节点
     private List<String> children;
-    private HashMap<String, String> objects;
 
-    public KnowledgeTreeNode(String id, String name, String template, List<String> parents, List<String> children, HashMap<String, String> objects) {
+    public KnowledgeTreeNode(String id, String name, String template, List<String> parents, List<String> children) {
         this.id = id;
         this.name = name;
         this.template = template;
         this.parents = parents;
         this.children = children;
-        this.objects = objects;
     }
 
     public String getId() {
@@ -66,13 +64,5 @@ public class KnowledgeTreeNode extends MongoBase{
 
     public void setChildren(List<String> children) {
         this.children = children;
-    }
-
-    public HashMap<String, String> getObjects() {
-        return objects;
-    }
-
-    public void setObjects(HashMap<String, String> objects) {
-        this.objects = objects;
     }
 }

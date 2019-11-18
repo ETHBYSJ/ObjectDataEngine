@@ -49,12 +49,11 @@ public class MongoReceiver {
          */
         else if (op.equals("NODE_CREATE")) {
             String id = message.get("id").toString();
-            String name = message.get("id").toString();
+            String name = message.get("name").toString();
             String template = message.get("template").toString();
             List<String> parents =  DeleteWarning.cast(message.get("parents"));
             List<String> children = new ArrayList<>();
-            HashMap<String, String> objects = new HashMap<>();
-            mongoTreeService.createTreeNode(id, name, template, parents, children, objects);
+            mongoTreeService.createTreeNode(id, name, template, parents, children);
         }
 
         /**
@@ -65,8 +64,20 @@ public class MongoReceiver {
             mongoTreeService.deleteWholeNodeByKey(id);
         }
 
-        else if (op.equals("FIND_ATTR_TIMES")) {
-
+        else if (op.equals("NODE_MODIFY")) {
+            String id = message.get("id").toString();
+            String name, template;
+            List<String> parents;
+            if (message.get("name") != null)
+                name = message.get("name").toString();
+            else name = null;
+            if (message.get("template") != null)
+                template = message.get("template").toString();
+            else template = null;
+            if (message.get("parents") != null)
+                parents =  DeleteWarning.cast(message.get("parents"));
+            else parents = null;
+            mongoTreeService.updateNodeByKey(id, name, template, parents);
         }
 
         else if (op.equals("UPDATE")) {

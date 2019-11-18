@@ -1,5 +1,7 @@
 package com.sjtu.objectdataengine.controller;
 
+import com.sjtu.objectdataengine.model.KnowledgeTreeNode;
+import com.sjtu.objectdataengine.model.TreeNodeReturn;
 import com.sjtu.objectdataengine.service.TreeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -22,5 +24,20 @@ public class TreeController {
     @GetMapping("/delete")
     public String delete(@RequestParam String id) {
         return treeService.delete(id);
+    }
+
+    @PostMapping("/modify")
+    public String modify(@RequestBody String request) {
+        return treeService.modify(request);
+    }
+
+    @GetMapping("/get_tree")
+    public TreeNodeReturn getTreeByRoot(@RequestParam String id) {
+        return treeService.getTreeByRoot(id);
+    }
+
+    @GetMapping("/get_node")
+    public KnowledgeTreeNode getNodeById(@RequestParam String id) {
+        return treeService.getNodeById(id);
     }
 }
