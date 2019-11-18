@@ -75,28 +75,6 @@ public class RedisTemplateService {
     }
 
     /**
-     * 通过解析请求字符串创建模板
-     * @param request 请求
-     * @return true代表创建成功，false代表创建失败
-     */
-    public boolean createTemplate(String request) {
-        JSONObject jsonObject = JSON.parseObject(request);
-        //id必须要有
-        String id = jsonObject.getString("id");
-        if(id == null) return false;
-        String name = jsonObject.getString("name");
-        if (name == null) name = "";
-        String type = jsonObject.getString("type");
-        if (type == null) return false;
-        String nodeId = jsonObject.getString("nodeId");
-        if (nodeId == null) nodeId = "";
-        JSONArray jsonArray = jsonObject.getJSONArray("attrs");
-        List<String> attrs = jsonArray==null ? new ArrayList<>() : JSONObject.parseArray(jsonArray.toJSONString(), String.class);
-
-        return createTemplate(id, name, type, nodeId, attrs);
-    }
-
-    /**
      * 返回全部模板
      * @return 全部模板
      */

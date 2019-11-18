@@ -1,6 +1,7 @@
 package com.sjtu.objectdataengine.dao;
 
 import com.sjtu.objectdataengine.model.ObjectTemplate;
+import com.sjtu.objectdataengine.utils.TypeConversion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -48,10 +49,12 @@ public class RedisTemplateDAO extends RedisDAO {
         if(type == null) return null;
         Object nodeId = hget(baseKey, "nodeId");
         if(nodeId == null) return null;
+        Object objects = hget(baseKey, "objects");
+        if(objects == null) return null;
         Object createTime = hget(baseKey, "createTime");
         Object updateTime = hget(baseKey, "updateTime");
         Set<String> attrSet = (Set<String>) sGet(attrsKey);
-        ObjectTemplate objectTemplate = new ObjectTemplate(id, name.toString(), attrSet, nodeId.toString(), type.toString());
+        ObjectTemplate objectTemplate = new ObjectTemplate(id, name.toString(), attrSet, nodeId.toString(), type.toString(), TypeConversion.cast(objects));
         objectTemplate.setCreateTime((Date) createTime);
         objectTemplate.setUpdateTime((Date) updateTime);
         return objectTemplate;

@@ -11,18 +11,18 @@ public class ObjectTemplate extends MongoBase{
     @Id
     private String id;              //对象模板id
     private String name;            //对象模板name
-    private Set<String> attrs;       //属性集合
+    private HashMap<String, String> attrs;       //属性集合
     private String nodeId;          //对应的结点id
     private String type;            //类型，有事件和实体
     private HashMap<String, String> objects;
 
-    public ObjectTemplate(String id, String name, Set<String> attrs, String nodeId, String type/*, HashMap<String, String> objects*/) {
+    public ObjectTemplate(String id, String name, HashMap<String, String> attrs, String nodeId, String type, HashMap<String, String> objects) {
         this.id = id;
         this.name = name;
         this.attrs = attrs;
         this.nodeId = nodeId;
         this.type = type;
-        //this.objects = objects;
+        this.objects = objects;
     }
 
     public String getId() {
@@ -41,11 +41,11 @@ public class ObjectTemplate extends MongoBase{
         this.name = name;
     }
 
-    public Set<String> getAttrs() {
+    public HashMap<String, String> getAttrs() {
         return attrs;
     }
 
-    public void setAttrs(Set<String> attribute) {
+    public void setAttrs(HashMap<String, String> attribute) {
         this.attrs = attribute;
     }
 
@@ -65,20 +65,12 @@ public class ObjectTemplate extends MongoBase{
         this.type = type;
     }
 
-    public boolean addAttr(String name) {
-        return this.attrs.add(name);
+    public void addAttr(String name, String nickname) {
+        this.attrs.put(name, nickname);
     }
 
-    public boolean delAttr(String name) {
-        return this.attrs.remove(name);
-    }
-
-    public boolean replaceAttr(String oldName, String newName) {
-        if (this.attrs.remove(oldName)) {
-            return this.attrs.add(newName);
-        } else {
-            return false;
-        }
+    public void delAttr(String name) {
+        this.attrs.remove(name);
     }
 
     public HashMap<String, String> getObjects() {

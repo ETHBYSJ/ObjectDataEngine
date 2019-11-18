@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.sjtu.objectdataengine.model.KnowledgeTreeNode;
 import com.sjtu.objectdataengine.model.TreeNodeReturn;
 import com.sjtu.objectdataengine.rabbitMQ.MongoSender;
+import com.sjtu.objectdataengine.service.mongodb.TemplateService;
 import com.sjtu.objectdataengine.service.redis.RedisTemplateService;
 import com.sjtu.objectdataengine.service.redis.RedisTreeService;
 import org.springframework.stereotype.Component;
@@ -27,6 +28,8 @@ public class TreeService {
     @Resource
     private RedisTemplateService redisTemplateService;
 
+    @Resource
+    private TemplateService templateService;
 
     /**
      * 需要注意create之后，没有template的情况，反之亦然
@@ -148,4 +151,10 @@ public class TreeService {
     public KnowledgeTreeNode getNodeById(String id) {
         return redisTreeService.findNodeByKey(id);
     }
+
+    public String bindTemplate(String id, String template) {
+        String request = "{ \"id\":" + id + ", \"template\":" + template + "}";
+        return this.modify(request);
+    }
+
 }

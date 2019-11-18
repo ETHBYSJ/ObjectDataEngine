@@ -2,7 +2,7 @@ package com.sjtu.objectdataengine.rabbitMQ;
 
 import com.sjtu.objectdataengine.service.mongodb.MongoObjectService;
 import com.sjtu.objectdataengine.service.mongodb.MongoTreeService;
-import com.sjtu.objectdataengine.utils.DeleteWarning;
+import com.sjtu.objectdataengine.utils.TypeConversion;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
@@ -38,8 +38,8 @@ public class MongoReceiver {
             String id = message.get("id").toString();
             String intro = message.get("intro").toString();
             String template = message.get("template").toString();
-            List<String> objects = DeleteWarning.cast(message.get("objects"));
-            HashMap<String, String> attrs = DeleteWarning.cast(message.get("attrs"));
+            List<String> objects = TypeConversion.cast(message.get("objects"));
+            HashMap<String, String> attrs = TypeConversion.cast(message.get("attrs"));
             mongoObjectService.create(id, intro, template, attrs, objects);
         }
 
@@ -51,7 +51,7 @@ public class MongoReceiver {
             String id = message.get("id").toString();
             String name = message.get("name").toString();
             String template = message.get("template").toString();
-            List<String> parents =  DeleteWarning.cast(message.get("parents"));
+            List<String> parents =  TypeConversion.cast(message.get("parents"));
             List<String> children = new ArrayList<>();
             mongoTreeService.createTreeNode(id, name, template, parents, children);
         }
@@ -75,7 +75,7 @@ public class MongoReceiver {
                 template = message.get("template").toString();
             else template = null;
             if (message.get("parents") != null)
-                parents =  DeleteWarning.cast(message.get("parents"));
+                parents =  TypeConversion.cast(message.get("parents"));
             else parents = null;
             mongoTreeService.updateNodeByKey(id, name, template, parents);
         }
