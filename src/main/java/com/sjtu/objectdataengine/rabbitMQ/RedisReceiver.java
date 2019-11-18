@@ -6,6 +6,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,21 @@ public class RedisReceiver {
             List<String> objects = (List<String>) message.get("objects");
             HashMap<String, String> attrs = (HashMap<String, String>) message.get("attrs");
             redisObjectService.create(id, intro, template, objects, attrs);
+        }
+        else if (op.equals("EVICT_AND_ADD")) {
+            String id = message.get("id").toString();
+            String attr = message.get("attr").toString();
+            String key = message.get("key").toString();
+            String value = message.get("value").toString();
+            Date date = (Date) message.get("date");
+            redisObjectService.doEvict(id, attr);
+            redisObjectService.addAttr(key, value, date);
+        }
+        else if(op.equals("ADD_ATTR")) {
+            String key = message.get("key").toString();
+            String value = message.get("value").toString();
+            Date date = (Date) message.get("date");
+            redisObjectService.addAttr(key, value, date);
         }
     }
 }
