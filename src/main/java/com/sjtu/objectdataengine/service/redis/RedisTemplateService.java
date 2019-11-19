@@ -94,5 +94,20 @@ public class RedisTemplateService {
     public boolean hasKey(String id) {
         return redisTemplateDAO.sHasKey("index", id);
     }
+    public void addAttrs(String id, String name, String nickname) {
+        redisTemplateDAO.hset(id + "#attrs", name, nickname);
+    }
+
+    public void delAttrs(String id, String name) {
+        redisTemplateDAO.hdel(id + "#attrs", name);
+    }
+
+    public void addObjects(String id, String objId, String name) {
+        redisTemplateDAO.hset(id + "#objects", objId, name);
+    }
+
+    public void delObjects(String id, String objId) {
+        redisTemplateDAO.hdel(id + "#objects", objId);
+    }
 
 }
