@@ -28,16 +28,6 @@ public class RedisTemplateService {
      * @return true代表创建成功，false代表创建失败
      */
     public boolean createTemplate(String id, String name, String type, String nodeId, HashMap<String, String> attrs) {
-<<<<<<< HEAD
-        //基本属性不能为空
-=======
-        //在上层检查
-        /*
->>>>>>> d2643eb88dee606f64f07e8d7b7cbdb40fb5395d
-        if(id == null || name == null || type == null || nodeId == null) {
-            return false;
-        }
-        */
         Date now = new Date();
         //创建模板
         //id索引表
