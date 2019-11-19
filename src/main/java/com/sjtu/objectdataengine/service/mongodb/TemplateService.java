@@ -82,25 +82,38 @@ public class TemplateService {
         // 解析
         JSONObject jsonObject = JSON.parseObject(request);
         HashMap<String, Object> modifyMessage = new HashMap<>();
-        modifyMessage.put("op", "TEMP_MODIFY");
+        modifyMessage.put("op", "TEMP_MODIFY_BASE");
         // id必须要有
         String id = jsonObject.getString("id");
-        if(id == null) return "ID不能为空";
-        if(!redisTemplateService.hasKey(id)) return "ID不存在";     // 不存在
+        if (id == null) return "ID不能为空";
+        ObjectTemplate objectTemplate = redisTemplateService.findTemplateById(id);
+        if (objectTemplate == null) return "ID不存在";     // 不存在
         modifyMessage.put("id", id);
         // name如果是null就不需要改
         String name = jsonObject.getString("name");
-        if(name != null) {
+        if (name != null) {
             modifyMessage.put("name", name);
         }
         // 判断nodeId是否存在
         String nodeId = jsonObject.getString("nodeId");
-        if(nodeId!= null && !nodeId.equals("") && redisTreeService.findNodeByKey(nodeId) == null) {
+        String oldNodeId = objectTemplate.getNodeId();
+        if (nodeId!= null && !nodeId.equals("") && redisTreeService.findNodeByKey(nodeId) == null) {
             return "结点不存在";
+        } else if (nodeId != null) { //nodeId有可能是""
+            modifyMessage.put("nodeId", nodeId);
+            modifyMessage.put("oldNodeId", oldNodeId);
+        }
+        // 判断type
+        String type = jsonObject.getString("type");
+        if (type != null) {
+            modifyMessage.put("name", name);
         }
 
-        //String nodeId =
-        return "";
+        mongoSender.send(modifyMessage);
+        if (redisTemplateService.updateBaseInfo(id, name, oldNodeId, nodeId, type)) {
+            return "修改成功";
+        }
+        return "修改失败";
     }
 
 }

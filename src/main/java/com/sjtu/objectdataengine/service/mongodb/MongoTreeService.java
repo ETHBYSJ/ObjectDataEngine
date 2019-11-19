@@ -256,6 +256,7 @@ public class MongoTreeService {
         MongoCondition mongoCondition = new MongoCondition();
         mongoCondition.addQuery("id", template);
         mongoCondition.addUpdate("nodeId", nodeId);
+        mongoCondition.addUpdate("updateTime", new Date());
         mongoTemplateDAO.update(mongoCondition);
     }
 }

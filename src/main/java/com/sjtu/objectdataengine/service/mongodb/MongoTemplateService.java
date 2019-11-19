@@ -84,13 +84,16 @@ public class MongoTemplateService {
      * 根据条件更新对象模板
      * @param id ID
      */
-    public void updateBaseInfo(String id, String name, String nodeId, String type){
+    public void updateBaseInfo(String id, String name, String oldNodeId, String nodeId, String type){
         MongoCondition mongoCondition = new MongoCondition();
         mongoCondition.addQuery("id", id);
         if (name != null) mongoCondition.addUpdate("name", name);
         if (type != null) mongoCondition.addUpdate("type", type);
-        if (nodeId != null) {
+        if (nodeId != null && oldNodeId != null) {
+            // nodeId为数字则双向更新，nodeId为""则先单向更新，再在之前的template里面删掉绑定
             mongoCondition.addUpdate("nodeId", nodeId);
+            mongoCondition.addUpdate("updateTime", new Date());
+            this.bindToNode(oldNodeId, "");
             this.bindToNode(nodeId, id);
         }
         mongoTemplateDAO.update(mongoCondition);
@@ -113,8 +116,12 @@ public class MongoTemplateService {
     }
     private void bindToNode(String nodeId, String template) {
         MongoCondition mongoCondition = new MongoCondition();
-        mongoCondition.addQuery("id", nodeId);
-        mongoCondition.addUpdate("template", template);
-        mongoTreeDAO.update(mongoCondition);
+        // 绑定, 把对应nodeId的node上的template改成当前的template
+        if (!nodeId.equals("")) {
+            mongoCondition.addQuery("id", nodeId);
+            mongoCondition.addUpdate("template", template);
+            mongoCondition.addUpdate("updateTime", new Date());
+            mongoTreeDAO.update(mongoCondition);
+        }
     }
 }

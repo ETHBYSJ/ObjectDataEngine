@@ -107,8 +107,22 @@ public class MongoReceiver {
             mongoTemplateService.deleteTemplateById(id, nodeId);
         }
 
-        else if (op.equals("TEMP_MODIFY")) {
-
+        else if (op.equals("TEMP_MODIFY_BASE")) {
+            String id = message.get("id").toString();
+            String name, nodeId, type, oldNodeId;
+            if (message.get("name") != null)
+                name = message.get("name").toString();
+            else name = null;
+            if (message.get("nodeId") != null)
+                nodeId = message.get("nodeId").toString();
+            else nodeId = null;
+            if (message.get("type") != null)
+                type = message.get("type").toString();
+            else type = null;
+            if (message.get("oldNodeId") != null)
+                oldNodeId = message.get("oldNodeId").toString();
+            else oldNodeId = null;
+            mongoTemplateService.updateBaseInfo(id, name, oldNodeId, nodeId, type);
         }
 
     }
