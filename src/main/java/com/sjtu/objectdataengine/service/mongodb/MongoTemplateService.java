@@ -1,10 +1,6 @@
 package com.sjtu.objectdataengine.service.mongodb;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mongodb.Mongo;
 import com.sjtu.objectdataengine.dao.MongoTemplateDAO;
 import com.sjtu.objectdataengine.dao.MongoTreeDAO;
 import com.sjtu.objectdataengine.model.ObjectTemplate;
@@ -12,9 +8,7 @@ import com.sjtu.objectdataengine.utils.MongoCondition;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 
 @Component
@@ -75,8 +69,14 @@ public class MongoTemplateService {
      * @param key 对象模板id
      * @return true表示成功，false反之
      */
-    public boolean deleteTemplateById(String key) {
-        return mongoTemplateDAO.deleteByKey(key);
+    public void deleteTemplateById(String key, String nodeId) {
+        MongoCondition mongoCondition = new MongoCondition();
+        if (!nodeId.equals("")) {
+            mongoCondition.addQuery("id", nodeId);
+            mongoCondition.addUpdate("template", "");
+            mongoTreeDAO.update(mongoCondition);
+        }
+        mongoTemplateDAO.deleteByKey(key);
     }
 
     /**
