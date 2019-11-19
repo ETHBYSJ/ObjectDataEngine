@@ -82,6 +82,11 @@ public class RedisTemplateService {
      * @return true代表删除成功，false代表删除失败
      */
     public boolean deleteTemplateById(String id) {
+        //解除树节点的绑定
+        Object nodeId = redisTemplateDAO.hget(id + "#base", "nodeId");
+        if(nodeId != null) {
+            redisTreeDAO.hdel(nodeId + "#base", "template");
+        }
         return redisTemplateDAO.deleteById(id);
     }
 

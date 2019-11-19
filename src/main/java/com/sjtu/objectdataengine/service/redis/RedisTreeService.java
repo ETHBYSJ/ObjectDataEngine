@@ -326,7 +326,11 @@ public class RedisTreeService {
                 deleteParentsEdge(key, parents);
             }
             deleteNodeByKey(key);
-            //redisTreeDAO.hset(key + "#base", "updateTime", new Date());//?
+            //解除与template的绑定
+            Object template = redisTreeDAO.hget(key + "#base", "template");
+            if(template != null) {
+                redisTemplateDAO.hdel(template.toString(), "nodeId");
+            }
             return true;
         } catch (Exception e) {
             e.printStackTrace();
