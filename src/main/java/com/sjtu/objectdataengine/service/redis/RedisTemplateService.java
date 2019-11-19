@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sjtu.objectdataengine.dao.RedisTemplateDAO;
 import com.sjtu.objectdataengine.dao.RedisTreeDAO;
 import com.sjtu.objectdataengine.model.ObjectTemplate;
+import com.sjtu.objectdataengine.utils.MongoCondition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -109,5 +110,33 @@ public class RedisTemplateService {
     public void delObjects(String id, String objId) {
         redisTemplateDAO.hdel(id + "#objects", objId);
     }
-
+    /**
+     * 根据条件更新对象模板
+     * @param id ID
+     */
+    public void updateBaseInfo(String id, String name, String oldNodeId, String nodeId, String type){
+        String baseKey = id + "#base";
+        if(id == null) return;
+        if(!redisTemplateDAO.sHasKey("index", id)) return;
+        if(name != null) {
+            redisTemplateDAO.hset(baseKey, "name", name);
+        }
+        if(nodeId != null) {
+            //Object oldNodeId = redisTemplateDAO.hget(baseKey, "nodeId");
+            redisTemplateDAO.hset(baseKey, "nodeId", nodeId);
+            if(oldNodeId != null) {
+                //解除旧节点的绑定
+                redisTreeDAO.hset(oldNodeId + "#base", "template", "");
+            }
+            if(nodeId != "") {
+                //绑定新节点
+                if(redisTreeDAO.sHasKey("index", nodeId)) {
+                    redisTreeDAO.hset(nodeId + "#base", "template", id);
+                }
+            }
+        }
+        if(type != null) {
+            redisTemplateDAO.hset(baseKey, "type", type);
+        }
+    }
 }
