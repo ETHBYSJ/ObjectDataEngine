@@ -2,6 +2,7 @@ package com.sjtu.objectdataengine.service.mongodb;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.sjtu.objectdataengine.model.ObjectTemplate;
 import com.sjtu.objectdataengine.rabbitMQ.MongoSender;
 import com.sjtu.objectdataengine.service.redis.RedisTemplateService;
 import com.sjtu.objectdataengine.utils.TypeConversion;
@@ -56,9 +57,15 @@ public class TemplateService {
     public String delete(String id) {
         if(id == null) return "ID不能为空";
 
+        ObjectTemplate objectTemplate = redisTemplateService.findTemplateById(id);
+        if (objectTemplate == null) return "没有该模板";
+
+        String nodeId = objectTemplate.getNodeId();
+
         HashMap<String, Object> message = new HashMap<>();
         message.put("op", "TEMP_DELETE");
         message.put("id", id);
+        message.put("nodeId", nodeId);
 
         mongoSender.send(message);
         if (redisTemplateService.deleteTemplateById(id)) {

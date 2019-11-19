@@ -3,11 +3,13 @@ package com.sjtu.objectdataengine.service;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.sjtu.objectdataengine.model.KnowledgeTreeNode;
+import com.sjtu.objectdataengine.model.ObjectTemplate;
 import com.sjtu.objectdataengine.model.TreeNodeReturn;
 import com.sjtu.objectdataengine.rabbitMQ.MongoSender;
 import com.sjtu.objectdataengine.service.mongodb.TemplateService;
 import com.sjtu.objectdataengine.service.redis.RedisTemplateService;
 import com.sjtu.objectdataengine.service.redis.RedisTreeService;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -79,9 +81,15 @@ public class TreeService {
     public String delete(String id) {
         if(id == null) return "ID不能为空";
 
+        KnowledgeTreeNode knowledgeTreeNode = redisTreeService.findNodeByKey(id);
+        if (knowledgeTreeNode == null) return "没有该节点";
+
+        String template = knowledgeTreeNode.getTemplate();
+
         HashMap<String, Object> message = new HashMap<>();
         message.put("op", "NODE_DELETE");
         message.put("id", id);
+        message.put("template", template);
 
         mongoSender.send(message);
         if (redisTreeService.deleteWholeNodeByKey(id)) {

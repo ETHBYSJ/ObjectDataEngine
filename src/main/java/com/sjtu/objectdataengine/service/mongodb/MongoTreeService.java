@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.Mongo;
 import com.sjtu.objectdataengine.dao.MongoRootDAO;
 import com.sjtu.objectdataengine.dao.MongoTemplateDAO;
 import com.sjtu.objectdataengine.dao.MongoTreeDAO;
@@ -197,23 +198,24 @@ public class MongoTreeService {
      * @param key 节点key:id
      * @return true表示成功，false反之
      */
-    public boolean deleteWholeNodeByKey(String key) {
-        try{
-            KnowledgeTreeNode knowledgeTreeNode = findNodeByKey(key);
-            List<String> parents = knowledgeTreeNode.getParents();
-            List<String> children = knowledgeTreeNode.getChildren();
-            deleteChildrenEdge(key, children);
-            if (!parents.get(0).equals("root")) {
-                deleteParentsEdge(key, parents);
-            } else {
-                deleteRootEdges(key);
-            }
-            deleteNodeByKey(key);
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+    public void deleteWholeNodeByKey(String key, String template) {
+        KnowledgeTreeNode knowledgeTreeNode = findNodeByKey(key);
+        List<String> parents = knowledgeTreeNode.getParents();
+        List<String> children = knowledgeTreeNode.getChildren();
+        deleteChildrenEdge(key, children);
+        // 删除template中的node
+        if (!template.equals("")) {
+            MongoCondition mongoCondition = new MongoCondition();
+            mongoCondition.addQuery("id", template);
+            mongoCondition.addUpdate("nodeId", "");
+            mongoTemplateDAO.update(mongoCondition);
         }
+        if (!parents.get(0).equals("root")) {
+            deleteParentsEdge(key, parents);
+        } else {
+            deleteRootEdges(key);
+        }
+        deleteNodeByKey(key);
     }
 
     /**

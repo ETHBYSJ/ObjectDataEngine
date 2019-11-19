@@ -47,9 +47,9 @@ public class RedisTemplateService {
 
         //存储基本信息
         redisTemplateDAO.hset(baseKey, "id", id);
-        if(name != "") redisTemplateDAO.hset(baseKey, "name", name);
-        if(type != "") redisTemplateDAO.hset(baseKey, "type", type);
-        if(nodeId != "") redisTemplateDAO.hset(baseKey, "nodeId", nodeId);
+        if(!name.equals("")) redisTemplateDAO.hset(baseKey, "name", name);
+        if(!type.equals("")) redisTemplateDAO.hset(baseKey, "type", type);
+        if(!nodeId.equals("")) redisTemplateDAO.hset(baseKey, "nodeId", nodeId);
         //如果树节点已经存在，建立树节点与模板的关联
         if(redisTreeDAO.sHasKey("index", nodeId)) {
             redisTreeDAO.hset(nodeId + "#base", "template", id);

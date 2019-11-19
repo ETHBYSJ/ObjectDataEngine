@@ -65,7 +65,9 @@ public class MongoReceiver {
          */
         else if (op.equals("NODE_DELETE")) {
             String id = message.get("id").toString();
-            mongoTreeService.deleteWholeNodeByKey(id);
+            // 传过来的是""或者是数字,没有null
+            String template = message.get("template").toString();
+            mongoTreeService.deleteWholeNodeByKey(id, template);
         }
 
         /**
