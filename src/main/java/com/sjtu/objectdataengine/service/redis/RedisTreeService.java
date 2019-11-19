@@ -347,7 +347,7 @@ public class RedisTreeService {
             if(name != null) {
                 redisTreeDAO.hset(baseKey, "name", name);
             }
-            if(template!=null) {
+            if(template!=null && redisTemplateDAO.sHasKey("index", template)) {
                 redisTreeDAO.hset(baseKey, "template", template);
             }
             if (parents!=null) {
