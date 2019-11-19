@@ -62,7 +62,7 @@ public class RedisTemplateDAO extends RedisDAO {
         if(attrs == null) {
             attrs = new HashMap<String, String>();
         }
-        ObjectTemplate objectTemplate = new ObjectTemplate(id, name.toString(), attrs, nodeId.toString(), type.toString(), objects);
+        ObjectTemplate objectTemplate = new ObjectTemplate(id, name.toString(), nodeId.toString(), type.toString(), attrs, objects);
         objectTemplate.setCreateTime((Date) createTime);
         objectTemplate.setUpdateTime((Date) updateTime);
         return objectTemplate;

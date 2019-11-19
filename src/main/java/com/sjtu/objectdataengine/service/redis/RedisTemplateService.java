@@ -18,7 +18,6 @@ public class RedisTemplateService {
     private RedisTemplateDAO redisTemplateDAO;
     @Autowired
     private RedisTreeDAO redisTreeDAO;
-    private static ObjectMapper MAPPER = new ObjectMapper();
     /**
      * 创建模板
      * @param id 模板id
@@ -29,17 +28,22 @@ public class RedisTemplateService {
      * @return true代表创建成功，false代表创建失败
      */
     public boolean createTemplate(String id, String name, String type, String nodeId, HashMap<String, String> attrs) {
+<<<<<<< HEAD
         //基本属性不能为空
+=======
+        //在上层检查
+        /*
+>>>>>>> d2643eb88dee606f64f07e8d7b7cbdb40fb5395d
         if(id == null || name == null || type == null || nodeId == null) {
             return false;
         }
+        */
         Date now = new Date();
         //创建模板
         //id索引表
         String indexKey = "index";
         String attrsKey = id + '#' + "attrs";
         String baseKey = id + '#' +"base";
-        String objectskey = id + '#' + "objects";
         //判断是否是第一次创建
         if(redisTemplateDAO.sHasKey(indexKey, id)) {
             return false;
@@ -53,18 +57,15 @@ public class RedisTemplateService {
 
         //存储基本信息
         redisTemplateDAO.hset(baseKey, "id", id);
-        redisTemplateDAO.hset(baseKey, "name", name);
-        redisTemplateDAO.hset(baseKey, "type", type);
-        redisTemplateDAO.hset(baseKey, "nodeId", nodeId);
+        if(name != "") redisTemplateDAO.hset(baseKey, "name", name);
+        if(type != "") redisTemplateDAO.hset(baseKey, "type", type);
+        if(nodeId != "") redisTemplateDAO.hset(baseKey, "nodeId", nodeId);
+        //如果树节点已经存在，建立树节点与模板的关联
+        if(redisTreeDAO.sHasKey("index", nodeId)) {
+            redisTreeDAO.hset(nodeId + "#base", "template", id);
+        }
         redisTemplateDAO.hset(baseKey, "createTime", now);
         redisTemplateDAO.hset(baseKey, "updateTime", now);
-        //待修改：更新树节点
-        Set<String> nodes = (Set<String>) redisTreeDAO.sGet("index");
-        for(String node : nodes) {
-            if(redisTreeDAO.hget(node + "#base", "id").equals(nodeId)) {
-                redisTreeDAO.hset(node + "#base", "template", id);
-            }
-        }
         return true;
     }
 
