@@ -87,15 +87,16 @@ public class RedisObjectService {
         ObjectTemplate objectTemplate = redisTemplateDAO.findById(template);
         //没有找到模板，返回false
         if(objectTemplate == null) return false;
-        Set<String> attrs = objectTemplate.getAttrs();
+        HashMap<String, String> attrs = objectTemplate.getAttrs();
         HashMap<String, MongoAttr> hashMap = new HashMap<String, MongoAttr>();
         //Date date = new Date();
-        for(String attr : attrs) {
-            String value = attrMap.get(attr) == null ? "" : attrMap.get(attr);
+        for(Map.Entry<String, String> attr : attrs.entrySet()) {
+            String attrName = attr.getKey();
+            String value = attrMap.get(attrName) == null ? "" : attrMap.get(attrName);
             MongoAttr mongoAttr = new MongoAttr(value);
             //mongoAttr.setCreateTime(date);
             //mongoAttr.setUpdateTime(date);
-            hashMap.put(attr, mongoAttr);
+            hashMap.put(attrName, mongoAttr);
         }
         return createObject(id, intro, objectTemplate, objects, hashMap);
     }

@@ -42,6 +42,7 @@ public class RedisTemplateDAO extends RedisDAO {
     public ObjectTemplate findById(String id) {
         String attrsKey = id + '#' + "attrs";
         String baseKey = id + '#' + "base";
+        String objectsKey = id + '#' + "objects";
         //基本信息
         Object name = hget(baseKey, "name");
         if(name == null) return null;
@@ -49,12 +50,19 @@ public class RedisTemplateDAO extends RedisDAO {
         if(type == null) return null;
         Object nodeId = hget(baseKey, "nodeId");
         if(nodeId == null) return null;
-        Object objects = hget(baseKey, "objects");
-        if(objects == null) return null;
+        //关联对象
+        HashMap<String, String> objects = (HashMap<String, String>) hmget(objectsKey);
+        if(objects == null) {
+            objects = new HashMap<String, String>();
+        }
         Object createTime = hget(baseKey, "createTime");
         Object updateTime = hget(baseKey, "updateTime");
-        Set<String> attrSet = (Set<String>) sGet(attrsKey);
-        ObjectTemplate objectTemplate = new ObjectTemplate(id, name.toString(), attrSet, nodeId.toString(), type.toString(), TypeConversion.cast(objects));
+        //属性
+        HashMap<String, String> attrs = (HashMap<String, String>) hmget(attrsKey);
+        if(attrs == null) {
+            attrs = new HashMap<String, String>();
+        }
+        ObjectTemplate objectTemplate = new ObjectTemplate(id, name.toString(), attrs, nodeId.toString(), type.toString(), objects);
         objectTemplate.setCreateTime((Date) createTime);
         objectTemplate.setUpdateTime((Date) updateTime);
         return objectTemplate;
@@ -69,12 +77,14 @@ public class RedisTemplateDAO extends RedisDAO {
         String indexKey = "index";
         String attrsKey = id + '#' + "attrs";
         String baseKey = id + '#' + "base";
+        String objectsKey = id + '#' + "objects";
         if(sHasKey(indexKey, id)) {
             //如果在索引表中存在此id，则删除
             setRemove(indexKey, id);
             //删除模板数据
             del(baseKey);
             del(attrsKey);
+            del(objectsKey);
         }
         return true;
         /*

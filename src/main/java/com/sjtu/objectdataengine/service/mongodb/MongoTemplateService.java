@@ -95,12 +95,17 @@ public class MongoTemplateService {
      * 根据条件更新对象模板
      * @param id ID
      * @return true表示成功，false反之
-     * @throws Exception readValue
      */
-    public boolean updateBaseInfo(String id, String name, String nodeId, String type){
+    public void updateBaseInfo(String id, String name, String nodeId, String type){
         MongoCondition mongoCondition = new MongoCondition();
-        
-        return mongoTemplateDAO.update(mongoCondition);
+        mongoCondition.addQuery("id", id);
+        if (name != null) mongoCondition.addUpdate("name", name);
+        if (type != null) mongoCondition.addUpdate("type", type);
+        if (nodeId != null) {
+            mongoCondition.addUpdate("nodeId", nodeId);
+            this.bindToNode(nodeId, id);
+        }
+        mongoTemplateDAO.update(mongoCondition);
     }
 
     private void bindToNode(String nodeId, String template) {
