@@ -103,7 +103,8 @@ public class MongoReceiver {
 
         else if (op.equals("TEMP_DELETE")) {
             String id = message.get("id").toString();
-            mongoTemplateService.deleteTemplateById(id);
+            String nodeId = message.get("nodeId").toString();
+            mongoTemplateService.deleteTemplateById(id, nodeId);
         }
 
         else if (op.equals("TEMP_MODIFY")) {
