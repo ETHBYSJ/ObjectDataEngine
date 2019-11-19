@@ -8,6 +8,7 @@ import com.sjtu.objectdataengine.utils.MongoCondition;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -67,34 +68,21 @@ public class MongoTemplateService {
     /**
      * 根据id删除对象模板
      * @param key 对象模板id
-     * @return true表示成功，false反之
      */
     public void deleteTemplateById(String key, String nodeId) {
         MongoCondition mongoCondition = new MongoCondition();
         if (!nodeId.equals("")) {
             mongoCondition.addQuery("id", nodeId);
             mongoCondition.addUpdate("template", "");
+            mongoCondition.addUpdate("updateTime", new Date());
             mongoTreeDAO.update(mongoCondition);
         }
         mongoTemplateDAO.deleteByKey(key);
     }
 
     /**
-     * 根据条件删除对象模板
-     * @param request 删除条件
-     * @return 返回true表示成功，false反之
-     * @throws Exception readValue错误
-     */
-    public boolean deleteTemplate(String request) throws Exception{
-        HashMap<String, Object> queryMap = MAPPER.readValue(request, HashMap.class);
-        MongoCondition mongoCondition = new MongoCondition("delete", queryMap, queryMap);
-        return mongoTemplateDAO.deleteByArgs(mongoCondition);
-    }
-
-    /**
      * 根据条件更新对象模板
      * @param id ID
-     * @return true表示成功，false反之
      */
     public void updateBaseInfo(String id, String name, String nodeId, String type){
         MongoCondition mongoCondition = new MongoCondition();
@@ -108,6 +96,21 @@ public class MongoTemplateService {
         mongoTemplateDAO.update(mongoCondition);
     }
 
+    public void addAttrs(String id, String name, String nickname) {
+
+    }
+
+    public void delAttrs(String id, String name) {
+
+    }
+
+    public void addObjects(String id, String objId, String name) {
+
+    }
+
+    public void delObjects(String id, String objId) {
+
+    }
     private void bindToNode(String nodeId, String template) {
         MongoCondition mongoCondition = new MongoCondition();
         mongoCondition.addQuery("id", nodeId);

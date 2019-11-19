@@ -329,7 +329,8 @@ public class RedisTreeService {
             //解除与template的绑定
             Object template = redisTreeDAO.hget(key + "#base", "template");
             if(template != null) {
-                redisTemplateDAO.hdel(template.toString(), "nodeId");
+                redisTemplateDAO.hset(template + "#base", "nodeId", "");
+                redisTemplateDAO.hset(template + "#base", "updateTime", new Date());
             }
             return true;
         } catch (Exception e) {

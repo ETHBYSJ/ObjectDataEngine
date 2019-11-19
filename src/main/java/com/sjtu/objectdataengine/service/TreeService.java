@@ -3,17 +3,13 @@ package com.sjtu.objectdataengine.service;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.sjtu.objectdataengine.model.KnowledgeTreeNode;
-import com.sjtu.objectdataengine.model.ObjectTemplate;
 import com.sjtu.objectdataengine.model.TreeNodeReturn;
 import com.sjtu.objectdataengine.rabbitMQ.MongoSender;
-import com.sjtu.objectdataengine.service.mongodb.TemplateService;
 import com.sjtu.objectdataengine.service.redis.RedisTemplateService;
 import com.sjtu.objectdataengine.service.redis.RedisTreeService;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import javax.swing.tree.TreeNode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,8 +26,6 @@ public class TreeService {
     @Resource
     private RedisTemplateService redisTemplateService;
 
-    @Resource
-    private TemplateService templateService;
 
     /**
      * 需要注意create之后，没有template的情况，反之亦然
@@ -113,10 +107,7 @@ public class TreeService {
         // id必须要有
         String id = jsonObject.getString("id");
         if(id == null) return "ID不能为空";
-        if(!redisTreeService.hasKey(id)) {
-            //不存在
-            return "ID不存在";
-        }
+        if(!redisTreeService.hasKey(id)) return "ID不存在";     // 不存在
         modifyMessage.put("id", id);
         // name如果是null就不需要改
         String name = jsonObject.getString("name");

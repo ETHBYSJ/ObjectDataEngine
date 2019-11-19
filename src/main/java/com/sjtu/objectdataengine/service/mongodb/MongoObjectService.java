@@ -1,32 +1,30 @@
 package com.sjtu.objectdataengine.service.mongodb;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sjtu.objectdataengine.dao.*;
 import com.sjtu.objectdataengine.model.*;
 import com.sjtu.objectdataengine.utils.MongoCondition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.util.*;
 
 @Component
 public class MongoObjectService {
 
-    private static ObjectMapper MAPPER = new ObjectMapper();
-
-    @Autowired
+    @Resource
     MongoAttrsDAO mongoAttrsDAO;
 
-    @Autowired
+    @Resource
     MongoTemplateDAO mongoTemplateDAO;
 
-    @Autowired
+    @Resource
     MongoHeaderDAO mongoHeaderDAO;
 
-    @Autowired
+    @Resource
     MongoObjectDAO mongoObjectDAO;
 
-    @Autowired
+    @Resource
     MongoTreeDAO mongoTreeDAO;
 
     /**
@@ -41,9 +39,9 @@ public class MongoObjectService {
      */
     public boolean create(String id, String intro, String template, HashMap<String, String> kv, List<String> objects) {
         try {
-            Set<String> attrs = mongoTemplateDAO.findByKey(template).getAttrs();
+            HashMap<String, String> attrsMap = mongoTemplateDAO.findByKey(template).getAttrs();
             HashMap<String, MongoAttr> hashMap = new HashMap<>();
-            for (String attr : attrs) {
+            for (String attr : attrsMap.keySet()) {
                 String value = kv.get(attr)==null ? "" : kv.get(attr);
                 createHeader(id, attr, 1);
                 MongoAttr mongoAttr = createAttr(id, attr, value, 1);

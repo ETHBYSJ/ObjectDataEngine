@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.sjtu.objectdataengine.model.ObjectTemplate;
 import com.sjtu.objectdataengine.rabbitMQ.MongoSender;
 import com.sjtu.objectdataengine.service.redis.RedisTemplateService;
+import com.sjtu.objectdataengine.service.redis.RedisTreeService;
 import com.sjtu.objectdataengine.utils.TypeConversion;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +20,9 @@ public class TemplateService {
 
     @Resource
     RedisTemplateService redisTemplateService;
+
+    @Resource
+    RedisTreeService redisTreeService;
 
     public String create(String request) {
         //解析
@@ -74,11 +78,29 @@ public class TemplateService {
         return "删除失败！";
     }
 
-    public String modify(String request) {
+    public String modifyBaseInfo(String request) {
+        // 解析
+        JSONObject jsonObject = JSON.parseObject(request);
+        HashMap<String, Object> modifyMessage = new HashMap<>();
+        modifyMessage.put("op", "TEMP_MODIFY");
+        // id必须要有
+        String id = jsonObject.getString("id");
+        if(id == null) return "ID不能为空";
+        if(!redisTemplateService.hasKey(id)) return "ID不存在";     // 不存在
+        modifyMessage.put("id", id);
+        // name如果是null就不需要改
+        String name = jsonObject.getString("name");
+        if(name != null) {
+            modifyMessage.put("name", name);
+        }
+        // 判断nodeId是否存在
+        String nodeId = jsonObject.getString("nodeId");
+        if(nodeId!= null && !nodeId.equals("") && redisTreeService.findNodeByKey(nodeId) == null) {
+            return "结点不存在";
+        }
+
+        //String nodeId =
         return "";
     }
 
-    public String bindNode(String NodeId, String template) {
-        return "";
-    }
 }

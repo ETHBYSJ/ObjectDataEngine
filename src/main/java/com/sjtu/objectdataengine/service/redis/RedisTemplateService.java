@@ -85,20 +85,14 @@ public class RedisTemplateService {
         //解除树节点的绑定
         Object nodeId = redisTemplateDAO.hget(id + "#base", "nodeId");
         if(nodeId != null) {
-            redisTreeDAO.hdel(nodeId + "#base", "template");
+            redisTreeDAO.hset(nodeId + "#base", "template", "");
+            redisTreeDAO.hset(nodeId + "#base", "updateTime", new Date());
         }
         return redisTemplateDAO.deleteById(id);
     }
 
-    /**
-     * 更新类模板
-     * @param request 更新请求
-     * @return true代表成功，false代表失败
-     */
-    /*
-    public boolean updateTemplate(String request) {
-        return false;
+    public boolean hasKey(String id) {
+        return redisTemplateDAO.sHasKey("index", id);
     }
-    */
 
 }

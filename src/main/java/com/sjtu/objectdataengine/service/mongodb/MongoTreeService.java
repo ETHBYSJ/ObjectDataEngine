@@ -196,7 +196,6 @@ public class MongoTreeService {
     /**
      * 完全删除指定key的节点，删除其所有边和本身，保留其孩子和父亲
      * @param key 节点key:id
-     * @return true表示成功，false反之
      */
     public void deleteWholeNodeByKey(String key, String template) {
         KnowledgeTreeNode knowledgeTreeNode = findNodeByKey(key);
@@ -208,6 +207,7 @@ public class MongoTreeService {
             MongoCondition mongoCondition = new MongoCondition();
             mongoCondition.addQuery("id", template);
             mongoCondition.addUpdate("nodeId", "");
+            mongoCondition.addUpdate("updateTime", new Date());
             mongoTemplateDAO.update(mongoCondition);
         }
         if (!parents.get(0).equals("root")) {
