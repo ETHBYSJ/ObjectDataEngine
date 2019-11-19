@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.Mongo;
 import com.sjtu.objectdataengine.dao.MongoTemplateDAO;
 import com.sjtu.objectdataengine.dao.MongoTreeDAO;
 import com.sjtu.objectdataengine.model.ObjectTemplate;
@@ -29,33 +30,15 @@ public class MongoTemplateService {
 
     /**
      * 创建新的对象模板
-     * @param request json请求体
+     * @param id ID
      * @return true表示成功创建，false反之
      */
-    public boolean createObjectTemplate(String request) {
-        JSONObject jsonObject = JSON.parseObject(request);
-        //id必须要有
-        String id = jsonObject.getString("id");
-        if(id == null) return false;
-        String name = jsonObject.getString("name");
-        if (name == null) name = "";
-        String type = jsonObject.getString("type");
-        if (type == null) return false;
-        String nodeId = jsonObject.getString("nodeId");
-        if (nodeId == null) nodeId = "";
-        JSONArray jsonArray = jsonObject.getJSONArray("attrs");
-        List<String> attr = jsonArray==null ? new ArrayList<>() : JSONObject.parseArray(jsonArray.toJSONString(), String.class);
-        HashSet<String> attrSet = new HashSet<String>(attr);
-        ObjectTemplate objectTemplate = new ObjectTemplate(id, name, attrSet, nodeId, type);
-
-        if (!nodeId.equals("")) {
-            MongoCondition mongoCondition = new MongoCondition();
-            mongoCondition.addQuery("id", nodeId);
-            mongoCondition.addUpdate("template", id);
-            mongoTreeDAO.update(mongoCondition);
+    public void createObjectTemplate(String id, String name, String nodeId, String type, HashMap<String, String> attrs) {
+        HashMap<String, String> objects = new HashMap<>();
+        ObjectTemplate objectTemplate = new ObjectTemplate(id, name, nodeId, type, attrs, objects);
+        if(mongoTemplateDAO.create(objectTemplate) && !nodeId.equals("")) {
+            this.bindToNode(nodeId, id);
         }
-
-        return mongoTemplateDAO.create(objectTemplate);
     }
 
     /**
@@ -110,19 +93,20 @@ public class MongoTemplateService {
 
     /**
      * 根据条件更新对象模板
-     * @param request json条件，同mongodb，一个query一个update都是json，不写query=全部
+     * @param id ID
      * @return true表示成功，false反之
      * @throws Exception readValue
      */
-    public boolean updateTemplate(String request) throws Exception{
-        JSONObject jsonObject = JSON.parseObject(request);
-        JSONObject queryObject = jsonObject.getJSONObject("query");
-        String query = queryObject==null ? "" : queryObject.toJSONString();
-        JSONObject updateObject = jsonObject.getJSONObject("update");
-        String update = updateObject==null ? "" : updateObject.toJSONString();
-        HashMap<String, Object> queryMap = query.equals("") ? new HashMap<>(): MAPPER.readValue(query, HashMap.class);
-        HashMap<String, Object> updateMap = update.equals("") ? new HashMap<>(): MAPPER.readValue(update, HashMap.class);
-        MongoCondition mongoCondition = new MongoCondition("update", queryMap, updateMap);
+    public boolean updateBaseInfo(String id, String name, String nodeId, String type){
+        MongoCondition mongoCondition = new MongoCondition();
+        
         return mongoTemplateDAO.update(mongoCondition);
+    }
+
+    private void bindToNode(String nodeId, String template) {
+        MongoCondition mongoCondition = new MongoCondition();
+        mongoCondition.addQuery("id", nodeId);
+        mongoCondition.addUpdate("template", template);
+        mongoTreeDAO.update(mongoCondition);
     }
 }

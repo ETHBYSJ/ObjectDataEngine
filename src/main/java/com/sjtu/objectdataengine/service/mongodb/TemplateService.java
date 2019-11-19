@@ -27,26 +27,51 @@ public class TemplateService {
         if(id == null) return "ID不能为空";
         String name = jsonObject.getString("name");
         if (name == null) name = "";
-        String type = jsonObject.getString("type");
-        if (type == null) return "类型不能为空";
         String nodeId = jsonObject.getString("nodeId");
         if (nodeId == null) nodeId = "";
+        String type = jsonObject.getString("type");
+        if (type == null) return "类型不能为空";
         JSONObject attrsJson = jsonObject.getJSONObject("attrs");
         if (attrsJson == null) return "属性不能为空";
         HashMap<String, String> attrs = TypeConversion.JsonToMap(attrsJson);
         //redisTemplateService.createTemplate(id, name, type, nodeId, attrs);
+
+        HashMap<String, Object> createMessage = new HashMap<>();
+        createMessage.put("op", "TEMP_CREATE");
+        createMessage.put("id", id);
+        createMessage.put("name", name);
+        createMessage.put("nodeId", nodeId);
+        createMessage.put("type", type);
+        createMessage.put("attrs", attrs);
+
+        mongoSender.send(createMessage);
+
+        if(true){//redisTemplateService.createTemplate(id, name, type, nodeId, attrs)) {
+            return "创建成功";
+        }
+        this.delete(id);
         return "创建失败!";
     }
 
-    public String delete() {
+    public String delete(String id) {
+        if(id == null) return "ID不能为空";
 
+        HashMap<String, Object> message = new HashMap<>();
+        message.put("op", "TEMP_DELETE");
+        message.put("id", id);
+
+        mongoSender.send(message);
+        if (redisTemplateService.deleteTemplateById(id)) {
+            return  "删除成功！";
+        }
+        return "删除失败！";
     }
 
-    public String modify() {
-
+    public String modify(String request) {
+        return "";
     }
 
     public String bindNode(String NodeId, String template) {
-
+        return "";
     }
 }

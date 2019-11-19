@@ -39,9 +39,13 @@ public class MongoTreeService {
      * @param children 子节点id
      * @return true表示成功，false反之
      */
-    public boolean createTreeNode(String id, String name, String template, List<String> parents, List<String> children) {
+    public void createTreeNode(String id, String name, String template, List<String> parents, List<String> children) {
         KnowledgeTreeNode knowledgeTreeNode = new KnowledgeTreeNode(id, name, template, parents, children);
         if(mongoTreeDAO.create(knowledgeTreeNode)) {
+            if (!template.equals("")) {
+                this.bindToTemplate(id, template);
+            }
+
             if(parents.get(0).equals("root")) {
                 mongoRootDAO.addNewRoot(id , name);
             } else {
@@ -50,9 +54,6 @@ public class MongoTreeService {
                 //为其子结点添加关系
                 // opChildren(id, children, true);
             }
-            return true;
-        } else{
-            return false;
         }
     }
 
@@ -247,5 +248,12 @@ public class MongoTreeService {
      */
     private void deleteRootEdges(String key) {
         mongoRootDAO.deleteRoot(key);
+    }
+
+    private void bindToTemplate(String nodeId, String template) {
+        MongoCondition mongoCondition = new MongoCondition();
+        mongoCondition.addQuery("id", template);
+        mongoCondition.addUpdate("nodeId", nodeId);
+        mongoTemplateDAO.update(mongoCondition);
     }
 }

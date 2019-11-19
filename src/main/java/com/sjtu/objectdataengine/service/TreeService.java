@@ -72,11 +72,7 @@ public class TreeService {
         if(redisTreeService.createTreeNode(id, name, template, parentsArray, children))
            return "创建成功！";
 
-        // 若redis失败，则删掉mongodb的
-        HashMap<String, Object> deleteMessage = new HashMap<>();
-        deleteMessage.put("op", "NODE_DELETE");
-        deleteMessage.put("id", id);
-        mongoSender.send(deleteMessage);
+        this.delete(id);
         return "创建失败!";
     }
 
@@ -91,7 +87,6 @@ public class TreeService {
         if (redisTreeService.deleteWholeNodeByKey(id)) {
             return  "删除成功！";
         }
-
         return "删除失败！";
     }
 
@@ -152,9 +147,5 @@ public class TreeService {
         return redisTreeService.findNodeByKey(id);
     }
 
-    public String bindTemplate(String id, String template) {
-        String request = "{ \"id\":" + id + ", \"template\":" + template + "}";
-        return this.modify(request);
-    }
 
 }

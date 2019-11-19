@@ -1,6 +1,7 @@
 package com.sjtu.objectdataengine.rabbitMQ;
 
 import com.sjtu.objectdataengine.service.mongodb.MongoObjectService;
+import com.sjtu.objectdataengine.service.mongodb.MongoTemplateService;
 import com.sjtu.objectdataengine.service.mongodb.MongoTreeService;
 import com.sjtu.objectdataengine.utils.TypeConversion;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
@@ -19,6 +20,9 @@ public class MongoReceiver {
 
     @Resource
     private MongoTreeService mongoTreeService;
+
+    @Resource
+    private MongoTemplateService mongoTemplateService;
 
     @RabbitHandler
     public void process(Map message) {
@@ -64,6 +68,9 @@ public class MongoReceiver {
             mongoTreeService.deleteWholeNodeByKey(id);
         }
 
+        /**
+         * 修改知识树节点
+         */
         else if (op.equals("NODE_MODIFY")) {
             String id = message.get("id").toString();
             String name, template;
@@ -80,16 +87,26 @@ public class MongoReceiver {
             mongoTreeService.updateNodeByKey(id, name, template, parents);
         }
 
-        else if (op.equals("UPDATE")) {
+        /**
+         * 创建模板
+         */
+        else if (op.equals("TEMP_CREATE")) {
+            String id = message.get("id").toString();
+            String name = message.get("name").toString();
+            String nodeId = message.get("nodeId").toString();
+            String type = message.get("type").toString();
+            HashMap<String, String> attrs = TypeConversion.cast(message.get("attrs"));
+            mongoTemplateService.createObjectTemplate(id, name, nodeId, type, attrs);
+        }
+
+        else if (op.equals("TEMP_DELETE")) {
+            String id = message.get("id").toString();
+            mongoTemplateService.deleteTemplateById(id);
+        }
+
+        else if (op.equals("TEMP_MODIFY")) {
 
         }
 
-        else if (op.equals("DELETE")) {
-
-        }
-
-        else {
-
-        }
     }
 }

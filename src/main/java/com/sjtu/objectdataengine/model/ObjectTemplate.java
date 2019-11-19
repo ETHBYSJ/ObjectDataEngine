@@ -11,12 +11,12 @@ public class ObjectTemplate extends MongoBase{
     @Id
     private String id;              //对象模板id
     private String name;            //对象模板name
-    private HashMap<String, String> attrs;       //属性集合
     private String nodeId;          //对应的结点id
     private String type;            //类型，有事件和实体
-    private HashMap<String, String> objects;
+    private HashMap<String, String> objects;    //关联对象
+    private HashMap<String, String> attrs;      //属性集合
 
-    public ObjectTemplate(String id, String name, HashMap<String, String> attrs, String nodeId, String type, HashMap<String, String> objects) {
+    public ObjectTemplate(String id, String name, String nodeId, String type, HashMap<String, String> attrs, HashMap<String, String> objects) {
         this.id = id;
         this.name = name;
         this.attrs = attrs;
