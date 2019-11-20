@@ -1,6 +1,7 @@
 package com.sjtu.objectdataengine.service.mongodb;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.Mongo;
 import com.sjtu.objectdataengine.dao.MongoTemplateDAO;
 import com.sjtu.objectdataengine.dao.MongoTreeDAO;
 import com.sjtu.objectdataengine.model.ObjectTemplate;
@@ -84,7 +85,7 @@ public class MongoTemplateService {
      * 根据条件更新对象模板
      * @param id ID
      */
-    public void updateBaseInfo(String id, String name, String oldNodeId, String nodeId, String type){
+    public void updateBaseInfo(String id, String name, String oldNodeId, String nodeId, String newTemplate, String type){
         MongoCondition mongoCondition = new MongoCondition();
         mongoCondition.addQuery("id", id);
         if (name != null) mongoCondition.addUpdate("name", name);
@@ -95,6 +96,9 @@ public class MongoTemplateService {
             mongoCondition.addUpdate("updateTime", new Date());
             this.bindToNode(oldNodeId, "");
             this.bindToNode(nodeId, id);
+            if (newTemplate != null && !newTemplate.equals("")) {
+                updateBaseInfo(newTemplate, null, "", "", null, null);
+            }
         }
         mongoTemplateDAO.update(mongoCondition);
     }

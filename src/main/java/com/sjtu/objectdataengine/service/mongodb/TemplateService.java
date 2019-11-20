@@ -2,6 +2,7 @@ package com.sjtu.objectdataengine.service.mongodb;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.sjtu.objectdataengine.model.KnowledgeTreeNode;
 import com.sjtu.objectdataengine.model.ObjectTemplate;
 import com.sjtu.objectdataengine.rabbitMQ.MongoSender;
 import com.sjtu.objectdataengine.service.redis.RedisTemplateService;
@@ -94,14 +95,26 @@ public class TemplateService {
         if (name != null) {
             modifyMessage.put("name", name);
         }
+
         // 判断nodeId是否存在
         String nodeId = jsonObject.getString("nodeId");
         String oldNodeId = objectTemplate.getNodeId();
-        if (nodeId!= null && !nodeId.equals("") && redisTreeService.findNodeByKey(nodeId) == null) {
-            return "结点不存在";
+        // 改之后的nodeId对应的node
+        KnowledgeTreeNode knowledgeTreeNode;
+        String newTemplate; //要修改的新的node上面的template（原有的
+        if (nodeId!= null && !nodeId.equals("") ) {
+            knowledgeTreeNode = redisTreeService.findNodeByKey(nodeId);
+            if (knowledgeTreeNode == null) return "结点不存在";
+            else {
+                newTemplate = knowledgeTreeNode.getTemplate();
+                modifyMessage.put("nodeId", nodeId);
+                modifyMessage.put("oldNodeId", oldNodeId);
+                modifyMessage.put("newTemplate", newTemplate);
+            }
         } else if (nodeId != null) { //nodeId有可能是""
             modifyMessage.put("nodeId", nodeId);
             modifyMessage.put("oldNodeId", oldNodeId);
+            newTemplate = null;
         }
         // 判断type
         String type = jsonObject.getString("type");
@@ -109,6 +122,7 @@ public class TemplateService {
             modifyMessage.put("name", name);
         }
 
+        System.out.println(modifyMessage);
         mongoSender.send(modifyMessage);
         if (redisTemplateService.updateBaseInfo(id, name, oldNodeId, nodeId, type)) {
             return "修改成功";

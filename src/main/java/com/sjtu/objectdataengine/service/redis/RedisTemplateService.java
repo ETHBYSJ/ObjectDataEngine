@@ -1,13 +1,8 @@
 package com.sjtu.objectdataengine.service.redis;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sjtu.objectdataengine.dao.RedisTemplateDAO;
 import com.sjtu.objectdataengine.dao.RedisTreeDAO;
 import com.sjtu.objectdataengine.model.ObjectTemplate;
-import com.sjtu.objectdataengine.utils.MongoCondition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -113,11 +108,12 @@ public class RedisTemplateService {
     /**
      * 根据条件更新对象模板
      * @param id ID
+     * @return
      */
-    public void updateBaseInfo(String id, String name, String oldNodeId, String nodeId, String type){
+    public boolean updateBaseInfo(String id, String name, String oldNodeId, String nodeId, String type){
         String baseKey = id + "#base";
-        if(id == null) return;
-        if(!redisTemplateDAO.sHasKey("index", id)) return;
+        if(id == null) return false;
+        if(!this.hasKey(id)) return false;
         if(name != null) {
             redisTemplateDAO.hset(baseKey, "name", name);
         }
@@ -130,7 +126,7 @@ public class RedisTemplateService {
             }
             if(nodeId != "") {
                 //绑定新节点
-                if(redisTreeDAO.sHasKey("index", nodeId)) {
+                if(this.hasKey(nodeId)) {
                     redisTreeDAO.hset(nodeId + "#base", "template", id);
                 }
             }
@@ -138,5 +134,6 @@ public class RedisTemplateService {
         if(type != null) {
             redisTemplateDAO.hset(baseKey, "type", type);
         }
+        return true;
     }
 }

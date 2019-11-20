@@ -109,7 +109,7 @@ public class MongoReceiver {
 
         else if (op.equals("TEMP_MODIFY_BASE")) {
             String id = message.get("id").toString();
-            String name, nodeId, type, oldNodeId;
+            String name, nodeId, type, oldNodeId, newTemplate;
             if (message.get("name") != null)
                 name = message.get("name").toString();
             else name = null;
@@ -122,7 +122,10 @@ public class MongoReceiver {
             if (message.get("oldNodeId") != null)
                 oldNodeId = message.get("oldNodeId").toString();
             else oldNodeId = null;
-            mongoTemplateService.updateBaseInfo(id, name, oldNodeId, nodeId, type);
+            if (message.get("newTemplate") != null)
+                newTemplate = message.get("newTemplate").toString();
+            else newTemplate = null;
+            mongoTemplateService.updateBaseInfo(id, name, oldNodeId, nodeId, newTemplate, type);
         }
 
     }

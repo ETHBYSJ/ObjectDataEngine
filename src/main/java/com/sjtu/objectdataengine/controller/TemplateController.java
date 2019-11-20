@@ -25,8 +25,8 @@ public class TemplateController {
         return templateService.delete(id);
     }
 
-    @PostMapping("/modify")
-    public String modify(@RequestBody String request) {
-        return templateService.modify(request);
+    @PostMapping("/modify_base")
+    public String modifyBaseInfo(@RequestBody String request) {
+        return templateService.modifyBaseInfo(request);
     }
 }
