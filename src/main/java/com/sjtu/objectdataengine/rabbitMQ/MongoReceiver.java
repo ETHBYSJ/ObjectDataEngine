@@ -54,10 +54,10 @@ public class MongoReceiver {
         else if (op.equals("NODE_CREATE")) {
             String id = message.get("id").toString();
             String name = message.get("name").toString();
-            String template = message.get("template").toString();
-            List<String> parents =  TypeConversion.cast(message.get("parents"));
+            String intro = message.get("intro").toString();
+            String parent =  message.get("parent").toString();
             List<String> children = new ArrayList<>();
-            mongoTreeService.createTreeNode(id, name, template, parents, children);
+            mongoTreeService.createTreeNode(id, name, intro, parent, children);
         }
 
         /**
@@ -75,18 +75,17 @@ public class MongoReceiver {
          */
         else if (op.equals("NODE_MODIFY")) {
             String id = message.get("id").toString();
-            String name, template;
-            List<String> parents;
+            String name, intro, parent;
             if (message.get("name") != null)
                 name = message.get("name").toString();
             else name = null;
-            if (message.get("template") != null)
-                template = message.get("template").toString();
-            else template = null;
+            if (message.get("intro") != null)
+                intro = message.get("intro").toString();
+            else intro = null;
             if (message.get("parents") != null)
-                parents =  TypeConversion.cast(message.get("parents"));
-            else parents = null;
-            mongoTreeService.updateNodeByKey(id, name, template, parents);
+                parent =  message.get("parent").toString();
+            else parent = null;
+            mongoTreeService.updateNodeByKey(id, name, intro, parent);
         }
 
         /**

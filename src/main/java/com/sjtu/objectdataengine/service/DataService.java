@@ -3,7 +3,7 @@ package com.sjtu.objectdataengine.service;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.sjtu.objectdataengine.model.MongoObject;
+import com.sjtu.objectdataengine.model.CommonObject;
 import com.sjtu.objectdataengine.rabbitMQ.MongoSender;
 import com.sjtu.objectdataengine.rabbitMQ.RedisSender;
 import com.sjtu.objectdataengine.service.mongodb.MongoObjectService;
@@ -92,8 +92,8 @@ public class DataService {
      * @param id 对象id
      * @return 对象
      */
-    public MongoObject findObjectByKey(String id) {
-        MongoObject redisResult = redisObjectService.findObjectById(id);
+    public CommonObject findObjectByKey(String id) {
+        CommonObject redisResult = redisObjectService.findObjectById(id);
         if (redisResult == null) {
             return mongoObjectService.findLatestObjectByKey(id);
         }
@@ -106,8 +106,8 @@ public class DataService {
      * @param time 时间
      * @return 对象
      */
-    public MongoObject findObjectByTime(String id, Date time) {
-        MongoObject redisResult = redisObjectService.findObjectById(id, time);
+    public CommonObject findObjectByTime(String id, Date time) {
+        CommonObject redisResult = redisObjectService.findObjectById(id, time);
         if (redisResult == null) {
             return mongoObjectService.findObjectByTime(id, time);
         }
@@ -121,7 +121,7 @@ public class DataService {
      * @param end 结束时间
      * @return 对象列表
      */
-    public List<MongoObject> findObjectByTimes(String id, Date start, Date end) {
+    public List<CommonObject> findObjectByTimes(String id, Date start, Date end) {
         return mongoObjectService.findObjectByStartAndEnd(id, start, end);
     }
 }

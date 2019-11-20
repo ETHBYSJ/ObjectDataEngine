@@ -2,8 +2,8 @@ package com.sjtu.objectdataengine.service.mongodb;
 
 import com.sjtu.objectdataengine.dao.*;
 import com.sjtu.objectdataengine.model.*;
+import com.sjtu.objectdataengine.utils.MongoAttr;
 import com.sjtu.objectdataengine.utils.MongoCondition;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -66,16 +66,14 @@ public class MongoObjectService {
      */
     private void createObject(String id, String intro, String template, List<String> objects, HashMap<String, MongoAttr> hashMap) {
         ObjectTemplate objectTemplate = mongoTemplateDAO.findByKey(template);
-        String nodeId = objectTemplate.getNodeId();
         String type = objectTemplate.getType();
         HashMap<String, Date> objs = new HashMap<>();
         Date now = new Date();
         for (String obj : objects) {
             objs.put(obj, now);
         }
-        MongoObject mongoObject = new MongoObject(id, intro, type, template, nodeId, hashMap, objs);
-        mongoObjectDAO.create(mongoObject);             //创建object
-        mongoTreeDAO.addNewObject(nodeId, id, intro);   //更新标签树
+        CommonObject commonObject = new CommonObject(id, intro, type, template, hashMap, objs);
+        mongoObjectDAO.create(commonObject);             //创建object
     }
 
     /**
@@ -290,7 +288,7 @@ public class MongoObjectService {
      * @param id 对象id
      * @return 最新对象
      */
-    public MongoObject findLatestObjectByKey(String id) {
+    public CommonObject findLatestObjectByKey(String id) {
         return mongoObjectDAO.findByKey(id);
     }
 
@@ -377,29 +375,29 @@ public class MongoObjectService {
     /**
      * 查找某个时间点的obj
      */
-    public MongoObject findObjectByTime(String id, Date time) {
+    public CommonObject findObjectByTime(String id, Date time) {
         Date ut = new Date(0);
-        MongoObject mongoObject = mongoObjectDAO.findByKey(id);
-        Set<String> attrName = mongoObject.getAttr().keySet();
+        CommonObject commonObject = mongoObjectDAO.findByKey(id);
+        Set<String> attrName = commonObject.getAttr().keySet();
         for(String name : attrName) {
             MongoAttr mongoAttr = findAttrByTime(id, name, time);
-            mongoObject.putAttr(name, mongoAttr);
+            commonObject.putAttr(name, mongoAttr);
             if(ut.before(mongoAttr.getUpdateTime())) {
                 ut = mongoAttr.getUpdateTime();
             }
         }
-        mongoObject.cutObjects(time);
-        mongoObject.setUpdateTime(ut);
-        return mongoObject;
+        commonObject.cutObjects(time);
+        commonObject.setUpdateTime(ut);
+        return commonObject;
     }
 
     /**
      * 查找某个时间段的obj
      */
-    public List<MongoObject> findObjectByStartAndEnd(String id, Date st, Date et) {
+    public List<CommonObject> findObjectByStartAndEnd(String id, Date st, Date et) {
         Set<Date> dateSet = new HashSet<>();
-        MongoObject mongoObject = mongoObjectDAO.findByKey(id);
-        Set<String> attrName = mongoObject.getAttr().keySet();
+        CommonObject commonObject = mongoObjectDAO.findByKey(id);
+        Set<String> attrName = commonObject.getAttr().keySet();
         List<MongoAttr> mongoAttrList = new ArrayList<>();
         //System.out.println(attrName);
         for (String name : attrName) {
@@ -426,12 +424,12 @@ public class MongoObjectService {
         }
         System.out.println(dateList);
 
-        List<MongoObject> mongoObjectList = new ArrayList<>();
+        List<CommonObject> commonObjectList = new ArrayList<>();
         for (Date date : dateList) {
-            mongoObjectList.add(findObjectByTime(id, date));
+            commonObjectList.add(findObjectByTime(id, date));
         }
 
-        return mongoObjectList;
+        return commonObjectList;
     }
 
     /**

@@ -1,6 +1,6 @@
 package com.sjtu.objectdataengine.dao;
 
-import com.sjtu.objectdataengine.model.KnowledgeTreeNode;
+import com.sjtu.objectdataengine.model.TreeNode;
 import com.sjtu.objectdataengine.utils.MongoCondition;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -12,25 +12,25 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 @Component
-public class MongoTreeDAO extends MongoBaseDAO<KnowledgeTreeNode> {
+public class MongoTreeDAO extends MongoBaseDAO<TreeNode> {
 
     @Override
-    public List<KnowledgeTreeNode> findAll() {
-        return mongoTemplate.findAll(KnowledgeTreeNode.class);
+    public List<TreeNode> findAll() {
+        return mongoTemplate.findAll(TreeNode.class);
     }
 
     @Override
-    public KnowledgeTreeNode findByKey(String key) {
+    public TreeNode findByKey(String key) {
         Query query = new Query();
         Criteria criteria = Criteria.where("_id").is(key);
         query.addCriteria(criteria);
-        return mongoTemplate.findOne(query, KnowledgeTreeNode.class);
+        return mongoTemplate.findOne(query, TreeNode.class);
     }
 
     @Override
-    public List<KnowledgeTreeNode> findByArgs(MongoCondition mongoCondition) {
+    public List<TreeNode> findByArgs(MongoCondition mongoCondition) {
         Query query = mongoCondition.getQuery();
-        return mongoTemplate.find(query, KnowledgeTreeNode.class);
+        return mongoTemplate.find(query, TreeNode.class);
     }
 
     @Override
@@ -39,7 +39,7 @@ public class MongoTreeDAO extends MongoBaseDAO<KnowledgeTreeNode> {
             Query query = mongoCondition.getQuery();
             Update update = mongoCondition.getUpdate();
             update.set("updateTime", new Date());
-            mongoTemplate.updateMulti(query, update, KnowledgeTreeNode.class);
+            mongoTemplate.updateMulti(query, update, TreeNode.class);
             return true;
         } catch (Exception e) {
             return false;
@@ -47,12 +47,12 @@ public class MongoTreeDAO extends MongoBaseDAO<KnowledgeTreeNode> {
     }
 
     @Override
-    public List<KnowledgeTreeNode> fuzzySearch(String search) {
+    public List<TreeNode> fuzzySearch(String search) {
         Query query = new Query();
         Pattern pattern = Pattern.compile("^.*" + search + ".*$" , Pattern.CASE_INSENSITIVE);
         Criteria criteria = Criteria.where("name").regex(pattern);
         query.addCriteria(criteria);
-        return mongoTemplate.findAllAndRemove(query, KnowledgeTreeNode.class);
+        return mongoTemplate.findAllAndRemove(query, TreeNode.class);
     }
 
     public void addNewObject(String nodeId, String obj, String intro) {
@@ -61,6 +61,6 @@ public class MongoTreeDAO extends MongoBaseDAO<KnowledgeTreeNode> {
         query.addCriteria(criteria);
         Update update = new Update();
         update.set("objects." + obj, intro);
-        mongoTemplate.updateMulti(query, update, KnowledgeTreeNode.class);
+        mongoTemplate.updateMulti(query, update, TreeNode.class);
     }
 }

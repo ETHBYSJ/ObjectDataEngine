@@ -1,13 +1,9 @@
 package com.sjtu.objectdataengine.service.redis;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sjtu.objectdataengine.dao.*;
-import com.sjtu.objectdataengine.model.KnowledgeTreeNode;
-import com.sjtu.objectdataengine.model.MongoObject;
+import com.sjtu.objectdataengine.model.TreeNode;
+import com.sjtu.objectdataengine.model.CommonObject;
 import com.sjtu.objectdataengine.model.TreeNodeReturn;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,9 +29,9 @@ public class RedisTreeService {
      * @param nodeId 树节点id
      * @return
      */
-    public List<MongoObject> findRelatedObjects(String eventId, String nodeId) {
+    public List<CommonObject> findRelatedObjects(String eventId, String nodeId) {
         //根据事件id查询关联对象
-        List<MongoObject> retList = new ArrayList<MongoObject>();
+        List<CommonObject> retList = new ArrayList<CommonObject>();
         //此对象必须存在且类型为事件
         HashSet<String> eObjectSet;
         HashSet<String> nObjectSet;
@@ -55,8 +51,8 @@ public class RedisTreeService {
         }
         eObjectSet.retainAll(nObjectSet);
         for(String objId : eObjectSet) {
-            MongoObject mongoObject = redisObjectService.findObjectById(objId);
-            retList.add(mongoObject);
+            CommonObject commonObject = redisObjectService.findObjectById(objId);
+            retList.add(commonObject);
         }
 
         return retList;
@@ -290,7 +286,7 @@ public class RedisTreeService {
      * @param key 树节点id
      * @return 树节点(无嵌套)
      */
-    public KnowledgeTreeNode findNodeByKey(String key) {
+    public TreeNode findNodeByKey(String key) {
         return redisTreeDAO.findByKey(key);
     }
 

@@ -2,7 +2,7 @@ package com.sjtu.objectdataengine.service.mongodb;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.sjtu.objectdataengine.model.KnowledgeTreeNode;
+import com.sjtu.objectdataengine.model.TreeNode;
 import com.sjtu.objectdataengine.model.ObjectTemplate;
 import com.sjtu.objectdataengine.rabbitMQ.MongoSender;
 import com.sjtu.objectdataengine.service.redis.RedisTemplateService;
@@ -100,13 +100,13 @@ public class TemplateService {
         String nodeId = jsonObject.getString("nodeId");
         String oldNodeId = objectTemplate.getNodeId();
         // 改之后的nodeId对应的node
-        KnowledgeTreeNode knowledgeTreeNode;
+        TreeNode treeNode;
         String newTemplate; //要修改的新的node上面的template（原有的
         if (nodeId!= null && !nodeId.equals("") ) {
-            knowledgeTreeNode = redisTreeService.findNodeByKey(nodeId);
-            if (knowledgeTreeNode == null) return "结点不存在";
+            treeNode = redisTreeService.findNodeByKey(nodeId);
+            if (treeNode == null) return "结点不存在";
             else {
-                newTemplate = knowledgeTreeNode.getTemplate();
+                newTemplate = treeNode.getTemplate();
                 modifyMessage.put("nodeId", nodeId);
                 modifyMessage.put("oldNodeId", oldNodeId);
                 modifyMessage.put("newTemplate", newTemplate);

@@ -8,21 +8,21 @@ import java.util.List;
 import java.util.Map;
 
 @Document(collection="knowledgeTree")
-public class KnowledgeTreeNode extends MongoBase{
-    private String id;      //结点id
-    private String name;    //名称
-    private String template;    //对象模板
+public class TreeNode extends MongoBase{
+    private String id;          // 结点id
+    private String name;        // 名称 (英文概念)
+    private String intro;       // 中文概念名
+    private String template;    // 对象模板
 
-
-    //private Map<String, String> events; //事件
-    private List<String> parents; //父节点
+    private String parent; //父节点
     private List<String> children;
 
-    public KnowledgeTreeNode(String id, String name, String template, List<String> parents, List<String> children) {
+    public TreeNode(String id, String name, String intro, String template, String parent, List<String> children) {
         this.id = id;
         this.name = name;
+        this.intro = intro;
         this.template = template;
-        this.parents = parents;
+        this.parent = parent;
         this.children = children;
     }
 
@@ -32,6 +32,14 @@ public class KnowledgeTreeNode extends MongoBase{
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getIntro() {
+        return intro;
+    }
+
+    public void setIntro(String intro) {
+        this.intro = intro;
     }
 
     public String getName() {
@@ -50,12 +58,12 @@ public class KnowledgeTreeNode extends MongoBase{
         this.template = temp;
     }
 
-    public List<String> getParents() {
-        return parents;
+    public String getParent() {
+        return parent;
     }
 
-    public void setParents(List<String> parents) {
-        this.parents = parents;
+    public void setParent(String parent) {
+        this.parent = parent;
     }
 
     public List<String> getChildren() {

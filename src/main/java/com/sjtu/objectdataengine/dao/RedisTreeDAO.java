@@ -1,6 +1,6 @@
 package com.sjtu.objectdataengine.dao;
 
-import com.sjtu.objectdataengine.model.KnowledgeTreeNode;
+import com.sjtu.objectdataengine.model.TreeNode;
 import com.sjtu.objectdataengine.model.TreeNodeReturn;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -51,7 +51,7 @@ public class RedisTreeDAO extends RedisDAO {
      * @param key 树节点id
      * @return 树节点(无嵌套)
      */
-    public KnowledgeTreeNode findByKey(String key) {
+    public TreeNode findByKey(String key) {
         String indexKey = "index";
         //如果没有找到，直接返回
         if(!sHasKey(indexKey, key)) {
@@ -59,23 +59,23 @@ public class RedisTreeDAO extends RedisDAO {
         }
         String baseKey = key + '#' + "base";
         String childrenKey = key + '#' + "children";
-        String parentsKey = key + '#' + "parents";
         String objectsKey = key + '#' + "objects";
         String id = hget(baseKey, "id").toString();
         String name = hget(baseKey, "name") == null ? "" : hget(baseKey, "name").toString();
+        String intro = hget(baseKey, "intro") == null ? "" : hget(baseKey, "intro").toString();
         String template = hget(baseKey, "template") == null ? "" : hget(baseKey, "template").toString();
         Date createTime = (Date) hget(baseKey, "createTime");
         Date updateTime = (Date) hget(baseKey, "updateTime");
         //孩子节点列表
         List<String> children = (List<String>) lGet(childrenKey, 0, -1);
         //父节点列表
-        List<String> parents = (List<String>) lGet(parentsKey, 0, -1);
+        String parent = hget(baseKey, "parent").toString();
         //关联对象列表
         HashMap<String, String> objects = (HashMap<String, String>) hmget(objectsKey);
-        KnowledgeTreeNode knowledgeTreeNode = new KnowledgeTreeNode(id, name, template, parents, children);
-        knowledgeTreeNode.setCreateTime(createTime);
-        knowledgeTreeNode.setUpdateTime(updateTime);
-        return knowledgeTreeNode;
+        TreeNode treeNode = new TreeNode(id, name, intro, template, parent, children);
+        treeNode.setCreateTime(createTime);
+        treeNode.setUpdateTime(updateTime);
+        return treeNode;
     }
     /**
      * 根据id返回指定树节点

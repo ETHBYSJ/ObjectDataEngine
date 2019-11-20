@@ -1,5 +1,7 @@
 package com.sjtu.objectdataengine.model;
 
+import com.sjtu.objectdataengine.utils.MongoAttr;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
@@ -7,25 +9,25 @@ import java.util.HashMap;
 import java.util.Set;
 
 @Document(collection = "mongoObjects")
-public class MongoObject extends MongoBase{
-    private String id;              //对象id
-    private String intro;           //描述
-    private String type;            //类型，event或entity
-    private String template;        //模板id
-    private String nodeId;          //标签id
+public class CommonObject extends MongoBase{
+    @Id
+    private String id;              // 对象id
+    private String name;            // 英文
+    private String intro;           // 描述
+    private String type;            // 类型
+    private String template;        // 模板id
 
-    private HashMap<String, Date> objects; //关联的objects
+    private HashMap<String, Date> events; // 关联的events
 
-    private HashMap<String, MongoAttr> attr;  //最新属性集合
+    private HashMap<String, MongoAttr> attr;  // 最新属性集合
 
-    public MongoObject(String id, String intro, String type, String template, String nodeId, HashMap<String, MongoAttr> attr, HashMap<String, Date> objects) {
+    public CommonObject(String id, String intro, String type, String template, HashMap<String, MongoAttr> attr, HashMap<String, Date> events) {
         this.id = id;
         this.intro = intro;
         this.type = type;
         this.template = template;
-        this.nodeId = nodeId;
         this.attr = attr;
-        this.objects = objects;
+        this.events = events;
     }
 
     public String getId() {
@@ -60,21 +62,12 @@ public class MongoObject extends MongoBase{
         this.template = template;
     }
 
-    public String getNodeId() {
-        return nodeId;
-    }
-
-    public void setNodeId(String nodeId) {
-        this.nodeId = nodeId;
-    }
-
-
     public HashMap<String, Date> getObjects() {
-        return objects;
+        return events;
     }
 
-    public void setObjects(HashMap<String, Date> objects) {
-        this.objects = objects;
+    public void setObjects(HashMap<String, Date> events) {
+        this.events = events;
     }
 
     public HashMap<String, MongoAttr> getAttr() {
@@ -94,12 +87,12 @@ public class MongoObject extends MongoBase{
      * @param time 截止时间
      */
     public void cutObjects(Date time) {
-        if (this.objects != null) {
-            Set<String> keySet = this.objects.keySet();
+        if (this.events != null) {
+            Set<String> keySet = this.events.keySet();
             for (String key : keySet) {
-                Date bindTime = this.objects.get(key);
+                Date bindTime = this.events.get(key);
                 if (bindTime.after(time)) {
-                    this.objects.remove(key);
+                    this.events.remove(key);
                 }
             }
         }

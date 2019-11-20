@@ -1,7 +1,7 @@
 package com.sjtu.objectdataengine.dao;
 
-import com.sjtu.objectdataengine.model.MongoAttr;
-import com.sjtu.objectdataengine.model.MongoObject;
+import com.sjtu.objectdataengine.utils.MongoAttr;
+import com.sjtu.objectdataengine.model.CommonObject;
 import com.sjtu.objectdataengine.utils.MongoCondition;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -12,15 +12,15 @@ import java.util.Date;
 import java.util.List;
 
 @Component
-public class MongoObjectDAO extends MongoBaseDAO<MongoObject>{
+public class MongoObjectDAO extends MongoBaseDAO<CommonObject>{
     /**
      * 查询全部
      *
      * @return List类型，返回集合所有数据
      */
     @Override
-    public List<MongoObject> findAll() {
-        return mongoTemplate.findAll(MongoObject.class);
+    public List<CommonObject> findAll() {
+        return mongoTemplate.findAll(CommonObject.class);
     }
 
     /**
@@ -30,11 +30,11 @@ public class MongoObjectDAO extends MongoBaseDAO<MongoObject>{
      * @return T类型，返回某条数据
      */
     @Override
-    public MongoObject findByKey(String key) {
+    public CommonObject findByKey(String key) {
         Query query = new Query();
         Criteria criteria = Criteria.where("_id").is(key);
         query.addCriteria(criteria);
-        return mongoTemplate.findOne(query, MongoObject.class);
+        return mongoTemplate.findOne(query, CommonObject.class);
     }
 
     /**
@@ -44,7 +44,7 @@ public class MongoObjectDAO extends MongoBaseDAO<MongoObject>{
      * @return List类型，返回查询到的所有数据
      */
     @Override
-    public List<MongoObject> findByArgs(MongoCondition mongoCondition) {
+    public List<CommonObject> findByArgs(MongoCondition mongoCondition) {
         return null;
     }
 
@@ -59,7 +59,7 @@ public class MongoObjectDAO extends MongoBaseDAO<MongoObject>{
         Update update = mongoCondition.getUpdate();
         update.set("updateTime", new Date());
         try {
-            mongoTemplate.updateMulti(query, update, MongoObject.class);
+            mongoTemplate.updateMulti(query, update, CommonObject.class);
             return true;
         } catch (Exception e) {
             return false;
@@ -83,7 +83,7 @@ public class MongoObjectDAO extends MongoBaseDAO<MongoObject>{
             update.set("attr." + name + ".value", mongoAttr.getValue());
             update.set("attr." + name + ".updateTime", mongoAttr.getUpdateTime());
             update.set("updateTime", new Date());
-            mongoTemplate.updateMulti(query, update, MongoObject.class);
+            mongoTemplate.updateMulti(query, update, CommonObject.class);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -95,7 +95,7 @@ public class MongoObjectDAO extends MongoBaseDAO<MongoObject>{
      * @param search 查询条件
      */
     @Override
-    public List<MongoObject> fuzzySearch(String search) {
+    public List<CommonObject> fuzzySearch(String search) {
         return null;
     }
 }

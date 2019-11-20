@@ -1,6 +1,6 @@
 package com.sjtu.objectdataengine.controller;
 
-import com.sjtu.objectdataengine.model.KnowledgeTreeNode;
+import com.sjtu.objectdataengine.model.TreeNode;
 import com.sjtu.objectdataengine.model.TreeNodeReturn;
 import com.sjtu.objectdataengine.service.TreeService;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +37,7 @@ public class TreeController {
     }
 
     @GetMapping("/get_node")
-    public KnowledgeTreeNode getNodeById(@RequestParam String id) {
+    public TreeNode getNodeById(@RequestParam String id) {
         return treeService.getNodeById(id);
     }
 }

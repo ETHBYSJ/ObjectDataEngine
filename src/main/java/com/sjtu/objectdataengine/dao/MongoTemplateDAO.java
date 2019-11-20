@@ -77,4 +77,17 @@ public class MongoTemplateDAO extends MongoBaseDAO<ObjectTemplate>{
         query.addCriteria(criteria);
         return mongoTemplate.findAllAndRemove(query, ObjectTemplate.class);
     }
+
+    public void opAttr(String id, String name, String nickName, String op) {
+        Query query = new Query();
+        Criteria criteria = Criteria.where("id").is(id);
+        query.addCriteria(criteria);
+
+        Update update = new Update();
+        if (op.equals("add")) {
+
+        } else if (op.equals("del")) {
+
+        }
+    }
 }

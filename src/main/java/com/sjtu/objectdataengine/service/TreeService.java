@@ -2,7 +2,7 @@ package com.sjtu.objectdataengine.service;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.sjtu.objectdataengine.model.KnowledgeTreeNode;
+import com.sjtu.objectdataengine.model.TreeNode;
 import com.sjtu.objectdataengine.model.TreeNodeReturn;
 import com.sjtu.objectdataengine.rabbitMQ.MongoSender;
 import com.sjtu.objectdataengine.service.redis.RedisTemplateService;
@@ -44,15 +44,12 @@ public class TreeService {
         String id = jsonObject.getString("id");
         if(id == null) return "ID不能为空";
         String name = jsonObject.getString("name");
-        if (name == null) name = "";
-        String template = jsonObject.getString("template");
-        if (template == null) template = "";
-        String parents = jsonObject.getString("parents");
-        if (parents == null) return "父节点不能为空";
+        if (name == null) return  "name不能为空";
+        String intro = jsonObject.getString("intro");
+        if (intro == null) intro = "";
+        String parent = jsonObject.getString("parent");
+        if (parent  == null) return "父节点不能为空";
 
-        //要判断是否有空的
-        List<String> parentsArray = new ArrayList<>();
-        parentsArray.add(parents);
         List<String> children = new ArrayList<>();
 
         //组装message
@@ -60,12 +57,11 @@ public class TreeService {
         message.put("op", "NODE_CREATE");
         message.put("id", id);
         message.put("name", name);
-        message.put("template", template);
-        message.put("parents", parentsArray);
+        message.put("parent", parent);
 
         // 双写
         mongoSender.send(message);
-        if(redisTreeService.createTreeNode(id, name, template, parentsArray, children))
+        if(true)//redisTreeService.createTreeNode(id, name, template, parentsArray, children)) //改成上面参数的形式
            return "创建成功！";
 
         this.delete(id);
@@ -75,10 +71,10 @@ public class TreeService {
     public String delete(String id) {
         if(id == null) return "ID不能为空";
 
-        KnowledgeTreeNode knowledgeTreeNode = redisTreeService.findNodeByKey(id);
-        if (knowledgeTreeNode == null) return "没有该节点";
+        TreeNode treeNode = redisTreeService.findNodeByKey(id);
+        if (treeNode == null) return "没有该节点";
 
-        String template = knowledgeTreeNode.getTemplate();
+        String template = treeNode.getTemplate();
 
         HashMap<String, Object> message = new HashMap<>();
         message.put("op", "NODE_DELETE");
@@ -86,7 +82,7 @@ public class TreeService {
         message.put("template", template);
 
         mongoSender.send(message);
-        if (redisTreeService.deleteWholeNodeByKey(id)) {
+        if (redisTreeService.deleteWholeNodeByKey(id)) { //删除node要把对应template删了
             return  "删除成功！";
         }
         return "删除失败！";
@@ -114,25 +110,20 @@ public class TreeService {
         if(name != null) {
             modifyMessage.put("name", name);
         }
-        // 判断template是否存在
-        String template = jsonObject.getString("template");
-        if(template != null && !template.equals("") && redisTemplateService.findTemplateById(template) == null) {
-            return "模板不存在";
+        // intro如果是null就不需要改
+        String intro = jsonObject.getString("intro");
+        if(intro != null) {
+            modifyMessage.put("intro", intro);
         }
-        modifyMessage.put("template", template);
-        // 判断parents是否修改
-        String parents = jsonObject.getString("parents");
 
-        List<String> parentsArray = new ArrayList<>();
-        if(parents != null) {
-            parentsArray.add(parents);
-            modifyMessage.put("parents", parentsArray);
-        } else {
-            parentsArray = null;
+        // 判断parents是否修改
+        String parent = jsonObject.getString("parent");
+        if(parent != null) {
+            modifyMessage.put("parent", parent);
         }
 
         mongoSender.send(modifyMessage);
-        if (redisTreeService.updateNodeByKey(id, name, template, parentsArray)) {
+        if (true) {//redisTreeService.updateNodeByKey(id, name, template, parentsArray)) { //改成上面几个
             return "修改成功";
         }
         return "修改失败";
@@ -142,7 +133,7 @@ public class TreeService {
         return redisTreeService.findTreeByRoot(id);
     }
 
-    public KnowledgeTreeNode getNodeById(String id) {
+    public TreeNode getNodeById(String id) {
         return redisTreeService.findNodeByKey(id);
     }
 

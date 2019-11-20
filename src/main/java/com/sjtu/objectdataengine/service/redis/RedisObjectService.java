@@ -5,8 +5,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.sjtu.objectdataengine.dao.RedisAttrDAO;
 import com.sjtu.objectdataengine.dao.RedisObjectDAO;
 import com.sjtu.objectdataengine.dao.RedisTemplateDAO;
-import com.sjtu.objectdataengine.model.MongoAttr;
-import com.sjtu.objectdataengine.model.MongoObject;
+import com.sjtu.objectdataengine.utils.MongoAttr;
+import com.sjtu.objectdataengine.model.CommonObject;
 import com.sjtu.objectdataengine.model.ObjectTemplate;
 import com.sjtu.objectdataengine.rabbitMQ.RedisSender;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -419,7 +419,7 @@ public class RedisObjectService {
      * @param id 对象id
      * @return 对象最新值
      */
-    public MongoObject findObjectById(String id) {
+    public CommonObject findObjectById(String id) {
         if(id == null) {
             return null;
         }
@@ -427,15 +427,15 @@ public class RedisObjectService {
         if(attrList == null || attrList.size() == 0) {
             return null;
         }
-        MongoObject mongoObject = findById(id);
-        if(mongoObject == null) {
+        CommonObject commonObject = findById(id);
+        if(commonObject == null) {
             return null;
         }
         Date ut = new Date(0);
         for(Object everyAttr : attrList) {
             MongoAttr mongoAttr = findAttrByKey(id, everyAttr.toString());
             if(mongoAttr != null) {
-                mongoObject.putAttr(everyAttr.toString(), mongoAttr);
+                commonObject.putAttr(everyAttr.toString(), mongoAttr);
                 if(ut.before(mongoAttr.getUpdateTime())) {
                     ut = mongoAttr.getUpdateTime();
                 }
@@ -444,13 +444,13 @@ public class RedisObjectService {
         System.out.println("ut = " + ut);
         //关联对象
         HashMap<String, Date> objectMap = (HashMap<String, Date>) redisAttrDAO.hmget(id + "#object");
-        mongoObject.setObjects(objectMap);
+        commonObject.setObjects(objectMap);
         /*
         mongoObject.setUpdateTime(ut);
         HashMap<String, Date> cutMap = cutObjects(ut, id);
         mongoObject.setObjects(cutMap);
         */
-        return mongoObject;
+        return commonObject;
     }
 
     /**
@@ -478,7 +478,7 @@ public class RedisObjectService {
      * @param id 对象id
      * @return 初始化的MongoObject对象
      */
-    private MongoObject findById(String id) {
+    private CommonObject findById(String id) {
         if(redisAttrDAO.hsize(id + "#META") > 0) {
             String template = redisAttrDAO.hget(id + "#META", "template").toString();
             String nodeId = redisAttrDAO.hget(id + "#META", "nodeId").toString();
@@ -486,10 +486,10 @@ public class RedisObjectService {
             String intro = redisAttrDAO.hget(id + "#META", "intro") != null ? redisAttrDAO.hget(id + "#META", "intro").toString(): "";
             Date createTime = (Date) redisAttrDAO.hget(id + "#META", "createTime");
             Date updateTime = (Date) redisAttrDAO.hget(id + "#META", "updateTime");
-            MongoObject mongoObject = new MongoObject(id, intro, type, template, nodeId, new HashMap<String, MongoAttr>(), new HashMap<String, Date>());
-            mongoObject.setCreateTime(createTime);
-            mongoObject.setUpdateTime(updateTime);
-            return mongoObject;
+            CommonObject commonObject = new CommonObject(id, intro, type, template, new HashMap<String, MongoAttr>(), new HashMap<String, Date>());
+            commonObject.setCreateTime(createTime);
+            commonObject.setUpdateTime(updateTime);
+            return commonObject;
         }
         return null;
     }
@@ -499,7 +499,7 @@ public class RedisObjectService {
      * @param date 日期
      * @return 初始化的MongoObject对象
      */
-    public MongoObject findObjectById(String id, Date date) {
+    public CommonObject findObjectById(String id, Date date) {
         if(id == null) {
             return null;
         }
@@ -507,24 +507,24 @@ public class RedisObjectService {
         if(attrList == null || attrList.size() == 0) {
             return null;
         }
-        MongoObject mongoObject = findById(id);
-        if(mongoObject == null) {
+        CommonObject commonObject = findById(id);
+        if(commonObject == null) {
             return null;
         }
         Date ut = new Date(0);
         for(Object everyAttr : attrList) {
             MongoAttr mongoAttr = findAttrByTime(id, everyAttr.toString(), date);
             if(mongoAttr != null) {
-                mongoObject.putAttr(everyAttr.toString(), mongoAttr);
+                commonObject.putAttr(everyAttr.toString(), mongoAttr);
                 if(ut.before(mongoAttr.getUpdateTime())) {
                     ut = mongoAttr.getUpdateTime();
                 }
             }
         }
-        mongoObject.setUpdateTime(ut);
+        commonObject.setUpdateTime(ut);
         HashMap<String, Date> cutMap = cutObjects(ut, id);
-        mongoObject.setObjects(cutMap);
-        return mongoObject;
+        commonObject.setObjects(cutMap);
+        return commonObject;
     }
 
     /**
@@ -575,7 +575,7 @@ public class RedisObjectService {
      * @param endDate 结束时间
      * @return 对象列表
      */
-    public List<MongoObject> findObjectBetweenTime(String id, Date startDate, Date endDate) {
+    public List<CommonObject> findObjectBetweenTime(String id, Date startDate, Date endDate) {
         if(id == null) {
             return null;
         }
@@ -613,7 +613,7 @@ public class RedisObjectService {
         List<Integer> indexList = new ArrayList<Integer>(attrList.size());
 
         //存储最终返回结果
-        List<MongoObject> retList = new ArrayList<MongoObject>();
+        List<CommonObject> retList = new ArrayList<CommonObject>();
         //初始化
         for(i = 0; i < attrList.size(); i++) {
             //从第一个数据开始
@@ -645,7 +645,7 @@ public class RedisObjectService {
         while(!isComplete) {
             //是否有剩余数据待处理
             boolean notRemain = true;
-            MongoObject mongoObject = findById(id);
+            CommonObject commonObject = findById(id);
             double minTime = Double.MAX_VALUE;
             for(i = 0; i < attrList.size(); i++) {
                 //当前属性还没有扫描到最后一个数据
@@ -662,7 +662,7 @@ public class RedisObjectService {
             }
             else {
                 //设置更新时间
-                mongoObject.setUpdateTime(new Date(new Double(minTime).longValue()));
+                commonObject.setUpdateTime(new Date(new Double(minTime).longValue()));
                 for(i = 0; i < attrList.size(); i++) {
                     //属性名
                     String attrName = attrList.get(i).toString();
@@ -688,11 +688,11 @@ public class RedisObjectService {
                         mongoAttr.setUpdateTime(attrUpdateTime);
                     }
                     mongoAttr.setCreateTime(attrCreateTime);
-                    HashMap<String, Date> cutMap = cutObjects(mongoObject.getUpdateTime(), id);
-                    mongoObject.setObjects(cutMap);
-                    mongoObject.putAttr(attrName, mongoAttr);
+                    HashMap<String, Date> cutMap = cutObjects(commonObject.getUpdateTime(), id);
+                    commonObject.setObjects(cutMap);
+                    commonObject.putAttr(attrName, mongoAttr);
                 }
-                retList.add(mongoObject);
+                retList.add(commonObject);
             }
         }
         return retList;

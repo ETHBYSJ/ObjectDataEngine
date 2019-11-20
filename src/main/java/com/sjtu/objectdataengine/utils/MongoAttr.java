@@ -1,10 +1,8 @@
-package com.sjtu.objectdataengine.model;
+package com.sjtu.objectdataengine.utils;
 
-import com.mongodb.Mongo;
+import com.sjtu.objectdataengine.model.MongoBase;
 
-import java.util.Date;
-
-public class MongoAttr extends MongoBase{
+public class MongoAttr extends MongoBase {
 
     private String value;
 

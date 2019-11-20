@@ -1,8 +1,8 @@
 package com.sjtu.objectdataengine.controller;
 
-import com.sjtu.objectdataengine.model.MongoAttr;
+import com.sjtu.objectdataengine.utils.MongoAttr;
 import com.sjtu.objectdataengine.model.MongoAttrs;
-import com.sjtu.objectdataengine.model.MongoObject;
+import com.sjtu.objectdataengine.model.CommonObject;
 import com.sjtu.objectdataengine.service.mongodb.MongoObjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -51,7 +51,7 @@ public class testController {
     }
 
     @GetMapping("obj")
-    public MongoObject findLatestObject(@RequestParam String id) {
+    public CommonObject findLatestObject(@RequestParam String id) {
         return mongoObjectService.findLatestObjectByKey(id);
     }
 
@@ -61,7 +61,7 @@ public class testController {
     }
 
     @GetMapping("time_obj")
-    public MongoObject findObjByTime(@RequestParam String id, @RequestParam(value ="date") @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss") Date time) {
+    public CommonObject findObjByTime(@RequestParam String id, @RequestParam(value ="date") @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss") Date time) {
         return mongoObjectService.findObjectByTime(id, time);
     }
 
@@ -71,7 +71,7 @@ public class testController {
     }
 
     @GetMapping("se_obj")
-    public List<MongoObject> findObjByStartAndEnd(@RequestParam String id, @RequestParam(value ="start") @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss") Date st, @RequestParam(value ="end") @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss") Date et) {
+    public List<CommonObject> findObjByStartAndEnd(@RequestParam String id, @RequestParam(value ="start") @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss") Date st, @RequestParam(value ="end") @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss") Date et) {
         return mongoObjectService.findObjectByStartAndEnd(id ,st, et);
     }
 
