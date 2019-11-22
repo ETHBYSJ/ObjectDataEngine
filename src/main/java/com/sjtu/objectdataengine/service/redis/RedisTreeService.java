@@ -61,31 +61,24 @@ public class RedisTreeService {
     /**
      * 创建一个树节点
      * @param id 节点id
-     * @param name 节点名
-     * @param template 关联模板
-     * @param parents 父节点列表
+     * @param name 名称（简介）
+     * @param intro 简介
+     * @param parent 父节点列表
      * @param children 子节点列表
      * @return true代表创建成功，false代表创建失败
      */
-    public boolean createTreeNode(String id, String name, String template, List<String> parents, List<String> children) {
+    public boolean createTreeNode(String id, String name, String intro, String parent, List<String> children) {
         //id不可为空
         if(id == null) return false;
         if(name == null) name = "";
-        if(template == null) template = "";
-        if(parents == null) parents = new ArrayList<String>();
+        if(parent == null) /*parent = "";*/return false;
+        if(intro == null) intro = "";
         if(children == null) children = new ArrayList<String>();
 
         //创建树节点
         String baseKey = id + '#' + "base";
         String childrenKey = id + '#' + "children";
-        String parentsKey = id + '#' + "parents";
         String indexKey = "index";
-        //检查template合法性
-        if(redisTemplateDAO.sHasKey("index", template)) {
-            redisTreeDAO.hset(baseKey, "template", template);
-        } else if (!template.equals("")) {
-            return false;
-        }
         //判断已经创建过
         if(redisTreeDAO.sHasKey(indexKey, id)) return false;
         Date now = new Date();
@@ -97,23 +90,21 @@ public class RedisTreeService {
 
         redisTreeDAO.hset(baseKey, "createTime", now);
         redisTreeDAO.hset(baseKey, "updateTime", now);
-        if(parents != null && parents.size() != 0) {
-            //存储父节点列表
-            redisTreeDAO.lSet(parentsKey, parents.toArray());
-        }
+        redisTreeDAO.hset(baseKey, "intro", intro);
+        //存储父节点
+        redisTreeDAO.hset(baseKey, "parent", parent);
+
         if(children != null && children.size() != 0) {
             //存储子节点列表
             redisTreeDAO.lSet(childrenKey, children.toArray());
         }
         //更新根节点列表
-        if(parents.size() > 0 && parents.get(0).equals("root")) {
+        if(parent.equals("root")) {
             redisRootDAO.addNewRoot(id, name);
-            opChildren(id, children, true);
         }
         else {
             //ops
-            opParents(id, parents, true);
-            //opChildren(id, children, true);
+            opParent(id, parent, true);
         }
         return true;
     }
@@ -121,29 +112,25 @@ public class RedisTreeService {
     /**
      * 对特定节点的父节点的子属性作修改
      * @param child 特定子节点id
-     * @param parents 父节点列表
+     * @param parent 父节点id
      * @param flag true代表添加，false代表删除
      * @return true代表成功，false代表失败
      */
-    private boolean opParents(String child, List<String> parents, boolean flag) {
+    private boolean opParent(String child, String parent, boolean flag) {
         try {
             Date now = new Date();
             redisTreeDAO.hset(child + "#base", "updateTime", now);
             if(flag) {
                 //添加
-                for(String parent : parents) {
-                    if(!redisTreeDAO.lHasValue(parent + "#children", child)) {
-                        redisTreeDAO.lSet(parent + "#children", child);
-                    }
-                    redisTreeDAO.hset(parent + "#base", "updateTime", now);
+                if(!redisTreeDAO.lHasValue(parent + "#children", child)) {
+                    redisTreeDAO.lSet(parent + "#children", child);
                 }
+                redisTreeDAO.hset(parent + "#base", "updateTime", now);
             }
             else {
                 //删除
-                for(String parent : parents) {
-                    redisTreeDAO.lRemove(parent + "#children", 1, child);
-                    redisTreeDAO.hset(parent + "#base", "updateTime", now);
-                }
+                redisTreeDAO.lRemove(parent + "#children", 1, child);
+                redisTreeDAO.hset(parent + "#base", "updateTime", now);
             }
             return true;
         } catch (Exception e) {
@@ -156,28 +143,16 @@ public class RedisTreeService {
      * 对特定节点子节点的父属性作修改
      * @param parent 特定父节点id
      * @param children 子节点列表
-     * @param flag true代表添加，false代表删除
      * @return true代表成功，false代表失败
      */
-    private boolean opChildren(String parent, List<String> children, boolean flag) {
+    private boolean opChildren(String parent, List<String> children) {
         try {
             Date now = new Date();
             redisTreeDAO.hset(parent + "#base", "updateTime", now);
-            if(flag) {
-                //添加
-                for(String child : children) {
-                    if(!redisTreeDAO.lHasValue(child + "#parents", parent)) {
-                        redisTreeDAO.lSet(child + "#parents", parent);
-                    }
-                    redisTreeDAO.hset(child + "#base", "updateTime", now);
-                }
-            }
-            else {
-                //删除
-                for(String child : children) {
-                    redisTreeDAO.lRemove(child + "#parents", 1, parent);
-                    redisTreeDAO.hset(child + "#base", "updateTime", new Date());
-                }
+            //更新children列表中的parent属性
+            for(String child : children) {
+                redisTreeDAO.hset(child + "#base", "parent", parent);
+                redisTreeDAO.hset(child + "#base", "updateTime", now);
             }
             return true;
         } catch (Exception e) {
@@ -189,25 +164,19 @@ public class RedisTreeService {
     /**
      * 更新父节点列表
      * @param child 子节点id
-     * @param parents 父节点列表
+     * @param parent 父节点id
      * @return true代表更新成功，false代表更新失败
      */
-    private boolean updateParentsList(String child, List<String> parents) {
+    private boolean updateParent(String child, String parent) {
         try {
-            redisTreeDAO.hset(child + "#base", "updateTime", new Date());
-            String parentsKey = child + "#parents";
-            //清空父节点列表
-            redisTreeDAO.del(parentsKey);
-            if(parents != null && parents.size() != 0) {
-                //更新父节点列表
-                redisTreeDAO.lSet(parentsKey, parents.toArray());
-            }
+            String baseKey = child + "#base";
+            redisTreeDAO.hset(baseKey, "updateTime", new Date());
+            redisTreeDAO.hset(baseKey, "parent", parent);
             return true;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
-
     }
 
     /**
@@ -216,7 +185,7 @@ public class RedisTreeService {
      * @param children 子节点列表
      * @return true代表更新成功，false代表更新失败
      */
-    private boolean updateChildrenList(String parent, List<String> children) {
+    private boolean updateChildren(String parent, List<String> children) {
         try {
             redisTreeDAO.hset(parent + "#base", "updateTime", new Date());
             String childrenKey = parent + "#children";
@@ -236,18 +205,16 @@ public class RedisTreeService {
     /**
      * 切断子节点与父节点之间的关系
      * @param child 子节点id
-     * @param parents 父节点列表
+     * @param parent 父节点id
      * @return true代表成功，false代表失败
      */
-    private boolean deleteParentsEdge(String child, List<String> parents) {
-        if(opParents(child, parents, false)) {
-            List<String> newParents = new ArrayList<>();
-            return updateParentsList(child, newParents);
+    private boolean deleteParentEdge(String child, String parent) {
+        if(opParent(child, parent, false)) {
+            return updateParent(child, "");
         }
         else {
             return false;
         }
-
     }
 
     /**
@@ -257,9 +224,9 @@ public class RedisTreeService {
      * @return true代表成功，false代表失败
      */
     private boolean deleteChildrenEdge(String parent, List<String> children) {
-        if (opChildren(parent, children,false)) {
+        if (opChildren("", children)) {
             List<String> newChildren = new ArrayList<>();
-            return updateChildrenList(parent, newChildren);
+            return updateChildren(parent, newChildren);
         } else {
             return false;
         }
@@ -308,25 +275,25 @@ public class RedisTreeService {
             if(!redisTreeDAO.sHasKey("index", key)) {
                 return true;
             }
-            String parentsKey = key + "#parents";
+            String baseKey = key + "#base";
             String childrenKey = key + "#children";
-            List<String> parents = (List<String>) redisTreeDAO.lGet(parentsKey, 0, -1);
+            String parent = redisTreeDAO.hget(baseKey, "parent").toString();
             List<String> children = (List<String>) redisTreeDAO.lGet(childrenKey, 0, -1);
             deleteChildrenEdge(key, children);
-            if(parents.size() > 0 && parents.get(0).equals("root")) {
+            if(parent.equals("root")) {
                 //是根节点
                 deleteRootEdge(key);
             }
             else {
                 //非根节点
-                deleteParentsEdge(key, parents);
+                deleteParentEdge(key, parent);
             }
             deleteNodeByKey(key);
             //解除与template的绑定
             Object template = redisTreeDAO.hget(key + "#base", "template");
             if(template != null) {
-                redisTemplateDAO.hset(template + "#base", "nodeId", "");
-                redisTemplateDAO.hset(template + "#base", "updateTime", new Date());
+                //将对应模板也删除
+                redisTemplateDAO.deleteById(template.toString());
             }
             return true;
         } catch (Exception e) {
@@ -340,10 +307,9 @@ public class RedisTreeService {
      * @param id ID
      * @return true代表更新成功，false代表更新失败
      */
-    public boolean updateNodeByKey(String id, String name, String template, List<String> parents) {
+    public boolean updateNodeByKey(String id, String name, String template, String parent) {
         try {
             String baseKey = id + '#' + "base";
-            String parentsKey = id + '#' + "parents";
             //改名字
             if(name != null) {
                 redisTreeDAO.hset(baseKey, "name", name);
@@ -351,16 +317,15 @@ public class RedisTreeService {
             if(template!=null && redisTemplateDAO.sHasKey("index", template)) {
                 redisTreeDAO.hset(baseKey, "template", template);
             }
-            if (parents!=null) {
-                List<String> oldParents = (List<String>) redisTreeDAO.lGet(parentsKey, 0, -1);
-                //切断与旧父节点的关联
-                deleteParentsEdge(id, oldParents);
+            if (parent!=null) {
+                String oldParent = redisTreeDAO.hget(baseKey, "parent").toString();
+                //从旧父节点孩子节点中删除
+                opParent(id, oldParent, false);
                 //新父节点建立关联
-                opParents(id, parents, true);
+                opParent(id, parent, true);
                 //更新父节点
-                updateParentsList(id, parents);
+                updateParent(id, parent);
             }
-
             //更新时间
             redisTreeDAO.hset(baseKey, "updateTime", new Date());
             return true;
