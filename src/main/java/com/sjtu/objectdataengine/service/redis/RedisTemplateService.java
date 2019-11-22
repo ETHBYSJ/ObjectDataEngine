@@ -23,7 +23,7 @@ public class RedisTemplateService {
      * @param attrs 属性列表
      * @return true代表创建成功，false代表创建失败
      */
-    public boolean createTemplate(String id, String name, String type, String nodeId, HashMap<String, String> attrs) {
+    public boolean createTemplate(String id, String name, String intro, String type, String nodeId, HashMap<String, String> attrs) {
         Date now = new Date();
         //创建模板
         //id索引表
@@ -44,6 +44,7 @@ public class RedisTemplateService {
         //存储基本信息
         redisTemplateDAO.hset(baseKey, "id", id);
         if(!name.equals("")) redisTemplateDAO.hset(baseKey, "name", name);
+        if(!intro.equals("")) redisTemplateDAO.hset(baseKey, "intro", intro);
         if(!type.equals("")) redisTemplateDAO.hset(baseKey, "type", type);
         if(!nodeId.equals("")) redisTemplateDAO.hset(baseKey, "nodeId", nodeId);
         //如果树节点已经存在，建立树节点与模板的关联

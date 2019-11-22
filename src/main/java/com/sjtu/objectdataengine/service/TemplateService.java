@@ -61,7 +61,7 @@ public class TemplateService {
 
         mongoSender.send(createMessage);
 
-        if(redisTemplateService.createTemplate(id, name, type, nodeId, attrs)) {
+        if(redisTemplateService.createTemplate(id, name, intro, type, nodeId, attrs)) {
             return "创建成功";
         }
         this.delete(id);

@@ -50,6 +50,7 @@ public class RedisTemplateDAO extends RedisDAO {
         if(type == null) return null;
         Object nodeId = hget(baseKey, "nodeId");
         if(nodeId == null) return null;
+        String intro = hget(baseKey, "intro") == null ? "" : hget(baseKey, "intro").toString();
         //关联对象
         HashMap<String, String> objects = (HashMap<String, String>) hmget(objectsKey);
         if(objects == null) {
@@ -62,7 +63,7 @@ public class RedisTemplateDAO extends RedisDAO {
         if(attrs == null) {
             attrs = new HashMap<String, String>();
         }
-        ObjectTemplate objectTemplate = new ObjectTemplate(id, name.toString(), nodeId.toString(), type.toString(), attrs, objects);
+        ObjectTemplate objectTemplate = new ObjectTemplate(id, name.toString(), intro, nodeId.toString(), type.toString(), attrs, objects);
         objectTemplate.setCreateTime((Date) createTime);
         objectTemplate.setUpdateTime((Date) updateTime);
         return objectTemplate;
