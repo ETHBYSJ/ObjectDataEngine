@@ -129,7 +129,7 @@ public class TemplateService {
         if (name == null || name.equals("")) return "name不能为空";
         // intro
         String intro = jsonObject.getString("intro");
-        if (intro == null) return "intro必须指定"
+        if (intro == null) return "intro必须指定";
         HashMap<String, Object> addAttrMessage = new HashMap<>();
         addAttrMessage.put("op", "TEMP_ADD_ATTR");
 
