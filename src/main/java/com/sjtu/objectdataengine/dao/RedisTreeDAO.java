@@ -94,6 +94,7 @@ public class RedisTreeDAO extends RedisDAO {
         String objectsKey = key + '#' + "objects";
         String id = hget(baseKey, "id").toString();
         String name = hget(baseKey, "name") == null ? "" : hget(baseKey, "name").toString();
+        String intro = hget(baseKey, "intro") == null ? "" : hget(baseKey, "intro").toString();
         String template = hget(baseKey, "template") == null ? "" : hget(baseKey, "template").toString();
         Date createTime = (Date) hget(baseKey, "createTime");
         Date updateTime = (Date) hget(baseKey, "updateTime");
@@ -113,7 +114,7 @@ public class RedisTreeDAO extends RedisDAO {
         List<String> parents = (List<String>) lGet(parentsKey, 0, -1);
         //关联对象列表
         HashMap<String, String> objects = (HashMap<String, String>) hmget(objectsKey);
-        TreeNodeReturn treeNodeReturn = new TreeNodeReturn(id, name, template, parents, children, objects);
+        TreeNodeReturn treeNodeReturn = new TreeNodeReturn(id, name, intro, template, parents, children, objects);
         //设置时间属性
         treeNodeReturn.setCreateTime(createTime);
         treeNodeReturn.setUpdateTime(updateTime);

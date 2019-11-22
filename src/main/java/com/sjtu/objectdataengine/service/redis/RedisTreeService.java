@@ -71,7 +71,8 @@ public class RedisTreeService {
         //id不可为空
         if(id == null) return false;
         if(name == null) name = "";
-        if(parent == null) parent = "";
+        if(parent == null) /*parent = "";*/return false;
+        if(intro == null) intro = "";
         if(children == null) children = new ArrayList<String>();
 
         //创建树节点
@@ -89,6 +90,7 @@ public class RedisTreeService {
 
         redisTreeDAO.hset(baseKey, "createTime", now);
         redisTreeDAO.hset(baseKey, "updateTime", now);
+        redisTreeDAO.hset(baseKey, "intro", intro);
         //存储父节点
         redisTreeDAO.hset(baseKey, "parent", parent);
 
