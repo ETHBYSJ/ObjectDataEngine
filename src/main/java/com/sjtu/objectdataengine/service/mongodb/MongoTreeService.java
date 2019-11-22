@@ -1,6 +1,5 @@
 package com.sjtu.objectdataengine.service.mongodb;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sjtu.objectdataengine.dao.MongoRootDAO;
 import com.sjtu.objectdataengine.dao.MongoTemplateDAO;
 import com.sjtu.objectdataengine.dao.MongoTreeDAO;
@@ -14,7 +13,6 @@ import java.util.*;
 @Component
 public class MongoTreeService {
 
-    private static ObjectMapper MAPPER = new ObjectMapper();
 
     @Resource
     MongoTreeDAO mongoTreeDAO;
@@ -31,7 +29,6 @@ public class MongoTreeService {
      * @param name 名称（简介）
      * @param parent 父节点id
      * @param children 子节点id
-     * @return true表示成功，false反之
      */
     public void createTreeNode(String id, String name, String intro, String parent, List<String> children) {
         TreeNode treeNode = new TreeNode(id, name, intro, "", parent, children);
@@ -41,8 +38,6 @@ public class MongoTreeService {
             } else {
                 //为其父结点添加关系
                 opParents(id, parent, true);
-                //为其子结点添加关系
-                // opChildren(id, children, true);
             }
         }
     }
@@ -143,9 +138,8 @@ public class MongoTreeService {
      * 删除子结点-->父结点的隐形有向边，首先删除父结点children，然后删除子结点中的parents列表对应的父结点id
      * 注意这里只删除边，父子结点依旧存在，父结点的删除在deleteNode中
      * @param children 子结点id列表
-     * @param parent 父结点id
      */
-    private boolean deleteChildrenEdge(String parent, List<String> children) {
+    private boolean deleteChildrenEdge(List<String> children) {
         //opChildren false操作
         return opChildren("", children);
 
@@ -165,7 +159,7 @@ public class MongoTreeService {
      * @param key 节点key：id
      * @return KnowledgeTreeNode对象
      */
-    public TreeNode findNodeByKey(String key) {
+    private TreeNode findNodeByKey(String key) {
         return mongoTreeDAO.findByKey(key);
     }
 
@@ -177,7 +171,7 @@ public class MongoTreeService {
         TreeNode treeNode = findNodeByKey(key);
         String parent = treeNode.getParent();
         List<String> children = treeNode.getChildren();
-        deleteChildrenEdge(key, children);
+        deleteChildrenEdge(children);
         // 删除template中的node
         if (!template.equals("")) {
             // 处理方式为删掉模板

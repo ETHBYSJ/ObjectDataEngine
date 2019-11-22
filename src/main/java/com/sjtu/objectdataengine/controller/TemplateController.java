@@ -1,6 +1,6 @@
 package com.sjtu.objectdataengine.controller;
 
-import com.sjtu.objectdataengine.service.mongodb.TemplateService;
+import com.sjtu.objectdataengine.service.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 

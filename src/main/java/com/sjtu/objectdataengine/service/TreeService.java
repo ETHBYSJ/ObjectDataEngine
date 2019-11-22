@@ -137,5 +137,7 @@ public class TreeService {
         return redisTreeService.findNodeByKey(id);
     }
 
-
+    public TreeNode getNodeByName(String name) {
+        return redisTreeService.findNodeByKey(name); //改成name
+    }
 }

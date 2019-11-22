@@ -108,31 +108,17 @@ public class RedisTemplateService {
     /**
      * 根据条件更新对象模板
      * @param id ID
-     * @return
+     * @return true or false
      */
-    public boolean updateBaseInfo(String id, String name, String oldNodeId, String nodeId, String type){
+    public boolean updateBaseInfo(String id, String name, String intro){
         String baseKey = id + "#base";
         if(id == null) return false;
         if(!this.hasKey(id)) return false;
         if(name != null) {
             redisTemplateDAO.hset(baseKey, "name", name);
         }
-        if(nodeId != null) {
-            //Object oldNodeId = redisTemplateDAO.hget(baseKey, "nodeId");
-            redisTemplateDAO.hset(baseKey, "nodeId", nodeId);
-            if(oldNodeId != null) {
-                //解除旧节点的绑定
-                redisTreeDAO.hset(oldNodeId + "#base", "template", "");
-            }
-            if(nodeId != "") {
-                //绑定新节点
-                if(this.hasKey(nodeId)) {
-                    redisTreeDAO.hset(nodeId + "#base", "template", id);
-                }
-            }
-        }
-        if(type != null) {
-            redisTemplateDAO.hset(baseKey, "type", type);
+        if(intro != null) {
+            redisTemplateDAO.hset(baseKey, "intro", intro);
         }
         return true;
     }

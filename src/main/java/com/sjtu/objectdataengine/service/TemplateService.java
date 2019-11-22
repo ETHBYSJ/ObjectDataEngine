@@ -1,4 +1,4 @@
-package com.sjtu.objectdataengine.service.mongodb;
+package com.sjtu.objectdataengine.service;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -32,20 +32,29 @@ public class TemplateService {
         String id = jsonObject.getString("id");
         if(id == null) return "ID不能为空";
         String name = jsonObject.getString("name");
-        if (name == null) name = "";
+        if (name == null) return "name不能为空";
+        String intro = jsonObject.getString("intro");
+        if (intro == null) intro = "";
         String nodeId = jsonObject.getString("nodeId");
-        if (nodeId == null) nodeId = "";
+        if (nodeId == null || nodeId.equals("")) return "nodeId不能为空";
+        // 检查nodeId
+        TreeNode treeNode = redisTreeService.findNodeByKey(nodeId);
+        if(treeNode == null) {
+            return "指定的nodeId不存在";
+        } else if(!treeNode.getTemplate().equals("")) {
+            return "指定的node上已存在模板，若想创建新模板请先删除旧模板";
+        }
         String type = jsonObject.getString("type");
-        if (type == null) return "类型不能为空";
+        if (type == null || type.equals("")) return "类型不能为空";
         JSONObject attrsJson = jsonObject.getJSONObject("attrs");
         if (attrsJson == null) return "属性不能为空";
         HashMap<String, String> attrs = TypeConversion.JsonToMap(attrsJson);
-        //redisTemplateService.createTemplate(id, name, type, nodeId, attrs);
 
         HashMap<String, Object> createMessage = new HashMap<>();
         createMessage.put("op", "TEMP_CREATE");
         createMessage.put("id", id);
         createMessage.put("name", name);
+        createMessage.put("intro", intro);
         createMessage.put("nodeId", nodeId);
         createMessage.put("type", type);
         createMessage.put("attrs", attrs);
@@ -95,39 +104,40 @@ public class TemplateService {
         if (name != null) {
             modifyMessage.put("name", name);
         }
-
-        // 判断nodeId是否存在
-        String nodeId = jsonObject.getString("nodeId");
-        String oldNodeId = objectTemplate.getNodeId();
-        // 改之后的nodeId对应的node
-        TreeNode treeNode;
-        String newTemplate; //要修改的新的node上面的template（原有的
-        if (nodeId!= null && !nodeId.equals("") ) {
-            treeNode = redisTreeService.findNodeByKey(nodeId);
-            if (treeNode == null) return "结点不存在";
-            else {
-                newTemplate = treeNode.getTemplate();
-                modifyMessage.put("nodeId", nodeId);
-                modifyMessage.put("oldNodeId", oldNodeId);
-                modifyMessage.put("newTemplate", newTemplate);
-            }
-        } else if (nodeId != null) { //nodeId有可能是""
-            modifyMessage.put("nodeId", nodeId);
-            modifyMessage.put("oldNodeId", oldNodeId);
-            newTemplate = null;
+        // intro如果是null就不需要改
+        String intro = jsonObject.getString("name");
+        if (intro != null) {
+            modifyMessage.put("intro", intro);
         }
-        // 判断type
-        String type = jsonObject.getString("type");
-        if (type != null) {
-            modifyMessage.put("name", name);
-        }
-
-        System.out.println(modifyMessage);
+        // System.out.println(modifyMessage);
         mongoSender.send(modifyMessage);
-        if (redisTemplateService.updateBaseInfo(id, name, oldNodeId, nodeId, type)) {
+        if (redisTemplateService.updateBaseInfo(id, name, intro)) {
             return "修改成功";
         }
         return "修改失败";
     }
 
+    public String addAttr(String request) {
+        // 解析
+        JSONObject jsonObject = JSON.parseObject(request);
+        // id
+        String id = jsonObject.getString("id");
+        if (id == null || id.equals("")) return "ID不能为空";
+        if (redisTemplateService.hasKey(id)) return "ID不存在";
+        // name
+        String name = jsonObject.getString("name");
+        if (name == null || name.equals("")) return "name不能为空";
+        // intro
+        String intro = jsonObject.getString("intro");
+        if (intro == null) return "intro必须指定"
+        HashMap<String, Object> addAttrMessage = new HashMap<>();
+        addAttrMessage.put("op", "TEMP_ADD_ATTR");
+
+        mongoSender.send(addAttrMessage);
+        return "添加成功";
+    }
+
+    public String delAttr() {
+        return "删除成功";
+    }
 }

@@ -27,12 +27,11 @@ public class MongoTemplateService {
     /**
      * 创建新的对象模板
      * @param id ID
-     * @return true表示成功创建，false反之
      */
-    public void createObjectTemplate(String id, String name, String nodeId, String type, HashMap<String, String> attrs) {
+    public void createObjectTemplate(String id, String name, String intro, String nodeId, String type, HashMap<String, String> attrs) {
         HashMap<String, String> objects = new HashMap<>();
-        ObjectTemplate objectTemplate = new ObjectTemplate(id, name, nodeId, type, attrs, objects);
-        if(mongoTemplateDAO.create(objectTemplate) && !nodeId.equals("")) {
+        ObjectTemplate objectTemplate = new ObjectTemplate(id, name, intro, nodeId, type, attrs, objects);
+        if(mongoTemplateDAO.create(objectTemplate)) {
             this.bindToNode(nodeId, id);
         }
     }
@@ -75,7 +74,6 @@ public class MongoTemplateService {
         if (!nodeId.equals("")) {
             mongoCondition.addQuery("id", nodeId);
             mongoCondition.addUpdate("template", "");
-            mongoCondition.addUpdate("updateTime", new Date());
             mongoTreeDAO.update(mongoCondition);
         }
         mongoTemplateDAO.deleteByKey(key);
@@ -85,21 +83,11 @@ public class MongoTemplateService {
      * 根据条件更新对象模板
      * @param id ID
      */
-    public void updateBaseInfo(String id, String name, String oldNodeId, String nodeId, String newTemplate, String type){
+    public void updateBaseInfo(String id, String name, String intro){
         MongoCondition mongoCondition = new MongoCondition();
         mongoCondition.addQuery("id", id);
         if (name != null) mongoCondition.addUpdate("name", name);
-        if (type != null) mongoCondition.addUpdate("type", type);
-        if (nodeId != null && oldNodeId != null) {
-            // nodeId为数字则双向更新，nodeId为""则先单向更新，再在之前的template里面删掉绑定
-            mongoCondition.addUpdate("nodeId", nodeId);
-            mongoCondition.addUpdate("updateTime", new Date());
-            this.bindToNode(oldNodeId, "");
-            this.bindToNode(nodeId, id);
-            if (newTemplate != null && !newTemplate.equals("")) {
-                updateBaseInfo(newTemplate, null, "", "", null, null);
-            }
-        }
+        if (intro != null) mongoCondition.addUpdate("intro", intro);
         mongoTemplateDAO.update(mongoCondition);
     }
 
