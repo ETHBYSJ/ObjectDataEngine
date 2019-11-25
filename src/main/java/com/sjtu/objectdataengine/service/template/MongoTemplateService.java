@@ -91,11 +91,11 @@ public class MongoTemplateService {
     }
 
     public void addAttrs(String id, String name, String nickname) {
-
+        mongoTemplateDAO.opAttr(id, name, nickname, "add");
     }
 
     public void delAttrs(String id, String name) {
-
+        mongoTemplateDAO.opAttr(id, name, "del");
     }
 
     public void addObjects(String id, String objId, String name) {

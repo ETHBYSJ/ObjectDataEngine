@@ -126,17 +126,57 @@ public class TemplateService {
         // name
         String name = jsonObject.getString("name");
         if (name == null || name.equals("")) return "name不能为空";
-        // intro
-        String intro = jsonObject.getString("intro");
-        if (intro == null) return "intro必须指定";
+        // nickname
+        String nickname = jsonObject.getString("intro");
+        if (nickname == null || nickname.equals("")) return "nickname不能为空";
+
         HashMap<String, Object> addAttrMessage = new HashMap<>();
+
         addAttrMessage.put("op", "TEMP_ADD_ATTR");
+        addAttrMessage.put("id", id);
+        addAttrMessage.put("name", name);
+        addAttrMessage.put("nickname", nickname);
 
         mongoSender.send(addAttrMessage);
-        return "添加成功";
+        if (redisTemplateService.addAttrs(id, name, nickname)) {
+            return "添加成功";
+        } else {
+            addAttrMessage.put("op", "TEMP_DEL_ATTR");
+            addAttrMessage.remove("nickname");
+            mongoSender.send(addAttrMessage);
+            return "添加失败";
+        }
     }
 
-    public String delAttr() {
-        return "删除成功";
+    public String delAttr(String request) {
+        // 解析
+        JSONObject jsonObject = JSON.parseObject(request);
+        // id
+        String id = jsonObject.getString("id");
+        if (id == null || id.equals("")) return "ID不能为空";
+        if (redisTemplateService.hasKey(id)) return "ID不存在";
+        // name
+        String name = jsonObject.getString("name");
+        if (name == null || name.equals("")) return "name不能为空";
+
+        HashMap<String, Object> delAttrMessage = new HashMap<>();
+
+        delAttrMessage.put("op", "TEMP_DEL_ATTR");
+        delAttrMessage.put("id", id);
+        delAttrMessage.put("name", name);
+
+        mongoSender.send(delAttrMessage);
+        if (redisTemplateService.delAttrs(id, name)) {
+            return "删除成功";
+        }
+        return "删除失败";
+    }
+
+    public boolean addObject() {
+        return true;
+    }
+
+    public boolean delObject() {
+        return true;
     }
 }

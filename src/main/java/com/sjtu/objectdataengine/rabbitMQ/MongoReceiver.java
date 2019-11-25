@@ -119,7 +119,7 @@ public class MongoReceiver {
              */
             case "TEMP_MODIFY_BASE": {
                 String id = message.get("id").toString();
-                String name, intro, type;
+                String name, intro;
                 if (message.get("name") != null)
                     name = message.get("name").toString();
                 else name = null;
@@ -130,8 +130,22 @@ public class MongoReceiver {
                 break;
             }
 
+            /*
+             * 添加一个属性
+             * 包括name和intro
+             */
             case "TEMP_ADD_ATTR": {
+                String id = message.get("id").toString();
+                String name = message.get("name").toString();
+                String nickname = message.get("nickname").toString();
+                mongoTemplateService.addAttrs(id, name, nickname);
+                break;
+            }
 
+            case "TEMP_DEL_ATTR": {
+                String id = message.get("id").toString();
+                String name = message.get("name").toString();
+                mongoTemplateService.delAttrs(id, name);
                 break;
             }
         }

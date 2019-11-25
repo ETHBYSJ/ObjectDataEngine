@@ -6,14 +6,18 @@ import com.sjtu.objectdataengine.model.template.ObjectTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.util.*;
 
 @Component
 public class RedisTemplateService {
-    @Autowired
+
+    @Resource
     private RedisTemplateDAO redisTemplateDAO;
-    @Autowired
+
+    @Resource
     private RedisTreeDAO redisTreeDAO;
+
     /**
      * 创建模板
      * @param id 模板id
@@ -23,7 +27,7 @@ public class RedisTemplateService {
      * @param attrs 属性列表
      * @return true代表创建成功，false代表创建失败
      */
-    public boolean createTemplate(String id, String name, String intro, String type, String nodeId, HashMap<String, String> attrs) {
+    boolean createTemplate(String id, String name, String intro, String type, String nodeId, HashMap<String, String> attrs) {
         Date now = new Date();
         //创建模板
         //id索引表
@@ -69,7 +73,7 @@ public class RedisTemplateService {
      * @param id 模板id
      * @return 模板
      */
-    public ObjectTemplate findTemplateById(String id) {
+    ObjectTemplate findTemplateById(String id) {
         return redisTemplateDAO.findById(id);
     }
 
@@ -78,7 +82,7 @@ public class RedisTemplateService {
      * @param id 模板id
      * @return true代表删除成功，false代表删除失败
      */
-    public boolean deleteTemplateById(String id) {
+    boolean deleteTemplateById(String id) {
         //解除树节点的绑定
         Object nodeId = redisTemplateDAO.hget(id + "#base", "nodeId");
         if(nodeId != null) {
@@ -88,15 +92,16 @@ public class RedisTemplateService {
         return redisTemplateDAO.deleteById(id);
     }
 
-    public boolean hasKey(String id) {
+    boolean hasKey(String id) {
         return redisTemplateDAO.sHasKey("index", id);
     }
-    public void addAttrs(String id, String name, String nickname) {
-        redisTemplateDAO.hset(id + "#attrs", name, nickname);
+
+    boolean addAttrs(String id, String name, String nickname) {
+        return redisTemplateDAO.hset(id + "#attrs", name, nickname);
     }
 
-    public void delAttrs(String id, String name) {
-        redisTemplateDAO.hdel(id + "#attrs", name);
+    boolean delAttrs(String id, String name) {
+        return (redisTemplateDAO.hdel(id + "#attrs", name) > 0);
     }
 
     public void addObjects(String id, String objId, String name) {
@@ -111,7 +116,7 @@ public class RedisTemplateService {
      * @param id ID
      * @return true or false
      */
-    public boolean updateBaseInfo(String id, String name, String intro){
+    boolean updateBaseInfo(String id, String name, String intro){
         String baseKey = id + "#base";
         if(id == null) return false;
         if(!this.hasKey(id)) return false;

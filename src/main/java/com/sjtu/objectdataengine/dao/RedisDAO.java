@@ -246,6 +246,7 @@ public class RedisDAO {
      * 删除hash表中的值
      * @param key 键 不能为null
      * @param item 项 可以使多个 不能为null
+     * @return 被成功删除的数量
      */
     public long hdel(String key, Object... item){
         try {
