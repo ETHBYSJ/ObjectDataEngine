@@ -1,19 +1,14 @@
 package com.sjtu.objectdataengine.dao;
 
 import com.sjtu.objectdataengine.model.MongoBase;
-import com.sjtu.objectdataengine.model.ObjectTemplate;
 import com.sjtu.objectdataengine.utils.MongoCondition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 public abstract class MongoBaseDAO<T extends MongoBase> {
     @Autowired

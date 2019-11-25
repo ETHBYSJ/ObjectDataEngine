@@ -1,8 +1,8 @@
 package com.sjtu.objectdataengine.rabbitMQ;
 
-import com.sjtu.objectdataengine.service.mongodb.MongoObjectService;
-import com.sjtu.objectdataengine.service.mongodb.MongoTemplateService;
-import com.sjtu.objectdataengine.service.mongodb.MongoTreeService;
+import com.sjtu.objectdataengine.service.object.MongoObjectService;
+import com.sjtu.objectdataengine.service.template.MongoTemplateService;
+import com.sjtu.objectdataengine.service.tree.MongoTreeService;
 import com.sjtu.objectdataengine.utils.TypeConversion;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;

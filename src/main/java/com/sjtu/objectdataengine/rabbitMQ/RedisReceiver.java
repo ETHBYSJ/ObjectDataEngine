@@ -1,6 +1,6 @@
 package com.sjtu.objectdataengine.rabbitMQ;
 
-import com.sjtu.objectdataengine.service.redis.RedisObjectService;
+import com.sjtu.objectdataengine.service.object.RedisObjectService;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;

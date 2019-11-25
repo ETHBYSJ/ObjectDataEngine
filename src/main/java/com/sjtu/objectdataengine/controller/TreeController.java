@@ -1,8 +1,8 @@
 package com.sjtu.objectdataengine.controller;
 
-import com.sjtu.objectdataengine.model.TreeNode;
-import com.sjtu.objectdataengine.model.TreeNodeReturn;
-import com.sjtu.objectdataengine.service.TreeService;
+import com.sjtu.objectdataengine.model.tree.TreeNode;
+import com.sjtu.objectdataengine.model.tree.TreeNodeReturn;
+import com.sjtu.objectdataengine.service.tree.TreeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
