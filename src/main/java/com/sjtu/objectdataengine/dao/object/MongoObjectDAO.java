@@ -28,7 +28,7 @@ public class MongoObjectDAO extends MongoBaseDAO<CommonObject> {
      * 根据主键key查询
      *
      * @param key 主键key
-     * @return T类型，返回某条数据
+     * @return CommonObject类型，返回某条数据
      */
     @Override
     public CommonObject findByKey(String key) {

@@ -7,6 +7,7 @@ import com.sjtu.objectdataengine.model.object.CommonObject;
 import com.sjtu.objectdataengine.rabbitMQ.MongoSender;
 import com.sjtu.objectdataengine.rabbitMQ.RedisSender;
 import com.sjtu.objectdataengine.service.template.MongoTemplateService;
+import com.sjtu.objectdataengine.service.template.RedisTemplateService;
 import com.sjtu.objectdataengine.service.tree.RedisTreeService;
 import org.springframework.stereotype.Component;
 
@@ -32,8 +33,10 @@ public class ObjectService {
     RedisTreeService redisTreeService;
 
     @Resource
-    MongoTemplateService mongoTemplateService;
+    RedisTemplateService redisTemplateService;
 
+    @Resource
+    MongoTemplateService mongoTemplateService;
 
 
     /**
@@ -49,12 +52,13 @@ public class ObjectService {
 
         String name = jsonObject.getString("name");
         if (name == null || name.equals("")) return "name不能为空";
+
         String intro = jsonObject.getString("intro");
-        if (intro == null) return "intro不能为空！";
+        if (intro == null || intro.equals("")) return "intro不能为空！";
 
         String template = jsonObject.getString("template");
-        if(template == null) return "template不能为空！";
-        else if (mongoTemplateService.findTemplateById(template)==null) return "template不存在";
+        if(template == null || template.equals("")) return "template不能为空！";
+        else if (!redisTemplateService.hasKey(template)) return "template不存在";
 
         JSONArray objectsArray = jsonObject.getJSONArray("objects");
         List<String> objects = new ArrayList<>();
@@ -76,6 +80,7 @@ public class ObjectService {
         HashMap<String, Object> message = new HashMap<>();
         message.put("op", "CREATE");
         message.put("id", id);
+        message.put("name", name);
         message.put("intro", intro);
         message.put("template", template);
         message.put("objects", objects);

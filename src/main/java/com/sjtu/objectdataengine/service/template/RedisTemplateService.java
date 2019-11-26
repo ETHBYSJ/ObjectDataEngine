@@ -92,8 +92,8 @@ public class RedisTemplateService {
         return redisTemplateDAO.deleteById(id);
     }
 
-    boolean hasKey(String id) {
-        return redisTemplateDAO.sHasKey("index", id);
+    public boolean hasKey(String id) {
+        return redisTemplateDAO.hasKey(id);
     }
 
     boolean addAttrs(String id, String name, String nickname) {
@@ -129,4 +129,5 @@ public class RedisTemplateService {
         }
         return true;
     }
+
 }

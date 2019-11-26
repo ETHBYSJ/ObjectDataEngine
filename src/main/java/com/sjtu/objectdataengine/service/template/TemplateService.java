@@ -119,7 +119,7 @@ public class TemplateService {
         return "修改失败";
     }
 
-    public String addAttr(String request, String op) {
+    public String addAttr(String request) {
         // 解析
         JSONObject jsonObject = JSON.parseObject(request);
         // id
@@ -151,16 +151,13 @@ public class TemplateService {
         }
     }
 
-    public String delAttr(String request) {
-        // 解析
-        JSONObject jsonObject = JSON.parseObject(request);
-        // id
-        String id = jsonObject.getString("id");
+    public String delAttr(String id, String name) {
+
         if (id == null || id.equals("")) return "ID不能为空";
-        if (redisTemplateService.hasKey(id)) return "ID不存在";
+        if (!redisTemplateService.hasKey(id)) return "ID不存在";
         // name
-        String name = jsonObject.getString("name");
         if (name == null || name.equals("")) return "name不能为空";
+        //if (!redisTemplateService.keyHasName(id, name)) return "name不存在";
 
         HashMap<String, Object> delAttrMessage = new HashMap<>();
 
@@ -172,6 +169,7 @@ public class TemplateService {
         if (redisTemplateService.delAttrs(id, name)) {
             return "删除成功";
         }
+
         return "删除失败";
     }
 }

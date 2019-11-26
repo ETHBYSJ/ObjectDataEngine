@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +31,7 @@ public class MongoTemplateService {
      * @param id ID
      */
     public void createObjectTemplate(String id, String name, String intro, String nodeId, String type, HashMap<String, String> attrs) {
-        HashMap<String, String> objects = new HashMap<>();
+        List<String> objects = new ArrayList<>();
         ObjectTemplate objectTemplate = new ObjectTemplate(id, name, intro, nodeId, type, attrs, objects);
         if(mongoTemplateDAO.create(objectTemplate)) {
             this.bindToNode(nodeId, id);
@@ -104,11 +105,10 @@ public class MongoTemplateService {
      * 添加object
      * @param id 模板id
      * @param objId 对象id
-     * @param name 对象名称
      * @return true or false
      */
-    public boolean addObjects(String id, String objId, String name) {
-        return mongoTemplateDAO.opObjects(id, objId, name, "add");
+    public boolean addObjects(String id, String objId) {
+        return mongoTemplateDAO.opObjects(id, objId, "add");
     }
 
     public boolean delObjects(String id, String objId) {
