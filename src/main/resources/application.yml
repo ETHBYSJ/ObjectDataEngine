@@ -13,6 +13,7 @@ redis:
     objectDB: 1   #对象数据
     templateDB: 2 #类模板
     treeDB: 3     #树
+    eventDB: 4    #事件对象
 
 spring:
   data:
