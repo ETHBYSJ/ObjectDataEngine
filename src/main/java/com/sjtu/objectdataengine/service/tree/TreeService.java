@@ -57,10 +57,11 @@ public class TreeService {
         message.put("id", id);
         message.put("name", name);
         message.put("parent", parent);
+        message.put("intro", intro);
 
         // 双写
         mongoSender.send(message);
-        if(true)//redisTreeService.createTreeNode(id, name, template, parentsArray, children)) //改成上面参数的形式
+        if(redisTreeService.createTreeNode(id, name, intro, parent, children))//redisTreeService.createTreeNode(id, name, template, parentsArray, children)) //改成上面参数的形式
            return "创建成功！";
 
         this.delete(id);
@@ -122,7 +123,7 @@ public class TreeService {
         }
 
         mongoSender.send(modifyMessage);
-        if (true) {//redisTreeService.updateNodeByKey(id, name, template, parentsArray)) { //改成上面几个
+        if (redisTreeService.updateNodeByKey(id, name, intro, parent)) {//redisTreeService.updateNodeByKey(id, name, template, parentsArray)) { //改成上面几个
             return "修改成功";
         }
         return "修改失败";
