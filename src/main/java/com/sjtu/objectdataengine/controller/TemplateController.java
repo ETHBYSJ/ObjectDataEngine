@@ -29,4 +29,15 @@ public class TemplateController {
     public String modifyBaseInfo(@RequestBody String request) {
         return templateService.modifyBaseInfo(request);
     }
+
+    @PostMapping("/add_attr")
+    @ResponseBody
+    public String addAttr(@RequestBody String request) {
+        return templateService.addAttr(request);
+    }
+
+    @GetMapping("/del_attr")
+    public String delAttr(@RequestParam String id, @RequestParam String name) {
+        return templateService.delAttr(id, name);
+    }
 }
