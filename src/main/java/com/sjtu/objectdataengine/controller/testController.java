@@ -4,32 +4,21 @@ import com.sjtu.objectdataengine.utils.MongoAttr;
 import com.sjtu.objectdataengine.model.object.MongoAttrs;
 import com.sjtu.objectdataengine.model.object.CommonObject;
 import com.sjtu.objectdataengine.service.object.MongoObjectService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
+import javax.annotation.Resource;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 @RequestMapping("/test")
 @RestController
 public class testController {
-    @Autowired
+    @Resource
     private MongoObjectService mongoObjectService;
-
-    @GetMapping("create")
-    public boolean testCreate() {
-        HashMap<String, String> hashMap = new HashMap<>();
-        hashMap.put("id", "hh");
-        hashMap.put("name", "go");
-        List<String> objects = new ArrayList<>();
-        return mongoObjectService.create("2", "123","4", hashMap, objects);
-    }
 
     @GetMapping("find")
     public List<MongoAttrs> find(@RequestParam String id, @RequestParam String name) {

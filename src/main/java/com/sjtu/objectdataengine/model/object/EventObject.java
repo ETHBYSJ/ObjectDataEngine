@@ -19,7 +19,7 @@ public class EventObject extends MongoBase {
 
     private List<String> objects;
 
-    private HashMap<String, MongoAttr> attr;
+    private HashMap<String, MongoAttr> attrs;
 
     private Date startTime;
     private Date endTime;
@@ -27,13 +27,13 @@ public class EventObject extends MongoBase {
     private boolean status;      // 1-进行中 0-已结束
     private String stage;       // 自定义的事件子状态
 
-    public EventObject(String id, String name, String intro, String template, List<String> objects, HashMap<String, MongoAttr> attr) {
+    public EventObject(String id, String name, String intro, String template, List<String> objects, HashMap<String, MongoAttr> attrs) {
         this.id = id;
         this.name = name;
         this.intro = intro;
         this.template = template;
         this.objects = objects;
-        this.attr = attr;
+        this.attrs = attrs;
     }
 
     public String getId() {
@@ -76,12 +76,12 @@ public class EventObject extends MongoBase {
         this.objects = objects;
     }
 
-    public HashMap<String, MongoAttr> getAttr() {
-        return attr;
+    public HashMap<String, MongoAttr> getAttrs() {
+        return attrs;
     }
 
-    public void setAttr(HashMap<String, MongoAttr> attr) {
-        this.attr = attr;
+    public void setAttrs(HashMap<String, MongoAttr> attr) {
+        this.attrs = attrs;
     }
 
     public Date getStartTime() {

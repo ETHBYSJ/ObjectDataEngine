@@ -23,7 +23,7 @@ public class RedisReceiver {
     public void process(Map message) {
         String op = message.get("op").toString();
 
-        /**
+        /*
          * 每个操作信息都用map描述
          * create表示创建一个新的object
          * create中需要的信息有：
@@ -34,6 +34,7 @@ public class RedisReceiver {
          * attrs： HashMap类型，属性键值
          */
         switch (op) {
+
             case "CREATE": {
                 String id = message.get("id").toString();
                 String name = message.get("name").toString();
@@ -44,6 +45,7 @@ public class RedisReceiver {
                 redisObjectService.create(id, intro, template, objects, attrs);
                 break;
             }
+
             case "EVICT_AND_ADD": {
                 String id = message.get("id").toString();
                 String attr = message.get("attr").toString();
@@ -54,6 +56,7 @@ public class RedisReceiver {
                 redisObjectService.addAttr(key, value, date);
                 break;
             }
+
             case "ADD_ATTR": {
                 String key = message.get("key").toString();
                 String value = message.get("value").toString();

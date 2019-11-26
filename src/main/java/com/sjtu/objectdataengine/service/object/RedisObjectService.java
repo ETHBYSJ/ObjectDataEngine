@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Resource;
 import java.util.*;
 
 @Service
@@ -25,15 +26,13 @@ public class RedisObjectService {
     private int cacheSize;
     @Value("${redis.evict-size}")
     private int evictSize;
-    @Autowired
-    private static ObjectMapper MAPPER;
-    @Autowired
+    @Resource
     private RedisAttrDAO redisAttrDAO;
-    @Autowired
+    @Resource
     private RedisObjectDAO redisObjectDAO;
-    @Autowired
+    @Resource
     private RedisTemplateDAO redisTemplateDAO;
-    @Autowired
+    @Resource
     private RedisSender redisSender;
 
 
