@@ -311,15 +311,20 @@ public class RedisTreeService {
      * @param id ID
      * @return true代表更新成功，false代表更新失败
      */
-    public boolean updateNodeByKey(String id, String name, String template, String parent) {
+    public boolean updateNodeByKey(String id, String name, String intro, String parent) {
         try {
             String baseKey = id + '#' + "base";
             //改名字
             if(name != null) {
                 redisTreeDAO.hset(baseKey, "name", name);
             }
+            /*
             if(template!=null && redisTemplateDAO.sHasKey("index", template)) {
                 redisTreeDAO.hset(baseKey, "template", template);
+            }
+            */
+            if(intro != null) {
+                redisTreeDAO.hset(baseKey, "intro", intro);
             }
             if (parent!=null) {
                 String oldParent = redisTreeDAO.hget(baseKey, "parent").toString();
