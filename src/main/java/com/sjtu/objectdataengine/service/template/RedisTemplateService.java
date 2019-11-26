@@ -109,7 +109,7 @@ public class RedisTemplateService {
     }
 
     boolean delObject(String id, String objId) {
-        return (redisTemplateDAO.lRemove(id + "#objects", 1, objId) > 0;
+        return redisTemplateDAO.lRemove(id + "#objects", 1, objId) > 0;
     }
 
     /**
