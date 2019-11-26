@@ -5,6 +5,8 @@ import com.sjtu.objectdataengine.dao.template.MongoTemplateDAO;
 import com.sjtu.objectdataengine.dao.tree.MongoTreeDAO;
 import com.sjtu.objectdataengine.model.template.ObjectTemplate;
 import com.sjtu.objectdataengine.utils.MongoCondition;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -98,13 +100,21 @@ public class MongoTemplateService {
         mongoTemplateDAO.opAttr(id, name, "del");
     }
 
-    public void addObjects(String id, String objId, String name) {
-
+    /**
+     * 添加object
+     * @param id 模板id
+     * @param objId 对象id
+     * @param name 对象名称
+     * @return true or false
+     */
+    public boolean addObjects(String id, String objId, String name) {
+        return mongoTemplateDAO.opObjects(id, objId, name, "add");
     }
 
-    public void delObjects(String id, String objId) {
-
+    public boolean delObjects(String id, String objId) {
+        return mongoTemplateDAO.opObjects(id, objId, "del");
     }
+
     private void bindToNode(String nodeId, String template) {
         MongoCondition mongoCondition = new MongoCondition();
         // 绑定, 把对应nodeId的node上的template改成当前的template

@@ -106,6 +106,10 @@ public class MongoReceiver {
                 mongoTemplateService.createObjectTemplate(id, name, intro, nodeId, type, attrs);
                 break;
             }
+
+            /*
+             * 删除模板
+             */
             case "TEMP_DELETE": {
                 String id = message.get("id").toString();
                 String nodeId = message.get("nodeId").toString();
@@ -142,6 +146,10 @@ public class MongoReceiver {
                 break;
             }
 
+            /*
+             * 删除一个属性
+             * 通过id和name
+             */
             case "TEMP_DEL_ATTR": {
                 String id = message.get("id").toString();
                 String name = message.get("name").toString();

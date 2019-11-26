@@ -22,6 +22,9 @@ public class TemplateService {
     RedisTemplateService redisTemplateService;
 
     @Resource
+    MongoTemplateService mongoTemplateService;
+
+    @Resource
     RedisTreeService redisTreeService;
 
     public String create(String request) {
@@ -116,7 +119,7 @@ public class TemplateService {
         return "修改失败";
     }
 
-    public String addAttr(String request) {
+    public String addAttr(String request, String op) {
         // 解析
         JSONObject jsonObject = JSON.parseObject(request);
         // id
@@ -130,21 +133,21 @@ public class TemplateService {
         String nickname = jsonObject.getString("intro");
         if (nickname == null || nickname.equals("")) return "nickname不能为空";
 
-        HashMap<String, Object> addAttrMessage = new HashMap<>();
+        HashMap<String, Object> opAttrMessage = new HashMap<>();
 
-        addAttrMessage.put("op", "TEMP_ADD_ATTR");
-        addAttrMessage.put("id", id);
-        addAttrMessage.put("name", name);
-        addAttrMessage.put("nickname", nickname);
+        opAttrMessage.put("op", "TEMP_ADD_ATTR");
+        opAttrMessage.put("id", id);
+        opAttrMessage.put("name", name);
+        opAttrMessage.put("nickname", nickname);
 
-        mongoSender.send(addAttrMessage);
+        mongoSender.send(opAttrMessage);
         if (redisTemplateService.addAttrs(id, name, nickname)) {
-            return "添加成功";
+            return "操作成功";
         } else {
-            addAttrMessage.put("op", "TEMP_DEL_ATTR");
-            addAttrMessage.remove("nickname");
-            mongoSender.send(addAttrMessage);
-            return "添加失败";
+            opAttrMessage.put("op", "TEMP_DEL_ATTR");
+            opAttrMessage.remove("nickname");
+            mongoSender.send(opAttrMessage);
+            return "操作失败";
         }
     }
 
@@ -170,13 +173,5 @@ public class TemplateService {
             return "删除成功";
         }
         return "删除失败";
-    }
-
-    public boolean addObject() {
-        return true;
-    }
-
-    public boolean delObject() {
-        return true;
     }
 }

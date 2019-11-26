@@ -104,12 +104,12 @@ public class RedisTemplateService {
         return (redisTemplateDAO.hdel(id + "#attrs", name) > 0);
     }
 
-    public void addObjects(String id, String objId, String name) {
-        redisTemplateDAO.hset(id + "#objects", objId, name);
+    boolean addObjects(String id, String objId, String name) {
+        return redisTemplateDAO.hset(id + "#objects", objId, name);
     }
 
-    public void delObjects(String id, String objId) {
-        redisTemplateDAO.hdel(id + "#objects", objId);
+    boolean delObjects(String id, String objId) {
+        return (redisTemplateDAO.hdel(id + "#objects", objId) > 0);
     }
     /**
      * 根据条件更新对象模板

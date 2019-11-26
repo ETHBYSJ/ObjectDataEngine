@@ -1,5 +1,6 @@
 package com.sjtu.objectdataengine.dao.template;
 
+import com.mongodb.client.result.UpdateResult;
 import com.sjtu.objectdataengine.dao.MongoBaseDAO;
 import com.sjtu.objectdataengine.model.template.ObjectTemplate;
 import com.sjtu.objectdataengine.utils.MongoCondition;
@@ -99,5 +100,31 @@ public class MongoTemplateDAO extends MongoBaseDAO<ObjectTemplate> {
         }
 
         mongoTemplate.updateMulti(query, update, ObjectTemplate.class);
+    }
+
+    public boolean opObjects(String id, String objId, String op) {
+        if (op.equals("del")) {
+            return opObjects(id, objId, null, op);
+        }
+        return false;
+    }
+
+    public boolean opObjects(String id, String objId, String name, String op) {
+        Query query = new Query();
+        Criteria criteria = Criteria.where("id").is(id);
+        query.addCriteria(criteria);
+
+        Update update = new Update();
+        if (op.equals("add")) {
+            update.set("objects." + objId, name);
+        } else if (op.equals("del")) {
+            update.unset("objects." + objId);
+        } else {
+            return false;
+        }
+
+        UpdateResult updateRequest = mongoTemplate.updateMulti(query, update, ObjectTemplate.class);
+
+        return (updateRequest.getMatchedCount() > 0 && updateRequest.getModifiedCount() > 0);
     }
 }
