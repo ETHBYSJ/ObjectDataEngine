@@ -27,13 +27,13 @@ public class RedisEventService {
         String objectsKey = id + "#objects";
         Object name = redisEventDAO.hget(baseKey, "name");
         if(name == null) name = "";
-        Object intro =  redisEventDAO.hget(baseKey, "intro");
+        Object intro = redisEventDAO.hget(baseKey, "intro");
         if(intro == null) intro = "";
-        Object template =  redisEventDAO.hget(baseKey, "template");
+        Object template = redisEventDAO.hget(baseKey, "template");
         if(template == null) template = "";
-        Date startTime = (Date)  redisEventDAO.hget(baseKey, "startTime");
-        Date endTime = (Date)  redisEventDAO.hget(baseKey, "endTime");
-        String status = (String)  redisEventDAO.hget(baseKey, "status");
+        Date startTime = (Date) redisEventDAO.hget(baseKey, "startTime");
+        Date endTime = (Date) redisEventDAO.hget(baseKey, "endTime");
+        boolean status = (boolean) redisEventDAO.hget(baseKey, "status");
         List<String> objects = (List<String>) redisEventDAO.lGet(objectsKey, 0, -1);
         HashMap<String, MongoAttr> attrMap = new HashMap<>();
         for(String attr : attrList) {
