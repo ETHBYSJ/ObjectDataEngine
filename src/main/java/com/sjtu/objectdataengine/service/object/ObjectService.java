@@ -8,30 +8,30 @@ import com.sjtu.objectdataengine.rabbitMQ.MongoSender;
 import com.sjtu.objectdataengine.rabbitMQ.RedisSender;
 import com.sjtu.objectdataengine.service.template.MongoTemplateService;
 import com.sjtu.objectdataengine.service.tree.RedisTreeService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.util.*;
 
 @Component
-public class DataService {
+public class ObjectService {
 
-    @Autowired
+    @Resource
     MongoSender mongoSender;
 
-    @Autowired
+    @Resource
     RedisSender redisSender;
 
-    @Autowired
+    @Resource
     MongoObjectService mongoObjectService;
 
-    @Autowired
+    @Resource
     RedisObjectService redisObjectService;
 
-    @Autowired
+    @Resource
     RedisTreeService redisTreeService;
 
-    @Autowired
+    @Resource
     MongoTemplateService mongoTemplateService;
 
 
@@ -45,8 +45,10 @@ public class DataService {
         //解析JSON
         JSONObject jsonObject = JSON.parseObject(request);
         String id = jsonObject.getString("id");
-        if (id == null) return "ID不能为空！";
+        if (id == null || id.equals("")) return "ID不能为空！";
 
+        String name = jsonObject.getString("name");
+        if (name == null || name.equals("")) return "name不能为空";
         String intro = jsonObject.getString("intro");
         if (intro == null) return "intro不能为空！";
 

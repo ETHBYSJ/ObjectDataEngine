@@ -22,8 +22,9 @@ public class CommonObject extends MongoBase {
 
     private HashMap<String, MongoAttr> attr;  // 最新属性集合
 
-    public CommonObject(String id, String intro, String type, String template, HashMap<String, MongoAttr> attr, HashMap<String, Date> events) {
+    public CommonObject(String id, String name, String intro, String type, String template, HashMap<String, MongoAttr> attr, HashMap<String, Date> events) {
         this.id = id;
+        this.name = name;
         this.intro = intro;
         this.type = type;
         this.template = template;
