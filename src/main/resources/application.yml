@@ -9,11 +9,12 @@ redis:
   cache-size: 5   # 对象属性表大小
   evict-size: 2   # 单次淘汰的数据量
   database:
-    attrDB: 0     #属性列表
-    objectDB: 1   #对象数据
-    templateDB: 2 #类模板
-    treeDB: 3     #树
-    eventDB: 4    #事件对象
+    attrDB: 0       #属性列表
+    objectDB: 1     #对象数据
+    templateDB: 2   #类模板
+    treeDB: 3       #树
+    eventDB: 4      #事件对象
+    eventAttrDB: 5  #事件对象属性
 
 spring:
   data:

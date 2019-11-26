@@ -3,7 +3,6 @@ package com.sjtu.objectdataengine.service.template;
 import com.sjtu.objectdataengine.dao.template.RedisTemplateDAO;
 import com.sjtu.objectdataengine.dao.tree.RedisTreeDAO;
 import com.sjtu.objectdataengine.model.template.ObjectTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;

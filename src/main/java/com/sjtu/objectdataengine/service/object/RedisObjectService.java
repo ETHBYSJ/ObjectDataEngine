@@ -40,41 +40,6 @@ public class RedisObjectService {
 
     /**
      * 创建新对象
-     * @param request json请求体
-     * @return true代表创建成功，false代表创建失败
-     * json请求体结构：
-     * {
-     *     "id": "1",
-     *     "template": "1",
-     *     "objects": ["2", "3", "5"],
-     *      "attrs": {
-     *          "name": "Tony",
-     *          "age": "18",
-     *          "friends": [
-     *              {
-     *                  "id": "2",
-     *                  "template": "1",
-     *                  "objects": ["1"],
-     *                  "attrs": {
-     *                      "name": "Jack",
-     *                      "age": "18",
-     *                      "friends": [
-     *
-     *                      ],
-     *                  }
-     *              }
-     *           ],
-     *      }
-     * }
-     */
-    /*
-    public boolean create(String request) {
-
-        return true;
-    }
-    */
-    /**
-     * 创建新对象
      * @param id 对象id
      * @param intro 描述信息
      * @param template 模板id

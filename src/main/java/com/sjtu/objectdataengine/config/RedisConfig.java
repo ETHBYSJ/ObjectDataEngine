@@ -53,6 +53,8 @@ public class RedisConfig extends CachingConfigurerSupport {
     private int treeDB;
     @Value("${redis.database.eventDB}")
     private int eventDB;
+    @Value("{redis.database.eventAttrDB}")
+    private int eventAttrDB;
 
     private void initRedisTemplate(RedisTemplate<String, Object> redisTemplate) {
         //使用String作为key的序列化器，使用Jackson作为Value的序列化器
@@ -116,6 +118,15 @@ public class RedisConfig extends CachingConfigurerSupport {
     public RedisTemplate<String, Object> getEventRedisTemplate() {
         //创建客户端连接
         LettuceConnectionFactory lettuceConnectionFactory = createLettuceConnectionFactory(eventDB, hostName, port, maxIdle, minIdle, maxActive, maxWait, timeout);
+        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<String, Object>();
+        redisTemplate.setConnectionFactory(lettuceConnectionFactory);
+        initRedisTemplate(redisTemplate);
+        return redisTemplate;
+    }
+    @Bean(name="eventAttrRedisTemplate")
+    public RedisTemplate<String, Object> getEventAttrRedisTemplate() {
+        //创建客户端连接
+        LettuceConnectionFactory lettuceConnectionFactory = createLettuceConnectionFactory(eventAttrDB, hostName, port, maxIdle, minIdle, maxActive, maxWait, timeout);
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<String, Object>();
         redisTemplate.setConnectionFactory(lettuceConnectionFactory);
         initRedisTemplate(redisTemplate);
