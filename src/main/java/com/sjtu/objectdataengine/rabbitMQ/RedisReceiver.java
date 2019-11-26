@@ -1,11 +1,13 @@
 package com.sjtu.objectdataengine.rabbitMQ;
 
 import com.sjtu.objectdataengine.service.object.RedisObjectService;
+import com.sjtu.objectdataengine.utils.TypeConversion;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -14,7 +16,7 @@ import java.util.Map;
 @Component
 @RabbitListener(queues = "RedisQueue")//监听的队列名称 MongoQueue
 public class RedisReceiver {
-    @Autowired
+    @Resource
     private RedisObjectService redisObjectService;
 
     @RabbitHandler
@@ -31,28 +33,34 @@ public class RedisReceiver {
          * objects ： String列表，表示关联objects（的id）
          * attrs： HashMap类型，属性键值
          */
-        if (op.equals("CREATE")) {
-            String id = message.get("id").toString();
-            String intro = message.get("intro").toString();
-            String template = message.get("template").toString();
-            List<String> objects = (List<String>) message.get("objects");
-            HashMap<String, String> attrs = (HashMap<String, String>) message.get("attrs");
-            redisObjectService.create(id, intro, template, objects, attrs);
-        }
-        else if (op.equals("EVICT_AND_ADD")) {
-            String id = message.get("id").toString();
-            String attr = message.get("attr").toString();
-            String key = message.get("key").toString();
-            String value = message.get("value").toString();
-            Date date = (Date) message.get("date");
-            redisObjectService.doEvict(id, attr);
-            redisObjectService.addAttr(key, value, date);
-        }
-        else if(op.equals("ADD_ATTR")) {
-            String key = message.get("key").toString();
-            String value = message.get("value").toString();
-            Date date = (Date) message.get("date");
-            redisObjectService.addAttr(key, value, date);
+        switch (op) {
+            case "CREATE": {
+                String id = message.get("id").toString();
+                String name = message.get("name").toString();
+                String intro = message.get("intro").toString();
+                String template = message.get("template").toString();
+                List<String> objects = TypeConversion.cast(message.get("objects"));
+                HashMap<String, String> attrs = TypeConversion.cast(message.get("attrs"));
+                redisObjectService.create(id, intro, template, objects, attrs);
+                break;
+            }
+            case "EVICT_AND_ADD": {
+                String id = message.get("id").toString();
+                String attr = message.get("attr").toString();
+                String key = message.get("key").toString();
+                String value = message.get("value").toString();
+                Date date = (Date) message.get("date");
+                redisObjectService.doEvict(id, attr);
+                redisObjectService.addAttr(key, value, date);
+                break;
+            }
+            case "ADD_ATTR": {
+                String key = message.get("key").toString();
+                String value = message.get("value").toString();
+                Date date = (Date) message.get("date");
+                redisObjectService.addAttr(key, value, date);
+                break;
+            }
         }
     }
 }

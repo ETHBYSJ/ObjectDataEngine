@@ -5,20 +5,21 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
 @Document(collection="objectTemplate")
 public class ObjectTemplate extends MongoBase {
     @Id
-    private String id;              //对象模板id
-    private String name;            //对象模板name
-    private String intro;
-    private String nodeId;          //对应的结点id
-    private String type;            //类型，有事件和实体
-    private HashMap<String, String> objects;    //关联对象
-    private HashMap<String, String> attrs;      //属性集合
+    private String id;                          // 对象模板id
+    private String name;                        // 对象模板name
+    private String intro;                       // 说明
+    private String nodeId;                      // 对应的结点id
+    private String type;                        // 类型，有事件和实体
+    private List<String> objects;               // 关联对象
+    private HashMap<String, String> attrs;      // 属性集合
 
-    public ObjectTemplate(String id, String name, String intro, String nodeId, String type, HashMap<String, String> attrs, HashMap<String, String> objects) {
+    public ObjectTemplate(String id, String name, String intro, String nodeId, String type, HashMap<String, String> attrs, List<String> objects) {
         this.id = id;
         this.name = name;
         this.intro = intro;
@@ -76,25 +77,22 @@ public class ObjectTemplate extends MongoBase {
         this.attrs.remove(name);
     }
 
-    public HashMap<String, String> getObjects() {
+    public List<String> getObjects() {
         return objects;
     }
 
-    public void setObjects(HashMap<String, String> objects) {
+    public void setObjects(List<String> objects) {
         this.objects = objects;
     }
 
-    public void putObject(String key, String name) {
-        this.objects.put(key, name);
+    public void putObject(String key) {
+        this.objects.add(key);
     }
 
     public void removeObject(String key) {
         this.objects.remove(key);
     }
 
-    public void getObject(String key) {
-        this.objects.get(key);
-    }
     @Override
     public String toString() {
         return id + " " + name + " " + attrs;

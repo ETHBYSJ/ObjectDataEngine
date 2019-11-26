@@ -41,11 +41,12 @@ public class MongoReceiver {
         switch (op) {
             case "CREATE": {
                 String id = message.get("id").toString();
+                String name = message.get("name").toString();
                 String intro = message.get("intro").toString();
                 String template = message.get("template").toString();
                 List<String> objects = TypeConversion.cast(message.get("objects"));
                 HashMap<String, String> attrs = TypeConversion.cast(message.get("attrs"));
-                mongoObjectService.create(id, intro, template, attrs, objects);
+                mongoObjectService.create(id, name, intro, template, attrs, objects);
                 break;
             }
 

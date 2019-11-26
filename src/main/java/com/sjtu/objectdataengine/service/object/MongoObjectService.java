@@ -39,12 +39,13 @@ public class MongoObjectService {
      * 其次创建好单条属性的文档，没有的值为“”（空字符串）
      * 最后多条属性都要塞进去
      * @param id 对象id
+     * @param name 唯一名称
      * @param template 对象模板
      * @param kv 属性kv对
      * @param objects 关联对象集合
      * @return true or false
      */
-    public boolean create(String id, String intro, String template, HashMap<String, String> kv, List<String> objects) {
+    public boolean create(String id, String name, String intro, String template, HashMap<String, String> kv, List<String> objects) {
         try {
             HashMap<String, String> attrsMap = mongoTemplateDAO.findByKey(template).getAttrs();
             HashMap<String, MongoAttr> hashMap = new HashMap<>();
@@ -54,7 +55,7 @@ public class MongoObjectService {
                 MongoAttr mongoAttr = createAttr(id, attr, value, 1);
                 hashMap.put(attr, mongoAttr);
             }
-            createObject(id, intro, template, objects, hashMap);
+            createObject(id, name, intro, template, objects, hashMap);
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -66,12 +67,13 @@ public class MongoObjectService {
     /**
      *
      * @param id 对象id
+     * @param name 唯一名称
      * @param intro 简介
      * @param template 对象模板
      * @param objects 对象关联
      * @param hashMap kv对
      */
-    private void createObject(String id, String intro, String template, List<String> objects, HashMap<String, MongoAttr> hashMap) {
+    private void createObject(String id, String name, String intro, String template, List<String> objects, HashMap<String, MongoAttr> hashMap) {
         ObjectTemplate objectTemplate = mongoTemplateDAO.findByKey(template);
         String type = objectTemplate.getType();
         HashMap<String, Date> objs = new HashMap<>();
@@ -79,7 +81,7 @@ public class MongoObjectService {
         for (String obj : objects) {
             objs.put(obj, now);
         }
-        CommonObject commonObject = new CommonObject(id, intro, type, template, hashMap, objs);
+        CommonObject commonObject = new CommonObject(id, name, intro, type, template, hashMap, objs);
         mongoObjectDAO.create(commonObject);             //创建object
     }
 

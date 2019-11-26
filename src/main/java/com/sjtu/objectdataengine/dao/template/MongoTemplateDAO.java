@@ -103,22 +103,15 @@ public class MongoTemplateDAO extends MongoBaseDAO<ObjectTemplate> {
     }
 
     public boolean opObjects(String id, String objId, String op) {
-        if (op.equals("del")) {
-            return opObjects(id, objId, null, op);
-        }
-        return false;
-    }
-
-    public boolean opObjects(String id, String objId, String name, String op) {
         Query query = new Query();
         Criteria criteria = Criteria.where("id").is(id);
         query.addCriteria(criteria);
 
         Update update = new Update();
         if (op.equals("add")) {
-            update.set("objects." + objId, name);
+            update.addToSet("objects", objId);
         } else if (op.equals("del")) {
-            update.unset("objects." + objId);
+            update.pull("objects" , objId);
         } else {
             return false;
         }
