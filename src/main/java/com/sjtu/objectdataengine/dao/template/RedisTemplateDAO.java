@@ -52,9 +52,10 @@ public class RedisTemplateDAO extends RedisDAO {
         if(nodeId == null) return null;
         String intro = hget(baseKey, "intro") == null ? "" : hget(baseKey, "intro").toString();
         //关联对象
-        HashMap<String, String> objects = (HashMap<String, String>) hmget(objectsKey);
+        //HashMap<String, String> objects = (HashMap<String, String>) hmget(objectsKey);
+        List<String> objects = (List<String>) lGet(objectsKey, 0, -1);
         if(objects == null) {
-            objects = new HashMap<String, String>();
+            objects = new ArrayList<String>();
         }
         Object createTime = hget(baseKey, "createTime");
         Object updateTime = hget(baseKey, "updateTime");

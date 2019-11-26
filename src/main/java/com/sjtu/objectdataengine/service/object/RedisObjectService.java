@@ -481,12 +481,13 @@ public class RedisObjectService {
     private CommonObject findById(String id) {
         if(redisAttrDAO.hsize(id + "#META") > 0) {
             String template = redisAttrDAO.hget(id + "#META", "template").toString();
-            String nodeId = redisAttrDAO.hget(id + "#META", "nodeId").toString();
+            //String nodeId = redisAttrDAO.hget(id + "#META", "nodeId").toString();
+            String name = redisAttrDAO.hget(id + "#META", "name").toString();
             String type = redisAttrDAO.hget(id + "#META", "type").toString();
             String intro = redisAttrDAO.hget(id + "#META", "intro") != null ? redisAttrDAO.hget(id + "#META", "intro").toString(): "";
             Date createTime = (Date) redisAttrDAO.hget(id + "#META", "createTime");
             Date updateTime = (Date) redisAttrDAO.hget(id + "#META", "updateTime");
-            CommonObject commonObject = new CommonObject(id, intro, type, template, new HashMap<String, MongoAttr>(), new HashMap<String, Date>());
+            CommonObject commonObject = new CommonObject(id, name, intro, type, template, new HashMap<String, MongoAttr>(), new HashMap<String, Date>());
             commonObject.setCreateTime(createTime);
             commonObject.setUpdateTime(updateTime);
             return commonObject;
