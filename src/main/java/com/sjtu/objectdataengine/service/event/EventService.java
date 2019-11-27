@@ -21,6 +21,12 @@ public class EventService {
     @Resource
     RedisTemplateService redisTemplateService;
 
+    /**
+     * 创建一个事件
+     * id, name, intro, template都必须是不为空的
+     * @param request 请求体
+     * @return 结果描述
+     */
     public String create(String request) {
         JSONObject jsonObject = JSON.parseObject(request);
         String id = jsonObject.getString("id");
@@ -85,5 +91,56 @@ public class EventService {
             return  "删除成功！";
         }
         return "删除失败！";
+    }
+
+    public String modifyBase(String request) {
+        // 解析
+        JSONObject jsonObject = JSON.parseObject(request);
+        HashMap<String, Object> modifyMessage = new HashMap<>();
+        modifyMessage.put("op", "EVENT_MODIFY_BASE");
+        // id必须要有
+        String id = jsonObject.getString("id");
+        if (id == null || id.equals("")) return "ID不能为空";
+       EventObject eventObject = redisEventService.findEventObjectById(id);
+        if (eventObject == null) return "ID不存在";     // 不存在
+        modifyMessage.put("id", id);
+        // name如果是null就不需要改
+        String name = jsonObject.getString("name");
+        if (name != null) {
+            modifyMessage.put("name", name);
+        }
+        // intro如果是null就不需要改
+        String intro = jsonObject.getString("name");
+        if (intro != null) {
+            modifyMessage.put("intro", intro);
+        }
+        // stage如果是null就不需要改
+        String stage = jsonObject.getString("stage");
+        if (stage != null) {
+            modifyMessage.put("stage", stage);
+        }
+
+        mongoSender.send(modifyMessage);
+        if (redisEventService.updateBaseInfo(id, name, intro, stage)) {
+            return "修改成功";
+        }
+        return "修改失败";
+    }
+
+    public String end(String id) {
+        if (id == null || id.equals("")) return "ID不能为空";
+
+        EventObject eventObject = redisEventService.findEventObjectById(id);
+        if (eventObject == null) return "没有该事件";
+
+        HashMap<String, Object> endMessage = new HashMap<>();
+
+        endMessage.put("op", "EVENT_END");
+        endMessage.put("id", id);
+        if (redisEventService.delete(id, eventObject.getTemplate())) {
+            mongoSender.send(endMessage);
+            return "事件结束成功";
+        }
+        return "事件结束失败";
     }
 }

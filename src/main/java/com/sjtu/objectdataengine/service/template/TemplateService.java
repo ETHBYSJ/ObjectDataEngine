@@ -97,7 +97,7 @@ public class TemplateService {
         modifyMessage.put("op", "TEMP_MODIFY_BASE");
         // id必须要有
         String id = jsonObject.getString("id");
-        if (id == null) return "ID不能为空";
+        if (id == null || id.equals("")) return "ID不能为空";
         ObjectTemplate objectTemplate = redisTemplateService.findTemplateById(id);
         if (objectTemplate == null) return "ID不存在";     // 不存在
         modifyMessage.put("id", id);

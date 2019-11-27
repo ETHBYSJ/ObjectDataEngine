@@ -1,8 +1,10 @@
 package com.sjtu.objectdataengine.rabbitMQ;
 
+import com.sjtu.objectdataengine.service.event.MongoEventService;
 import com.sjtu.objectdataengine.service.object.MongoObjectService;
 import com.sjtu.objectdataengine.service.template.MongoTemplateService;
 import com.sjtu.objectdataengine.service.tree.MongoTreeService;
+import com.sjtu.objectdataengine.utils.MongoAttr;
 import com.sjtu.objectdataengine.utils.TypeConversion;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -24,6 +26,9 @@ public class MongoReceiver {
     @Resource
     private MongoTemplateService mongoTemplateService;
 
+    @Resource
+    private MongoEventService mongoEventService;
+
     @RabbitHandler
     public void process(Map message) {
         String op = message.get("op").toString();
@@ -39,7 +44,7 @@ public class MongoReceiver {
          * attrs： HashMap类型，属性键值
          */
         switch (op) {
-            case "CREATE": {
+            case "OBJECT_CREATE": {
                 String id = message.get("id").toString();
                 String name = message.get("name").toString();
                 String intro = message.get("intro").toString();
@@ -136,7 +141,7 @@ public class MongoReceiver {
             }
 
             /*
-             * 添加一个属性
+             * 模板添加一个属性
              * 包括name和intro
              */
             case "TEMP_ADD_ATTR": {
@@ -148,7 +153,7 @@ public class MongoReceiver {
             }
 
             /*
-             * 删除一个属性
+             * 模板删除一个属性
              * 通过id和name
              */
             case "TEMP_DEL_ATTR": {
@@ -157,6 +162,39 @@ public class MongoReceiver {
                 mongoTemplateService.delAttrs(id, name);
                 break;
             }
+
+            /*
+             * 创建事件
+             */
+            case "EVENT_CREATE": {
+                String id = message.get("id").toString();
+                String name = message.get("name").toString();
+                String intro = message.get("intro").toString();
+                String template = message.get("template").toString();
+                HashMap<String, String> attrs = TypeConversion.cast(message.get("attrs"));
+                mongoEventService.create(id, name, intro, template, attrs);
+                break;
+            }
+
+            case "EVENT_DELETE" : {
+                String id = message.get("id").toString();
+                String template = message.get("template").toString();
+                mongoEventService.delete(id, template);
+                break;
+            }
+
+            case "EVENT_MODIFY_BASE": {
+                break;
+            }
+
+            case "EVENT_END" : {
+                String id = message.get("id").toString();
+                mongoEventService.end(id);
+                break;
+            }
+
+            default:
+                break;
         }
     }
 }
