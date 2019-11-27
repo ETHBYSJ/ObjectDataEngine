@@ -139,7 +139,7 @@ public class EventService {
 
         endMessage.put("op", "EVENT_END");
         endMessage.put("id", id);
-        if (redisEventService.delete(id, eventObject.getTemplate())) {
+        if (redisEventService.deleteEventById(id, eventObject.getTemplate())) {
             mongoSender.send(endMessage);
             return "事件结束成功";
         }
