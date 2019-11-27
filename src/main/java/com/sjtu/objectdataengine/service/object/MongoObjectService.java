@@ -31,8 +31,6 @@ public class MongoObjectService {
     @Resource
     MongoObjectDAO mongoObjectDAO;
 
-    @Resource
-    MongoTreeDAO mongoTreeDAO;
 
     /**
      * 这里分为三步，首先创建对象链的头结点，名为对象id+属性名称+0，头结点内含当前长度等属性

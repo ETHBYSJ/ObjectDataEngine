@@ -24,7 +24,7 @@ public class EventObject extends MongoBase {
     private Date startTime;
     private Date endTime;
 
-    private boolean status;      // 1-进行中 0-已结束
+    private boolean status;      // t-进行中 f-已结束
     private String stage;       // 自定义的事件子状态
 
     public EventObject(String id, String name, String intro, String template, List<String> objects, HashMap<String, MongoAttr> attrs) {
@@ -34,6 +34,7 @@ public class EventObject extends MongoBase {
         this.template = template;
         this.objects = objects;
         this.attrs = attrs;
+        this.status = true;
     }
 
     public String getId() {
@@ -106,5 +107,13 @@ public class EventObject extends MongoBase {
 
     public void setStatus(boolean status) {
         this.status = status;
+    }
+
+    public String getStage() {
+        return stage;
+    }
+
+    public void setStage(String stage) {
+        this.stage = stage;
     }
 }

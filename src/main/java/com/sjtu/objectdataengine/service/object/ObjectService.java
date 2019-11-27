@@ -60,10 +60,10 @@ public class ObjectService {
         if(template == null || template.equals("")) return "template不能为空！";
         else if (!redisTemplateService.hasKey(template)) return "template不存在";
 
-        JSONArray objectsArray = jsonObject.getJSONArray("objects");
-        List<String> objects = new ArrayList<>();
-        if (objectsArray != null) {
-            objects = JSONObject.parseArray(objectsArray.toJSONString(), String.class);
+        JSONArray eventsArray = jsonObject.getJSONArray("events");
+        List<String> events = new ArrayList<>();
+        if (eventsArray != null) {
+            events = JSONObject.parseArray(eventsArray.toJSONString(), String.class);
         }
 
         JSONObject attrObject = jsonObject.getJSONObject("attrs");
@@ -83,7 +83,7 @@ public class ObjectService {
         message.put("name", name);
         message.put("intro", intro);
         message.put("template", template);
-        message.put("objects", objects);
+        message.put("events", events);
         message.put("attrs", attrs);
 
         mongoSender.send(message);

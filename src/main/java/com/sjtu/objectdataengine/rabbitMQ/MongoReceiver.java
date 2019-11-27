@@ -44,9 +44,9 @@ public class MongoReceiver {
                 String name = message.get("name").toString();
                 String intro = message.get("intro").toString();
                 String template = message.get("template").toString();
-                List<String> objects = TypeConversion.cast(message.get("objects"));
+                List<String> events = TypeConversion.cast(message.get("events"));
                 HashMap<String, String> attrs = TypeConversion.cast(message.get("attrs"));
-                mongoObjectService.create(id, name, intro, template, attrs, objects);
+                mongoObjectService.create(id, name, intro, template, attrs, events);
                 break;
             }
 
