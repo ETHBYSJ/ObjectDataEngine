@@ -143,9 +143,9 @@ public class EventService {
         endMessage.put("op", "EVENT_END");
         endMessage.put("id", id);
 
+        mongoSender.send(endMessage);
         // 删除redis中的已结束事件
         if (redisEventService.deleteEventById(id, eventObject.getTemplate())) {
-            mongoSender.send(endMessage);
             return "事件结束成功";
         }
         return "事件结束失败";
@@ -178,8 +178,9 @@ public class EventService {
         if (value == null) return "属性值不能为空";
         modifyMessage.put("value", value);
 
+        mongoSender.send(modifyMessage);
         if (redisEventService.updateAttr(id, name, value)) {
-            mongoSender.send(modifyMessage);
+            return  "更新属性成功";
         }
         return "更新属性失败";
     }
