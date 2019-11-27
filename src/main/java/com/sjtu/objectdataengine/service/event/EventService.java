@@ -5,11 +5,13 @@ import com.alibaba.fastjson.JSONObject;
 import com.sjtu.objectdataengine.model.event.EventObject;
 import com.sjtu.objectdataengine.rabbitMQ.MongoSender;
 import com.sjtu.objectdataengine.service.template.RedisTemplateService;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.Map;
 
+@Component
 public class EventService {
 
     @Resource
@@ -34,8 +36,8 @@ public class EventService {
 
         String template = jsonObject.getString("template");
         if(template == null || template.equals("")) return "template不能为空！";
-        else if (!redisTemplateService.hasKey(template)) return "template不存在";
-
+        //else if (!redisTemplateService.hasKey(template)) return "template不存在";
+        else if(!redisTemplateService.hasTemplate(template)) return "template不存在";
         JSONObject attrObject = jsonObject.getJSONObject("attrs");
         HashMap<String, String> attrs = new HashMap<>();
         if (attrObject != null) {
@@ -76,12 +78,12 @@ public class EventService {
         String template = eventObject.getTemplate();
 
         HashMap<String, Object> message = new HashMap<>();
-        message.put("op", "TEMP_DELETE");
+        message.put("op", "EVENT_DELETE");
         message.put("id", id);
         message.put("template", template);
 
         mongoSender.send(message);
-        if (redisTemplateService.deleteEventById(id)) {
+        if (redisEventService.deleteEventById(id, template)) {
             return  "删除成功！";
         }
         return "删除失败！";

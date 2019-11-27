@@ -48,6 +48,10 @@ public class RedisObjectService {
      * @return true代表创建成功，false代表创建失败
      */
     public boolean create(String id, String name, String intro, String template, List<String> objects, HashMap<String, String> attrMap) {
+        if(redisAttrDAO.hasKey(id + '#' + "META")) {
+            //说明对象已存在，创建失败
+            return false;
+        }
         ObjectTemplate objectTemplate = redisTemplateDAO.findById(template);
         //没有找到模板，返回false
         if(objectTemplate == null) return false;
@@ -72,10 +76,6 @@ public class RedisObjectService {
      * @return true代表创建成功，false代表创建失败
      */
     private boolean createObject(String id, String name, String intro, ObjectTemplate objectTemplate, List<String> objects, HashMap<String, MongoAttr> hashMap) {
-        if(redisAttrDAO.hsize(id + '#' + "META") != 0) {
-            //说明对象已存在，创建失败
-            return false;
-        }
         if(intro == null) intro = "";
         String templateId = objectTemplate.getId();
         String nodeId = objectTemplate.getNodeId();
