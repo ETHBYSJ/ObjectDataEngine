@@ -47,22 +47,19 @@ public class RedisObjectService {
      * @param attrMap 属性集合
      * @return true代表创建成功，false代表创建失败
      */
-    public boolean create(String id, String intro, String template, List<String> objects, HashMap<String, String> attrMap) {
+    public boolean create(String id, String name, String intro, String template, List<String> objects, HashMap<String, String> attrMap) {
         ObjectTemplate objectTemplate = redisTemplateDAO.findById(template);
         //没有找到模板，返回false
         if(objectTemplate == null) return false;
         HashMap<String, String> attrs = objectTemplate.getAttrs();
         HashMap<String, MongoAttr> hashMap = new HashMap<String, MongoAttr>();
-        //Date date = new Date();
         for(Map.Entry<String, String> attr : attrs.entrySet()) {
             String attrName = attr.getKey();
             String value = attrMap.get(attrName) == null ? "" : attrMap.get(attrName);
             MongoAttr mongoAttr = new MongoAttr(value);
-            //mongoAttr.setCreateTime(date);
-            //mongoAttr.setUpdateTime(date);
             hashMap.put(attrName, mongoAttr);
         }
-        return createObject(id, intro, objectTemplate, objects, hashMap);
+        return createObject(id, name, intro, objectTemplate, objects, hashMap);
     }
 
     /**
@@ -74,7 +71,7 @@ public class RedisObjectService {
      * @param hashMap 属性集合
      * @return true代表创建成功，false代表创建失败
      */
-    private boolean createObject(String id, String intro, ObjectTemplate objectTemplate, List<String> objects, HashMap<String, MongoAttr> hashMap) {
+    private boolean createObject(String id, String name, String intro, ObjectTemplate objectTemplate, List<String> objects, HashMap<String, MongoAttr> hashMap) {
         if(redisAttrDAO.hsize(id + '#' + "META") != 0) {
             //说明对象已存在，创建失败
             return false;
@@ -91,6 +88,7 @@ public class RedisObjectService {
         redisAttrDAO.hset(id + "#META", "createTime", date);
         redisAttrDAO.hset(id + "#META", "updateTime", date);
         redisAttrDAO.hset(id + "#META", "intro", intro);
+        redisAttrDAO.hset(id + "#META", "name", name);
 
         //存储关联对象
         if(objects != null && objects.size() > 0) {
