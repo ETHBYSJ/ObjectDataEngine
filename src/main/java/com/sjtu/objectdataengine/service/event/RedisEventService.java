@@ -55,8 +55,10 @@ public class RedisEventService {
         }
         //事件开始时间
         redisEventDAO.hset(baseKey, "startTime", now);
+        redisEventDAO.hset(baseKey, "createTime", now);
+        redisEventDAO.hset(baseKey, "updateTime", now);
         //状态
-        redisEventDAO.hset(baseKey, "status", false);
+        redisEventDAO.hset(baseKey, "status", true);
         return true;
     }
 

@@ -1,5 +1,6 @@
 package com.sjtu.objectdataengine.controller;
 
+import com.sjtu.objectdataengine.model.event.EventObject;
 import com.sjtu.objectdataengine.service.event.EventService;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,5 +28,9 @@ public class EventController {
     @ResponseBody
     public String modifyBase(@RequestBody String request) {
         return eventService.modifyBase(request);
+    }
+    @GetMapping("/find")
+    public EventObject find(@RequestParam String id) {
+        return eventService.find(id);
     }
 }

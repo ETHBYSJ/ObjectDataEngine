@@ -47,6 +47,7 @@ public class EventService {
         if(template == null || template.equals("")) return "template不能为空！";
         //else if (!redisTemplateService.hasKey(template)) return "template不存在";
         else if(!redisTemplateService.hasTemplate(template)) return "template不存在";
+        //待完成：检查template是否是event类型
         JSONObject attrObject = jsonObject.getJSONObject("attrs");
         HashMap<String, String> attrs = new HashMap<>();
         if (attrObject != null) {
@@ -115,7 +116,7 @@ public class EventService {
             modifyMessage.put("name", name);
         }
         // intro如果是null就不需要改
-        String intro = jsonObject.getString("name");
+        String intro = jsonObject.getString("intro");
         if (intro != null) {
             modifyMessage.put("intro", intro);
         }

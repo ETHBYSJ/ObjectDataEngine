@@ -58,7 +58,7 @@ public class MongoEventService {
         if (name != null) mongoCondition.addUpdate("name", name);
         if (intro != null) mongoCondition.addUpdate("intro", intro);
         if (stage != null) mongoCondition.addUpdate("stage", stage);
-        mongoTemplateDAO.update(mongoCondition);
+        mongoEventDAO.update(mongoCondition);
     }
 
     public EventObject findEventObjectById(String id) {
