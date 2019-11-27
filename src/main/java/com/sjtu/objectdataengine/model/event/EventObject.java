@@ -1,4 +1,4 @@
-package com.sjtu.objectdataengine.model.object;
+package com.sjtu.objectdataengine.model.event;
 
 import com.sjtu.objectdataengine.model.MongoBase;
 import com.sjtu.objectdataengine.utils.MongoAttr;
