@@ -83,6 +83,7 @@ public class RedisEventService {
         Date startTime = null;
         Date endTime = null;
         boolean status = false;
+        String stage = null;
         if(redisEventDAO.hget(baseKey, "startTime") != null) {
             startTime = (Date) redisEventDAO.hget(baseKey, "startTime");
         }
@@ -91,6 +92,9 @@ public class RedisEventService {
         }
         if(redisEventDAO.hget(baseKey, "status") != null) {
             status = (boolean) redisEventDAO.hget(baseKey, "status");
+        }
+        if(redisEventDAO.hget(baseKey, "stage") != null) {
+            stage = redisEventDAO.hget(baseKey, "stage").toString();
         }
         List<String> objects = (List<String>) redisEventDAO.lGet(objectsKey, 0, -1);
         HashMap<String, MongoAttr> attrMap = new HashMap<>();
@@ -102,6 +106,7 @@ public class RedisEventService {
         eventObject.setStatus(status);
         eventObject.setStartTime(startTime);
         eventObject.setEndTime(endTime);
+        eventObject.setStage(stage);
         return eventObject;
     }
 
@@ -131,4 +136,26 @@ public class RedisEventService {
         redisTemplateDAO.lRemove(template + "#objects", 1, id);
         return true;
     }
+
+    /**
+     * 基本信息的更新
+     * @param id 对象id
+     * @param name 对象名
+     * @param intro 对象简介
+     * @param stage 对象状态
+     * @return
+     */
+    public boolean updateBaseInfo(String id, String name, String intro, String stage) {
+        try {
+            String baseKey = id + "#base";
+            if(name != null) redisEventDAO.hset(baseKey, "name", name);
+            if(intro != null) redisEventDAO.hset(baseKey, "intro", intro);
+            if(stage != null) redisEventDAO.hset(baseKey, "stage", stage);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 }

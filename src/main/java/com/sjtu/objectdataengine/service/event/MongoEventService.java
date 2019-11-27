@@ -6,6 +6,7 @@ import com.sjtu.objectdataengine.model.event.EventObject;
 import com.sjtu.objectdataengine.model.template.ObjectTemplate;
 import com.sjtu.objectdataengine.utils.MongoAttr;
 import com.sjtu.objectdataengine.utils.MongoCondition;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+@Component
 public class MongoEventService {
 
     @Resource
