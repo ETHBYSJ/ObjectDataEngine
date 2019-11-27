@@ -94,7 +94,9 @@ public class RedisTemplateService {
     public boolean hasKey(String id) {
         return redisTemplateDAO.hasKey(id);
     }
-
+    public boolean hasTemplate(String id) {
+        return redisTemplateDAO.sHasKey("index", id);
+    }
     boolean addAttrs(String id, String name, String nickname) {
         return redisTemplateDAO.hset(id + "#attrs", name, nickname);
     }
