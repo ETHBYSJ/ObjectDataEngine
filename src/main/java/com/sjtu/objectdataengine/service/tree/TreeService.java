@@ -69,7 +69,7 @@ public class TreeService {
     }
 
     public String delete(String id) {
-        if(id == null) return "ID不能为空";
+        if(id == null || id.equals("")) return "ID不能为空";
 
         TreeNode treeNode = redisTreeService.findNodeByKey(id);
         if (treeNode == null) return "没有该节点";

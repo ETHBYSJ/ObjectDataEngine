@@ -2,6 +2,7 @@ package com.sjtu.objectdataengine.service.event;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.sjtu.objectdataengine.model.event.EventObject;
 import com.sjtu.objectdataengine.rabbitMQ.MongoSender;
 import com.sjtu.objectdataengine.service.template.RedisTemplateService;
 
@@ -59,5 +60,30 @@ public class EventService {
         }
 
         return "创建失败";
+    }
+
+    /**
+     * 删除一个事件
+     * @param id eventId
+     * @return 结果说明
+     */
+    public String delete(String id) {
+        if(id == null || id.equals("")) return "ID不能为空";
+
+        EventObject eventObject = redisEventService.findEventObjectById(id);
+        if (eventObject == null) return "没有该事件";
+
+        String template = eventObject.getTemplate();
+
+        HashMap<String, Object> message = new HashMap<>();
+        message.put("op", "TEMP_DELETE");
+        message.put("id", id);
+        message.put("template", template);
+
+        mongoSender.send(message);
+        if (redisTemplateService.deleteEventById(id)) {
+            return  "删除成功！";
+        }
+        return "删除失败！";
     }
 }

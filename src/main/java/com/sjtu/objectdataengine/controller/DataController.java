@@ -4,7 +4,7 @@ import com.sjtu.objectdataengine.service.object.ObjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-@RequestMapping("/")
+@RequestMapping("/object")
 @RestController
 public class DataController {
 

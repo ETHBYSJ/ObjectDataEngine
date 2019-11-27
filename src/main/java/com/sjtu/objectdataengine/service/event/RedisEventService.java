@@ -4,16 +4,16 @@ import com.sjtu.objectdataengine.dao.event.RedisEventAttrDAO;
 import com.sjtu.objectdataengine.dao.event.RedisEventDAO;
 import com.sjtu.objectdataengine.model.event.EventObject;
 import com.sjtu.objectdataengine.utils.MongoAttr;
-import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.annotation.Resource;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
 public class RedisEventService {
-    @Autowired
+    @Resource
     private RedisEventDAO redisEventDAO;
-    @Autowired
+    @Resource
     private RedisEventAttrDAO redisEventAttrDAO;
 
     public EventObject findEventObjectById(String id) {

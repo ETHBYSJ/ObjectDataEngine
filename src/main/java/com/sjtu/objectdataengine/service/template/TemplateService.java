@@ -71,7 +71,7 @@ public class TemplateService {
     }
 
     public String delete(String id) {
-        if(id == null) return "ID不能为空";
+        if(id == null || id.equals("")) return "ID不能为空";
 
         ObjectTemplate objectTemplate = redisTemplateService.findTemplateById(id);
         if (objectTemplate == null) return "没有该模板";
