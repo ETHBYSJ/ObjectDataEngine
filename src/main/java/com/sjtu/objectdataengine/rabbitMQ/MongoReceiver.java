@@ -192,7 +192,7 @@ public class MongoReceiver {
                 if (message.get("intro") != null)
                     intro = message.get("intro").toString();
                 else intro = null;
-                if (message.get("intro") != null)
+                if (message.get("stage") != null)
                     stage = message.get("stage").toString();
                 else stage = null;
                 mongoEventService.updateBaseInfo(id, name, intro, stage);

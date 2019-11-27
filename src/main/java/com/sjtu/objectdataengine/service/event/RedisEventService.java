@@ -55,8 +55,10 @@ public class RedisEventService {
         }
         //事件开始时间
         redisEventDAO.hset(baseKey, "startTime", now);
+        redisEventDAO.hset(baseKey, "createTime", now);
+        redisEventDAO.hset(baseKey, "updateTime", now);
         //状态
-        redisEventDAO.hset(baseKey, "status", false);
+        redisEventDAO.hset(baseKey, "status", true);
         return true;
     }
 
@@ -151,6 +153,8 @@ public class RedisEventService {
             if(name != null) redisEventDAO.hset(baseKey, "name", name);
             if(intro != null) redisEventDAO.hset(baseKey, "intro", intro);
             if(stage != null) redisEventDAO.hset(baseKey, "stage", stage);
+            //设置更新时间
+            redisEventDAO.hset(baseKey, "updateTime", new Date());
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -158,4 +162,35 @@ public class RedisEventService {
         }
     }
 
+    /**
+     * 更新事件对象属性值
+     * @param id 对象id
+     * @param name 属性名
+     * @param value 更新后的属性值
+     * @return true代表更新成功，false代表更新失败
+     */
+    public boolean updateAttr(String id, String name, String value) {
+        try {
+            String baseKey = id + "#base";
+            String attrKey = id + '#' + name;
+            Date now = new Date();
+            redisEventDAO.hset(baseKey, "updateTime", now);
+            if(!redisEventAttrDAO.hasKey(attrKey)) {
+                redisEventAttrDAO.hset(attrKey, "createTime", now);
+            }
+            redisEventAttrDAO.hset(attrKey, "updateTime", now);
+            redisEventAttrDAO.hset(attrKey, "value", value);
+            return true;
+        } catch(Exception e) {
+            return false;
+        }
+    }
+    public void addObject(String id, String objId) {
+        if(!redisEventDAO.lHasValue(id + "#objects", objId)) {
+            redisEventDAO.lSet(id + "#objects", objId);
+        }
+    }
+    public void delObject(String id, String objId) {
+        redisEventDAO.lRemove(id + "#objects", 1, objId);
+    }
 }
