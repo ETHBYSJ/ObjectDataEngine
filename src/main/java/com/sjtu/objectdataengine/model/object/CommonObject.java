@@ -64,11 +64,11 @@ public class CommonObject extends MongoBase {
         this.template = template;
     }
 
-    public HashMap<String, Date> getObjects() {
+    public HashMap<String, Date> getEvents() {
         return events;
     }
 
-    public void setObjects(HashMap<String, Date> events) {
+    public void setEvents(HashMap<String, Date> events) {
         this.events = events;
     }
 
