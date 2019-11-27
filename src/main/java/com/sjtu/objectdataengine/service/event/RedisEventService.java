@@ -23,7 +23,7 @@ public class RedisEventService {
             return null;
         }
         String baseKey = id + "#base";
-        String attrsKey = id + "#attr";
+        //String attrsKey = id + "#attr";
         String objectsKey = id + "#objects";
         Object name = redisEventDAO.hget(baseKey, "name");
         if(name == null) name = "";

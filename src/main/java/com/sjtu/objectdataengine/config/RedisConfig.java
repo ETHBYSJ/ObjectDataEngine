@@ -53,7 +53,7 @@ public class RedisConfig extends CachingConfigurerSupport {
     private int treeDB;
     @Value("${redis.database.eventDB}")
     private int eventDB;
-    @Value("{redis.database.eventAttrDB}")
+    @Value("${redis.database.eventAttrDB}")
     private int eventAttrDB;
 
     private void initRedisTemplate(RedisTemplate<String, Object> redisTemplate) {

@@ -42,7 +42,7 @@ public class RedisReceiver {
                 String template = message.get("template").toString();
                 List<String> objects = TypeConversion.cast(message.get("objects"));
                 HashMap<String, String> attrs = TypeConversion.cast(message.get("attrs"));
-                redisObjectService.create(id, intro, template, objects, attrs);
+                redisObjectService.create(id, name, intro, template, objects, attrs);
                 break;
             }
 
