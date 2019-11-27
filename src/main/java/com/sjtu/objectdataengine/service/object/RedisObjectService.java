@@ -251,7 +251,7 @@ public class RedisObjectService {
         }
         else {
             Map<String, Object> addMsg = new HashMap<String, Object>();
-            addMsg.put("op", "ADD_ATTR");
+            addMsg.put("op", "OBJECT_ADD_ATTR");
             addMsg.put("key", key);
             addMsg.put("value", value);
             addMsg.put("date", date);
