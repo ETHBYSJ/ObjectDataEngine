@@ -456,6 +456,7 @@ public class RedisDAO {
      */
     public boolean lHasValue(String key, Object value) {
         List l = lGet(key, 0, -1);
+        if(l == null) return false;
         for(Object o : l) {
             if(o.equals(value)) {
                 return true;
