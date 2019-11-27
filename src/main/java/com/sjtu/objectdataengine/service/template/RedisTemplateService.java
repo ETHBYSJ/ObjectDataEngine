@@ -72,7 +72,7 @@ public class RedisTemplateService {
      * @param id 模板id
      * @return 模板
      */
-    ObjectTemplate findTemplateById(String id) {
+    public ObjectTemplate findTemplateById(String id) {
         return redisTemplateDAO.findById(id);
     }
 

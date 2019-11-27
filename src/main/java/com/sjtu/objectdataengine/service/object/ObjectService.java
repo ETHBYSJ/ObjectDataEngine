@@ -3,7 +3,10 @@ package com.sjtu.objectdataengine.service.object;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.sjtu.objectdataengine.model.event.EventObject;
 import com.sjtu.objectdataengine.model.object.CommonObject;
+import com.sjtu.objectdataengine.model.template.ObjectTemplate;
+import com.sjtu.objectdataengine.model.tree.TreeNode;
 import com.sjtu.objectdataengine.rabbitMQ.MongoSender;
 import com.sjtu.objectdataengine.rabbitMQ.RedisSender;
 import com.sjtu.objectdataengine.service.event.RedisEventService;
@@ -133,7 +136,30 @@ public class ObjectService {
      * @param end 结束时间
      * @return 对象列表
      */
-    public List<CommonObject> findObjectByTimes(String id, Date start, Date end) {
+    public List<CommonObject> findObjectsByTimes(String id, Date start, Date end) {
         return mongoObjectService.findObjectByStartAndEnd(id, start, end);
+    }
+
+    /**
+     * 根据知识树结点id和事件id获取对应object的最新状态
+     * @param nodeId 树结点Id
+     * @param eventId 事件Id
+     */
+    public List<CommonObject> findObjectsByNodeAndEvent(String nodeId, String eventId) {
+        // 合法性
+        List<CommonObject> result = new ArrayList<>();
+        if (nodeId == null || nodeId.equals("")) return result;
+        TreeNode treeNode = redisTreeService.findNodeByKey(nodeId);
+        if (treeNode == null) return result;
+        if (eventId == null || eventId.equals("")) return result;
+        ObjectTemplate objectTemplate = redisTemplateService.findTemplateById(treeNode.getTemplate());
+        List<String> objList = objectTemplate.getObjects();
+        for (String obj : objList) {
+            CommonObject commonObject = this.findObjectByKey(obj);
+            if(commonObject.getEvents().get(eventId)!=null) {
+                result.add(commonObject);
+            }
+        }
+        return result;
     }
 }
