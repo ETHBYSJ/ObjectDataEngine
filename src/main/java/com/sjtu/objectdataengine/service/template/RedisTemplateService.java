@@ -106,11 +106,11 @@ public class RedisTemplateService {
     }
 
     boolean addObject(String id, String objId) {
-        return redisTemplateDAO.lSet(id + "#objects", objId);
+        return redisTemplateDAO.opObject(id, objId, "add");
     }
 
     boolean delObject(String id, String objId) {
-        return (redisTemplateDAO.lRemove(id + "#objects", 1, objId) > 0);
+        return redisTemplateDAO.opObject(id, objId, "del");
     }
 
     /**
