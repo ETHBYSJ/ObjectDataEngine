@@ -12,14 +12,20 @@ public class EventController {
     @Resource
     private EventService eventService;
 
-    @PostMapping("create")
+    @PostMapping("/create")
     @ResponseBody
     public String create(@RequestBody String request) {
         return eventService.create(request);
     }
 
-    @GetMapping
+    @GetMapping("/delete")
     public String delete(@RequestParam String id) {
         return eventService.delete(id);
+    }
+
+    @PostMapping("/modify_base")
+    @ResponseBody
+    public String modifyBase(@RequestBody String request) {
+        return eventService.modifyBase(request);
     }
 }
