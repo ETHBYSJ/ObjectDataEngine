@@ -106,7 +106,7 @@ public class EventService {
         // id必须要有
         String id = jsonObject.getString("id");
         if (id == null || id.equals("")) return "ID不能为空";
-       EventObject eventObject = redisEventService.findEventObjectById(id);
+        EventObject eventObject = redisEventService.findEventObjectById(id);
         if (eventObject == null) return "事件不存在或已结束";     // 不存在
         modifyMessage.put("id", id);
         // name如果是null就不需要改
@@ -157,5 +157,30 @@ public class EventService {
             return mongoEventService.findEventObjectById(id);
         }
         return eventObject;
+    }
+
+    public String modifyAttr(String request) {
+        // 解析
+        JSONObject jsonObject = JSON.parseObject(request);
+        HashMap<String, Object> modifyMessage = new HashMap<>();
+        modifyMessage.put("op", "EVENT_MODIFY_ATTR");
+        // id必须要有
+        String id = jsonObject.getString("id");
+        if (id == null || id.equals("")) return "ID不能为空";
+        EventObject eventObject = redisEventService.findEventObjectById(id);
+        if (eventObject == null) return "事件不存在或已结束";     // 不存在
+        // 属性name
+        String name = jsonObject.getString("name");
+        if (name == null || name.equals("")) return "属性name不能为空";
+        modifyMessage.put("name", name);
+        // 属性value
+        String value = jsonObject.getString("value");
+        if (value == null) return "属性值不能为空";
+        modifyMessage.put("value", value);
+
+        if (redisEventService.updateAttr(id, name, value)) {
+            mongoSender.send(modifyMessage);
+        }
+        return "更新属性失败";
     }
 }

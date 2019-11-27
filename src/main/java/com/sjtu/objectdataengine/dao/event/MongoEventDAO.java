@@ -103,6 +103,7 @@ public class MongoEventDAO extends MongoBaseDAO<EventObject> {
 
         mongoTemplate.updateMulti(query, update, EventObject.class);
     }
+
     /**
      * 模糊查询
      *
