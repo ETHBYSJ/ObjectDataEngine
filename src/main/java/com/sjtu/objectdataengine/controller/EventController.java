@@ -33,4 +33,8 @@ public class EventController {
     public EventObject find(@RequestParam String id) {
         return eventService.find(id);
     }
+    @GetMapping("/end")
+    public String end(String id) {
+        return eventService.end(id);
+    }
 }
