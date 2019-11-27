@@ -49,4 +49,17 @@ public class MongoEventService {
         mongoCondition.addUpdate("status", false);
         mongoEventDAO.update(mongoCondition);
     }
+
+    public void updateBaseInfo(String id, String name, String intro, String stage) {
+        MongoCondition mongoCondition = new MongoCondition();
+        mongoCondition.addQuery("id", id);
+        if (name != null) mongoCondition.addUpdate("name", name);
+        if (intro != null) mongoCondition.addUpdate("intro", intro);
+        if (stage != null) mongoCondition.addUpdate("stage", stage);
+        mongoTemplateDAO.update(mongoCondition);
+    }
+
+    public EventObject findEventObjectById(String id) {
+        return mongoEventDAO.findByKey(id);
+    }
 }

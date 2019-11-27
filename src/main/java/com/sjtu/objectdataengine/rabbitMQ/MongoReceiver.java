@@ -184,6 +184,18 @@ public class MongoReceiver {
             }
 
             case "EVENT_MODIFY_BASE": {
+                String id = message.get("id").toString();
+                String name, intro, stage;
+                if (message.get("name") != null)
+                    name = message.get("name").toString();
+                else name = null;
+                if (message.get("intro") != null)
+                    intro = message.get("intro").toString();
+                else intro = null;
+                if (message.get("intro") != null)
+                    stage = message.get("stage").toString();
+                else stage = null;
+                mongoEventService.updateBaseInfo(id, name, intro, stage);
                 break;
             }
 

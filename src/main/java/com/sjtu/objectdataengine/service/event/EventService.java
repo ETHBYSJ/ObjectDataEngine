@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.sjtu.objectdataengine.model.event.EventObject;
 import com.sjtu.objectdataengine.rabbitMQ.MongoSender;
+import com.sjtu.objectdataengine.service.template.MongoTemplateService;
 import com.sjtu.objectdataengine.service.template.RedisTemplateService;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +23,9 @@ public class EventService {
 
     @Resource
     RedisTemplateService redisTemplateService;
+
+    @Resource
+    MongoEventService mongoEventService;
 
     /**
      * 创建一个事件
@@ -104,7 +108,7 @@ public class EventService {
         String id = jsonObject.getString("id");
         if (id == null || id.equals("")) return "ID不能为空";
        EventObject eventObject = redisEventService.findEventObjectById(id);
-        if (eventObject == null) return "ID不存在";     // 不存在
+        if (eventObject == null) return "事件不存在或已结束";     // 不存在
         modifyMessage.put("id", id);
         // name如果是null就不需要改
         String name = jsonObject.getString("name");
@@ -133,16 +137,25 @@ public class EventService {
         if (id == null || id.equals("")) return "ID不能为空";
 
         EventObject eventObject = redisEventService.findEventObjectById(id);
-        if (eventObject == null) return "没有该事件";
+        if (eventObject == null) return "没有该事件或事件已经结束";
 
         HashMap<String, Object> endMessage = new HashMap<>();
 
         endMessage.put("op", "EVENT_END");
         endMessage.put("id", id);
-        if (redisEventService.delete(id, eventObject.getTemplate())) {
+        // 删除redis中的已结束事件
+        if (redisEventService.deleteEventById(id, eventObject.getTemplate())) {
             mongoSender.send(endMessage);
             return "事件结束成功";
         }
         return "事件结束失败";
+    }
+
+    public EventObject find(String id) {
+        EventObject eventObject = redisEventService.findEventObjectById(id);
+        if (eventObject == null) {
+            return mongoEventService.findEventObjectById(id);
+        }
+        return eventObject;
     }
 }
