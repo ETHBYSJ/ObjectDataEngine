@@ -107,7 +107,7 @@ public class EventService {
         // id必须要有
         String id = jsonObject.getString("id");
         if (id == null || id.equals("")) return "ID不能为空";
-       EventObject eventObject = redisEventService.findEventObjectById(id);
+        EventObject eventObject = redisEventService.findEventObjectById(id);
         if (eventObject == null) return "事件不存在或已结束";     // 不存在
         modifyMessage.put("id", id);
         // name如果是null就不需要改
@@ -144,9 +144,9 @@ public class EventService {
         endMessage.put("op", "EVENT_END");
         endMessage.put("id", id);
 
+        mongoSender.send(endMessage);
         // 删除redis中的已结束事件
         if (redisEventService.deleteEventById(id, eventObject.getTemplate())) {
-            mongoSender.send(endMessage);
             return "事件结束成功";
         }
         return "事件结束失败";
@@ -158,5 +158,31 @@ public class EventService {
             return mongoEventService.findEventObjectById(id);
         }
         return eventObject;
+    }
+
+    public String modifyAttr(String request) {
+        // 解析
+        JSONObject jsonObject = JSON.parseObject(request);
+        HashMap<String, Object> modifyMessage = new HashMap<>();
+        modifyMessage.put("op", "EVENT_MODIFY_ATTR");
+        // id必须要有
+        String id = jsonObject.getString("id");
+        if (id == null || id.equals("")) return "ID不能为空";
+        EventObject eventObject = redisEventService.findEventObjectById(id);
+        if (eventObject == null) return "事件不存在或已结束";     // 不存在
+        // 属性name
+        String name = jsonObject.getString("name");
+        if (name == null || name.equals("")) return "属性name不能为空";
+        modifyMessage.put("name", name);
+        // 属性value
+        String value = jsonObject.getString("value");
+        if (value == null) return "属性值不能为空";
+        modifyMessage.put("value", value);
+
+        mongoSender.send(modifyMessage);
+        if (redisEventService.updateAttr(id, name, value)) {
+            return  "更新属性成功";
+        }
+        return "更新属性失败";
     }
 }

@@ -199,6 +199,14 @@ public class MongoReceiver {
                 break;
             }
 
+            case "EVENT_MODIFY_ATTR": {
+                String id = message.get("id").toString();
+                String name = message.get("name").toString();
+                String value = message.get("value").toString();
+                mongoEventService.modifyAttr(id, name, value);
+                break;
+            }
+
             case "EVENT_END" : {
                 String id = message.get("id").toString();
                 mongoEventService.end(id);

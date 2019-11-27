@@ -61,7 +61,23 @@ public class MongoEventService {
         mongoEventDAO.update(mongoCondition);
     }
 
-    public EventObject findEventObjectById(String id) {
+    EventObject findEventObjectById(String id) {
         return mongoEventDAO.findByKey(id);
+    }
+
+    public void modifyAttr(String id, String name, String value) {
+        MongoCondition mongoCondition = new MongoCondition();
+        mongoCondition.addQuery("id", id);
+        MongoAttr mongoAttr = new MongoAttr(value);
+        mongoCondition.addUpdate("attrs." + name, mongoAttr);
+        mongoEventDAO.update(mongoCondition);
+    }
+
+    public void addObject(String id, String objId) {
+        mongoEventDAO.opObjects(id, objId, "add");
+    }
+
+    public void delObject(String id, String objId) {
+        mongoEventDAO.opObjects(id, objId, "del");
     }
 }
