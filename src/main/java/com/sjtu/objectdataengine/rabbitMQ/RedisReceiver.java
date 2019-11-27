@@ -35,7 +35,7 @@ public class RedisReceiver {
          */
         switch (op) {
 
-            case "CREATE": {
+            case "OBJECT_CREATE": {
                 String id = message.get("id").toString();
                 String name = message.get("name").toString();
                 String intro = message.get("intro").toString();
@@ -57,7 +57,7 @@ public class RedisReceiver {
                 break;
             }
 
-            case "ADD_ATTR": {
+            case "OBJECT_ADD_ATTR": {
                 String key = message.get("key").toString();
                 String value = message.get("value").toString();
                 Date date = (Date) message.get("date");

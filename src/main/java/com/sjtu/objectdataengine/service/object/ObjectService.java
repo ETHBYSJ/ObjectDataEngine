@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.sjtu.objectdataengine.model.object.CommonObject;
 import com.sjtu.objectdataengine.rabbitMQ.MongoSender;
 import com.sjtu.objectdataengine.rabbitMQ.RedisSender;
+import com.sjtu.objectdataengine.service.event.RedisEventService;
 import com.sjtu.objectdataengine.service.template.MongoTemplateService;
 import com.sjtu.objectdataengine.service.template.RedisTemplateService;
 import com.sjtu.objectdataengine.service.tree.RedisTreeService;
@@ -36,7 +37,7 @@ public class ObjectService {
     RedisTemplateService redisTemplateService;
 
     @Resource
-    MongoTemplateService mongoTemplateService;
+    RedisEventService redisEventService;
 
 
     /**
@@ -66,6 +67,12 @@ public class ObjectService {
             events = JSONObject.parseArray(eventsArray.toJSONString(), String.class);
         }
 
+        // 检查events的合法性
+        for (String event : events) {
+            if (event == null || event.equals("")) return "events列表不合法";
+            if (redisEventService.findEventObjectById(id) == null) return "eventId=" + event + "不存在";
+        }
+
         JSONObject attrObject = jsonObject.getJSONObject("attrs");
         HashMap<String, String> attrs = new HashMap<>();
         if (attrObject != null) {
@@ -78,7 +85,7 @@ public class ObjectService {
 
         //组装message
         HashMap<String, Object> message = new HashMap<>();
-        message.put("op", "CREATE");
+        message.put("op", "OBJECT_CREATE");
         message.put("id", id);
         message.put("name", name);
         message.put("intro", intro);

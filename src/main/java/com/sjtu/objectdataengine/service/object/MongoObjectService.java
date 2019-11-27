@@ -1,5 +1,6 @@
 package com.sjtu.objectdataengine.service.object;
 
+import com.sjtu.objectdataengine.dao.event.MongoEventDAO;
 import com.sjtu.objectdataengine.dao.object.MongoAttrsDAO;
 import com.sjtu.objectdataengine.dao.object.MongoHeaderDAO;
 import com.sjtu.objectdataengine.dao.object.MongoObjectDAO;
@@ -31,6 +32,9 @@ public class MongoObjectService {
     @Resource
     MongoObjectDAO mongoObjectDAO;
 
+    @Resource
+    MongoEventDAO mongoEventDAO;
+
 
     /**
      * 这里分为三步，首先创建对象链的头结点，名为对象id+属性名称+0，头结点内含当前长度等属性
@@ -40,26 +44,18 @@ public class MongoObjectService {
      * @param name 唯一名称
      * @param template 对象模板
      * @param kv 属性kv对
-     * @param objects 关联对象集合
-     * @return true or false
+     * @param events 关联事件集合
      */
-    public boolean create(String id, String name, String intro, String template, HashMap<String, String> kv, List<String> objects) {
-        try {
-            HashMap<String, String> attrsMap = mongoTemplateDAO.findByKey(template).getAttrs();
-            HashMap<String, MongoAttr> hashMap = new HashMap<>();
-            for (String attr : attrsMap.keySet()) {
-                String value = kv.get(attr)==null ? "" : kv.get(attr);
-                createHeader(id, attr, 1);
-                MongoAttr mongoAttr = createAttr(id, attr, value, 1);
-                hashMap.put(attr, mongoAttr);
-            }
-            createObject(id, name, intro, template, objects, hashMap);
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+    public void create(String id, String name, String intro, String template, HashMap<String, String> kv, List<String> events) {
+        HashMap<String, String> attrsMap = mongoTemplateDAO.findByKey(template).getAttrs();
+        HashMap<String, MongoAttr> hashMap = new HashMap<>();
+        for (String attr : attrsMap.keySet()) {
+            String value = kv.get(attr)==null ? "" : kv.get(attr);
+            createHeader(id, attr);
+            MongoAttr mongoAttr = createAttr(id, attr, value, 1);
+            hashMap.put(attr, mongoAttr);
         }
-
+        createObject(id, name, intro, template, events, hashMap);
     }
 
     /**
@@ -68,18 +64,23 @@ public class MongoObjectService {
      * @param name 唯一名称
      * @param intro 简介
      * @param template 对象模板
-     * @param objects 对象关联
+     * @param eventsList 对象关联
      * @param hashMap kv对
      */
-    private void createObject(String id, String name, String intro, String template, List<String> objects, HashMap<String, MongoAttr> hashMap) {
+    private void createObject(String id, String name, String intro, String template, List<String> eventsList, HashMap<String, MongoAttr> hashMap) {
+        // 加入template的列表
+        mongoTemplateDAO.opObjects(template, id, "add");
         ObjectTemplate objectTemplate = mongoTemplateDAO.findByKey(template);
         String type = objectTemplate.getType();
-        HashMap<String, Date> objs = new HashMap<>();
+
+        // 组装events，加入event的列表
+        HashMap<String, Date> events = new HashMap<>();
         Date now = new Date();
-        for (String obj : objects) {
-            objs.put(obj, now);
+        for (String event : eventsList) {
+            events.put(event, now);
+            mongoEventDAO.opObjects(event, id, "add");
         }
-        CommonObject commonObject = new CommonObject(id, name, intro, type, template, hashMap, objs);
+        CommonObject commonObject = new CommonObject(id, name, intro, type, template, hashMap, events);
         mongoObjectDAO.create(commonObject);             //创建object
     }
 
@@ -87,12 +88,11 @@ public class MongoObjectService {
      * 为一条属性链创建一个创世块
      * @param id 对象id
      * @param name 属性名称
-     * @param size 属性块数量，一般为1
      */
-    private void createHeader(String id, String name, int size) {
+    private void createHeader(String id, String name) {
         //先创建header
         String headerId = id + name + "0";
-        AttrsHeader attrsHeader = new AttrsHeader(headerId, id, name, size);
+        AttrsHeader attrsHeader = new AttrsHeader(headerId, id, name, 1);
         mongoHeaderDAO.create(attrsHeader);
     }
 
