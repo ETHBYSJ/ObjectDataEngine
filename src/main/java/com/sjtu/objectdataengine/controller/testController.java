@@ -30,14 +30,6 @@ public class testController {
         return mongoObjectService.findLatestAttrByKey(id, name);
     }
 
-    @GetMapping("add")
-    public boolean add(@RequestParam String id, @RequestParam String name, @RequestParam String value) {
-        Date now = new Date();
-        MongoAttr mongoAttr = new MongoAttr(value);
-        mongoAttr.setUpdateTime(now);
-        return mongoObjectService.addValue(id, name, mongoAttr);
-    }
-
     @GetMapping("obj")
     public CommonObject findLatestObject(@RequestParam String id) {
         return mongoObjectService.findLatestObjectByKey(id);

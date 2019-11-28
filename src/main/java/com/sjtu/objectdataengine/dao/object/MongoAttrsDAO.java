@@ -63,9 +63,10 @@ public class MongoAttrsDAO extends MongoBaseDAO<MongoAttrs> {
      * @param key 属性id
      * @param size 属性长度
      * @param mongoAttr 值
+     * @param date 公共date
      * @return true or false
      */
-    public boolean addValue(String key, int size, MongoAttr mongoAttr) {
+    public boolean addValue(String key, int size, MongoAttr mongoAttr, Date date) {
         try {
             Query query = new Query();
             Update update = new Update();
@@ -73,7 +74,7 @@ public class MongoAttrsDAO extends MongoBaseDAO<MongoAttrs> {
             query.addCriteria(criteria);
             update.addToSet("attrs", mongoAttr);
             update.set("size", size + 1);
-            update.set("updateTime", new Date());
+            update.set("updateTime", date);
             mongoTemplate.updateMulti(query, update, MongoAttrs.class);
             return true;
         } catch (Exception e) {

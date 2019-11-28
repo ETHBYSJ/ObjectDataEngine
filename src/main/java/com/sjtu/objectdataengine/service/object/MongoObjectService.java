@@ -178,7 +178,7 @@ public class MongoObjectService {
     public boolean addAttr(String id, String name, String value, Date date) {
         MongoAttr mongoAttr = new MongoAttr(value);
         mongoAttr.setUpdateTime(date);
-        return addValue(id, name, mongoAttr);
+        return addValue(id, name, mongoAttr, date);
     }
 
     /**
@@ -187,15 +187,18 @@ public class MongoObjectService {
      * 已经满了后，要向新块写属性，并且要更新创世快size
      * @param id 对象id
      * @param name 属性名字
+     * @param date 公共date
      * @return true or false
      */
-    public boolean addValue(String id, String name, MongoAttr mongoAttr) {
+    private boolean addValue(String id, String name, MongoAttr mongoAttr, Date date) {
         int size = getAttrChainSize(id, name);
         String key = id + name + size;
         MongoAttrs mongoAttrs = mongoAttrsDAO.findByKey(key);
 
-        updateObject(id, name, mongoAttr);
+        // 在object表里更新
+        updateObject(id, name, mongoAttr, date);
 
+        // 在attr表里更新
         if (mongoAttrs == null) {
             return false;
         }
@@ -203,14 +206,14 @@ public class MongoObjectService {
             int newSize = size + 1;
             String key0 = id + name + "0";
             String newKey = id + name + newSize;
-            return (mongoAttrsDAO.addValue(newKey, 0, mongoAttr) && addHeaderSize(key0, size));
+            return (mongoAttrsDAO.addValue(newKey, 0, mongoAttr, date) && addHeaderSize(key0, size));
 
         } else if (mongoAttrs.isNearlyFull()) {
             int mongoAttrSize = mongoAttrs.getSize();
-            return mongoAttrsDAO.addValue(key, mongoAttrSize, mongoAttr) && addAttrs(id, name, size + 1) && timeSync(id, name, size);
+            return mongoAttrsDAO.addValue(key, mongoAttrSize, mongoAttr, date) && addAttrs(id, name, size + 1) && timeSync(id, name, size);
         } else {
             int mongoAttrSize = mongoAttrs.getSize();
-            return mongoAttrsDAO.addValue(key, mongoAttrSize, mongoAttr);
+            return mongoAttrsDAO.addValue(key, mongoAttrSize, mongoAttr, date);
         }
     }
 
@@ -241,8 +244,8 @@ public class MongoObjectService {
      * @param name 属性名称
      * @param mongoAttr 最新值
      */
-    private void updateObject(String id, String name, MongoAttr mongoAttr) {
-        mongoObjectDAO.updateAttrList(id, name, mongoAttr);
+    private void updateObject(String id, String name, MongoAttr mongoAttr, Date date) {
+        mongoObjectDAO.updateAttrList(id, name, mongoAttr, date);
     }
 
     /**
@@ -320,6 +323,7 @@ public class MongoObjectService {
      * 查找某个时间点的属性
      */
     public MongoAttr findAttrByTime(String id, String name, Date time) {
+        System.out.println("params: " + id + " " + name + " " + time);
         int cSize = getAttrChainSize(id, name); //chain size
         MongoAttrs mongoAttrs = divFindAttrsByTime(id, name, time, cSize);
         if (mongoAttrs == null) return null;
@@ -409,6 +413,7 @@ public class MongoObjectService {
         Set<String> attrName = commonObject.getAttr().keySet();
         for(String name : attrName) {
             MongoAttr mongoAttr = findAttrByTime(id, name, time);
+            System.out.println(mongoAttr);
             commonObject.putAttr(name, mongoAttr);
             if(ut.before(mongoAttr.getUpdateTime())) {
                 ut = mongoAttr.getUpdateTime();

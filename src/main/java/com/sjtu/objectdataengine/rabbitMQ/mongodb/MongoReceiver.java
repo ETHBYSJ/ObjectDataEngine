@@ -33,17 +33,17 @@ public class MongoReceiver {
     public void process(Map message) {
         String op = message.get("op").toString();
 
-        /*
-         * 每个操作信息都用map描述
-         * create表示创建一个新的object
-         * create中需要的信息有：
-         * op ： CREATE
-         * id : 对象id
-         * template ： 对象模板id
-         * objects ： String列表，表示关联objects（的id）
-         * attrs： HashMap类型，属性键值
-         */
         switch (op) {
+            /*
+             * 每个操作信息都用map描述
+             * create表示创建一个新的object
+             * create中需要的信息有：
+             * op ： CREATE
+             * id : 对象id
+             * template ： 对象模板id
+             * objects ： String列表，表示关联objects（的id）
+             * attrs： HashMap类型，属性键值
+             */
             case "OBJECT_CREATE": {
                 String id = message.get("id").toString();
                 String name = message.get("name").toString();
@@ -57,6 +57,9 @@ public class MongoReceiver {
                 break;
             }
 
+            /*
+             * 增加一个属性记录
+             */
             case "OBJECT_ADD_ATTR": {
                 String id = message.get("id").toString();
                 String name = message.get("name").toString();

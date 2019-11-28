@@ -72,7 +72,7 @@ public class MongoObjectDAO extends MongoBaseDAO<CommonObject> {
      * @param key 属性id
      * @param mongoAttr 值
      */
-    public void updateAttrList(String key, String name, MongoAttr mongoAttr) {
+    public void updateAttrList(String key, String name, MongoAttr mongoAttr, Date date) {
         try {
             Query query = new Query();
             Update update = new Update();
@@ -83,7 +83,7 @@ public class MongoObjectDAO extends MongoBaseDAO<CommonObject> {
 
             update.set("attr." + name + ".value", mongoAttr.getValue());
             update.set("attr." + name + ".updateTime", mongoAttr.getUpdateTime());
-            update.set("updateTime", new Date());
+            update.set("updateTime", date);
             mongoTemplate.updateMulti(query, update, CommonObject.class);
         } catch (Exception e) {
             e.printStackTrace();
