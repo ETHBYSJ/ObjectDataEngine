@@ -1,4 +1,4 @@
-package com.sjtu.objectdataengine.rabbitMQ;
+package com.sjtu.objectdataengine.rabbitMQ.config;
 
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
