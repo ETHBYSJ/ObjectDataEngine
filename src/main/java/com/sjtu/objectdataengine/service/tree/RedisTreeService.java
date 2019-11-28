@@ -279,11 +279,19 @@ public class RedisTreeService {
             if(!redisTreeDAO.sHasKey("index", key)) {
                 return true;
             }
+            //解除与template的绑定
+            Object template = redisTreeDAO.hget(key + "#base", "template");
+            if(template != null) {
+                //将对应模板也删除
+                redisTemplateDAO.deleteById(template.toString());
+            }
             String baseKey = key + "#base";
             String childrenKey = key + "#children";
             String parent = redisTreeDAO.hget(baseKey, "parent").toString();
             List<String> children = (List<String>) redisTreeDAO.lGet(childrenKey, 0, -1);
-            deleteChildrenEdge(key, children);
+            if(children != null && children.size() != 0) {
+                deleteChildrenEdge(key, children);
+            }
             if(parent.equals("root")) {
                 //是根节点
                 deleteRootEdge(key);
@@ -293,12 +301,6 @@ public class RedisTreeService {
                 deleteParentEdge(key, parent);
             }
             deleteNodeByKey(key);
-            //解除与template的绑定
-            Object template = redisTreeDAO.hget(key + "#base", "template");
-            if(template != null) {
-                //将对应模板也删除
-                redisTemplateDAO.deleteById(template.toString());
-            }
             return true;
         } catch (Exception e) {
             e.printStackTrace();
