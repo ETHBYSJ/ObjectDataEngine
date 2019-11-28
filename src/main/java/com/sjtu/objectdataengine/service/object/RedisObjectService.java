@@ -48,7 +48,7 @@ public class RedisObjectService {
      * @param attrMap 属性集合
      * @return true代表创建成功，false代表创建失败
      */
-    public boolean create(String id, String name, String intro, String template, List<String> events, HashMap<String, String> attrMap) {
+    public boolean create(String id, String name, String intro, String template, List<String> events, HashMap<String, String> attrMap, Date date) {
         if(redisAttrDAO.hasKey(id + '#' + "META")) {
             //说明对象已存在，创建失败
             return false;
@@ -64,7 +64,7 @@ public class RedisObjectService {
             MongoAttr mongoAttr = new MongoAttr(value);
             hashMap.put(attrName, mongoAttr);
         }
-        return createObject(id, name, intro, objectTemplate, events, hashMap);
+        return createObject(id, name, intro, objectTemplate, events, hashMap, date);
     }
 
     /**
@@ -76,13 +76,12 @@ public class RedisObjectService {
      * @param hashMap 属性集合
      * @return true代表创建成功，false代表创建失败
      */
-    private boolean createObject(String id, String name, String intro, ObjectTemplate objectTemplate, List<String> events, HashMap<String, MongoAttr> hashMap) {
+    private boolean createObject(String id, String name, String intro, ObjectTemplate objectTemplate, List<String> events, HashMap<String, MongoAttr> hashMap, Date date) {
         if(intro == null) intro = "";
         String templateId = objectTemplate.getId();
         redisTemplateDAO.opObject(templateId, id, "add");
         String nodeId = objectTemplate.getNodeId();
         String type = objectTemplate.getType();
-        Date date = new Date();
         //存储对象基本信息
         redisAttrDAO.hset(id + "#META", "template", templateId);
         redisAttrDAO.hset(id + "#META", "nodeId", nodeId);
@@ -99,19 +98,16 @@ public class RedisObjectService {
                 redisAttrDAO.hset(id + "#events", event, date);
                 redisEventDAO.opObject(event, id, "add");
             }
-            //relateObject(id, events);
         }
         //存储属性基本信息
         for(Map.Entry<String, MongoAttr> entry : hashMap.entrySet()) {
             String attrName = entry.getKey();
             MongoAttr mongoAttr = entry.getValue();
-            Date attrCT = date;
             Date attrUT = date;
             mongoAttr.setUpdateTime(attrUT);
             //插入属性
             addAttrByObjectId(id, attrName);
 
-            redisObjectDAO.hset(id + '#' + attrName, "createTime", attrCT);
             redisObjectDAO.hset(id + '#' + attrName, "updateTime", attrUT);
             boolean addSucc = addAttr(id, attrName, mongoAttr.getValue(), date);
             //最早可以获得的时间

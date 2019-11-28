@@ -42,7 +42,8 @@ public class RedisReceiver {
                 String template = message.get("template").toString();
                 List<String> objects = TypeConversion.cast(message.get("events"));
                 HashMap<String, String> attrs = TypeConversion.cast(message.get("attrs"));
-                redisObjectService.create(id, name, intro, template, objects, attrs);
+                Date date = (Date) message.get("date");
+                redisObjectService.create(id, name, intro, template, objects, attrs, date);
                 break;
             }
 
