@@ -96,6 +96,7 @@ public class RedisObjectService {
 
         //存储关联对象
         if(events != null && events.size() > 0) {
+            System.out.println(events);
             for(String event : events) {
                 redisAttrDAO.hset(id + "#events", event, date);
                 redisEventDAO.opObject(event, id, "add");
@@ -250,8 +251,8 @@ public class RedisObjectService {
             Map<String, Object> evictAndAddMsg = new HashMap<String, Object>();
             evictAndAddMsg.put("op", "EVICT_AND_ADD");
             evictAndAddMsg.put("id", id);
-            evictAndAddMsg.put("attr", attr);
-            evictAndAddMsg.put("key", key);
+            evictAndAddMsg.put("name", attr);
+            //evictAndAddMsg.put("key", key);
             evictAndAddMsg.put("value", value);
             evictAndAddMsg.put("date", date);
             redisSender.send(evictAndAddMsg);
@@ -259,7 +260,9 @@ public class RedisObjectService {
         else {
             Map<String, Object> addMsg = new HashMap<String, Object>();
             addMsg.put("op", "OBJECT_ADD_ATTR");
-            addMsg.put("key", key);
+            addMsg.put("id", id);
+            addMsg.put("name", attr);
+            //addMsg.put("key", key);
             addMsg.put("value", value);
             addMsg.put("date", date);
             redisSender.send(addMsg);
@@ -413,7 +416,7 @@ public class RedisObjectService {
         System.out.println("ut = " + ut);
         //关联对象
         HashMap<String, Date> objectMap = (HashMap<String, Date>) redisAttrDAO.hmget(id + "#events");
-        commonObject.setObjects(objectMap);
+        commonObject.setEvents(objectMap);
         /*
         mongoObject.setUpdateTime(ut);
         HashMap<String, Date> cutMap = cutObjects(ut, id);
@@ -493,7 +496,7 @@ public class RedisObjectService {
         }
         commonObject.setUpdateTime(ut);
         HashMap<String, Date> cutMap = cutObjects(ut, id);
-        commonObject.setObjects(cutMap);
+        commonObject.setEvents(cutMap);
         return commonObject;
     }
 
@@ -659,7 +662,7 @@ public class RedisObjectService {
                     }
                     mongoAttr.setCreateTime(attrCreateTime);
                     HashMap<String, Date> cutMap = cutObjects(commonObject.getUpdateTime(), id);
-                    commonObject.setObjects(cutMap);
+                    commonObject.setEvents(cutMap);
                     commonObject.putAttr(attrName, mongoAttr);
                 }
                 retList.add(commonObject);

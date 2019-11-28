@@ -404,9 +404,9 @@ public class MongoObjectService {
     public List<CommonObject> findObjectByStartAndEnd(String id, Date st, Date et) {
         Set<Date> dateSet = new HashSet<>();
         CommonObject commonObject = mongoObjectDAO.findByKey(id);
+
         Set<String> attrName = commonObject.getAttr().keySet();
         List<MongoAttr> mongoAttrList = new ArrayList<>();
-        //System.out.println(attrName);
         for (String name : attrName) {
             mongoAttrList.addAll(findAttrByStartAndEnd(id, name, st, et));
         }

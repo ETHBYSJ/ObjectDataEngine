@@ -62,7 +62,7 @@ public class ObjectService {
 
         String template = jsonObject.getString("template");
         if(template == null || template.equals("")) return "template不能为空！";
-        else if (!redisTemplateService.hasKey(template)) return "template不存在";
+        else if (!redisTemplateService.hasTemplate(template)) return "template不存在";
 
         JSONArray eventsArray = jsonObject.getJSONArray("events");
         List<String> events = new ArrayList<>();
@@ -73,7 +73,9 @@ public class ObjectService {
         // 检查events的合法性
         for (String event : events) {
             if (event == null || event.equals("")) return "events列表不合法";
-            if (redisEventService.findEventObjectById(id) == null) return "eventId=" + event + "不存在";
+            if (redisEventService.findEventObjectById(event) == null) {
+                return "eventId=" + event + "不存在";
+            }
         }
 
         JSONObject attrObject = jsonObject.getJSONObject("attrs");

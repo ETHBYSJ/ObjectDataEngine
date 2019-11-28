@@ -40,7 +40,7 @@ public class RedisReceiver {
                 String name = message.get("name").toString();
                 String intro = message.get("intro").toString();
                 String template = message.get("template").toString();
-                List<String> objects = TypeConversion.cast(message.get("objects"));
+                List<String> objects = TypeConversion.cast(message.get("events"));
                 HashMap<String, String> attrs = TypeConversion.cast(message.get("attrs"));
                 redisObjectService.create(id, name, intro, template, objects, attrs);
                 break;
@@ -48,17 +48,21 @@ public class RedisReceiver {
 
             case "EVICT_AND_ADD": {
                 String id = message.get("id").toString();
-                String attr = message.get("attr").toString();
-                String key = message.get("key").toString();
+                String name = message.get("name").toString();
+                String key = id + '#' + name + '#' + "time";
+                //String key = message.get("key").toString();
                 String value = message.get("value").toString();
                 Date date = (Date) message.get("date");
-                redisObjectService.doEvict(id, attr);
+                redisObjectService.doEvict(id, name);
                 redisObjectService.addAttr(key, value, date);
                 break;
             }
 
             case "OBJECT_ADD_ATTR": {
-                String key = message.get("key").toString();
+                String id = message.get("id").toString();
+                String name = message.get("name").toString();
+                String key = id + '#' + name + '#' + "time";
+                //String key = message.get("key").toString();
                 String value = message.get("value").toString();
                 Date date = (Date) message.get("date");
                 redisObjectService.addAttr(key, value, date);
