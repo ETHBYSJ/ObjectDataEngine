@@ -2,6 +2,7 @@ package com.sjtu.objectdataengine.service.object;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.sjtu.objectdataengine.dao.event.RedisEventDAO;
 import com.sjtu.objectdataengine.dao.object.RedisAttrDAO;
 import com.sjtu.objectdataengine.dao.object.RedisObjectDAO;
 import com.sjtu.objectdataengine.dao.template.RedisTemplateDAO;
@@ -31,6 +32,8 @@ public class RedisObjectService {
     @Resource
     private RedisTemplateDAO redisTemplateDAO;
     @Resource
+    private RedisEventDAO redisEventDAO;
+    @Resource
     private RedisSender redisSender;
 
 
@@ -41,11 +44,11 @@ public class RedisObjectService {
      * @param id 对象id
      * @param intro 描述信息
      * @param template 模板id
-     * @param objects 关联对象集合
+     * @param events 关联对象集合
      * @param attrMap 属性集合
      * @return true代表创建成功，false代表创建失败
      */
-    public boolean create(String id, String name, String intro, String template, List<String> objects, HashMap<String, String> attrMap) {
+    public boolean create(String id, String name, String intro, String template, List<String> events, HashMap<String, String> attrMap) {
         if(redisAttrDAO.hasKey(id + '#' + "META")) {
             //说明对象已存在，创建失败
             return false;
@@ -61,7 +64,7 @@ public class RedisObjectService {
             MongoAttr mongoAttr = new MongoAttr(value);
             hashMap.put(attrName, mongoAttr);
         }
-        return createObject(id, name, intro, objectTemplate, objects, hashMap);
+        return createObject(id, name, intro, objectTemplate, events, hashMap);
     }
 
     /**
@@ -69,13 +72,14 @@ public class RedisObjectService {
      * @param id 对象id
      * @param intro 描述信息
      * @param objectTemplate 模板
-     * @param objects 关联对象
+     * @param events 关联对象
      * @param hashMap 属性集合
      * @return true代表创建成功，false代表创建失败
      */
-    private boolean createObject(String id, String name, String intro, ObjectTemplate objectTemplate, List<String> objects, HashMap<String, MongoAttr> hashMap) {
+    private boolean createObject(String id, String name, String intro, ObjectTemplate objectTemplate, List<String> events, HashMap<String, MongoAttr> hashMap) {
         if(intro == null) intro = "";
         String templateId = objectTemplate.getId();
+        redisTemplateDAO.opObject(templateId, id, "add");
         String nodeId = objectTemplate.getNodeId();
         String type = objectTemplate.getType();
         Date date = new Date();
@@ -89,11 +93,12 @@ public class RedisObjectService {
         redisAttrDAO.hset(id + "#META", "name", name);
 
         //存储关联对象
-        if(objects != null && objects.size() > 0) {
-            for(String object : objects) {
-                redisAttrDAO.hset(id + "#object", object, date);
+        if(events != null && events.size() > 0) {
+            for(String event : events) {
+                redisAttrDAO.hset(id + "#events", event, date);
+                redisEventDAO.opObject(event, id, "add");
             }
-            relateObject(id, objects);
+            //relateObject(id, events);
         }
         //存储属性基本信息
         for(Map.Entry<String, MongoAttr> entry : hashMap.entrySet()) {
@@ -124,6 +129,7 @@ public class RedisObjectService {
      * @param objects 关联的对象id列表
      * @return true代表关联成功，false代表关联失败
      */
+    /*
     private boolean relateObject(String id, List<String> objects) {
         try {
             Date now = new Date();
@@ -139,6 +145,7 @@ public class RedisObjectService {
         }
 
     }
+    */
     /**
      * 根据对象id获取对象所有属性
      * @param id 对象id
@@ -403,7 +410,7 @@ public class RedisObjectService {
         }
         System.out.println("ut = " + ut);
         //关联对象
-        HashMap<String, Date> objectMap = (HashMap<String, Date>) redisAttrDAO.hmget(id + "#object");
+        HashMap<String, Date> objectMap = (HashMap<String, Date>) redisAttrDAO.hmget(id + "#events");
         commonObject.setObjects(objectMap);
         /*
         mongoObject.setUpdateTime(ut);
@@ -421,7 +428,7 @@ public class RedisObjectService {
      * @return 新的关联对象表
      */
     private HashMap<String, Date> cutObjects(Date ut, String id) {
-        HashMap<String, Date> objectMap = (HashMap<String, Date>) redisAttrDAO.hmget(id + "#object");
+        HashMap<String, Date> objectMap = (HashMap<String, Date>) redisAttrDAO.hmget(id + "#events");
         HashMap<String, Date> cutMap = new HashMap<String, Date>();
         for(Map.Entry<String, Date> entry : objectMap.entrySet()) {
             String objId = entry.getKey();

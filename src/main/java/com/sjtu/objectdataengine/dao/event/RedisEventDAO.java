@@ -12,5 +12,14 @@ public class RedisEventDAO extends RedisDAO {
     public RedisEventDAO(RedisTemplate<String, Object> eventRedisTemplate) {
         super.setTemplate(eventRedisTemplate);
     }
-
+    public void opObject(String id, String objId, String op) {
+        if(op.equals("add")) {
+            if(!lHasValue(id + "#objects", objId)) {
+                lSet(id + "#objects", objId);
+            }
+        }
+        else if(op.equals("del")) {
+            lRemove(id + "#objects", 1, objId);
+        }
+    }
 }

@@ -186,11 +186,9 @@ public class RedisEventService {
         }
     }
     public void addObject(String id, String objId) {
-        if(!redisEventDAO.lHasValue(id + "#objects", objId)) {
-            redisEventDAO.lSet(id + "#objects", objId);
-        }
+        redisEventDAO.opObject(id, objId, "add");
     }
     public void delObject(String id, String objId) {
-        redisEventDAO.lRemove(id + "#objects", 1, objId);
+        redisEventDAO.opObject(id, objId, "del");
     }
 }
