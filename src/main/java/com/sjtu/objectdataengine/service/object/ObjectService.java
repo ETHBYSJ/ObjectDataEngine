@@ -66,6 +66,8 @@ public class ObjectService {
         List<String> events = new ArrayList<>();
         if (eventsArray != null) {
             events = JSONObject.parseArray(eventsArray.toJSONString(), String.class);
+        } else {
+            return "events必须指定（可为空列表)";
         }
 
         // 检查events的合法性
