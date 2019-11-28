@@ -100,6 +100,25 @@ public class ObjectService {
         return "创建成功！";
     }
 
+    public String addAttr(String id, String name, String value) {
+        if (id == null || id.equals("")) return "ID不能为空！";
+        if (name == null || name.equals("")) return "name不能为空";
+        if (value == null) return "value不能为空";
+
+        Date date = new Date();
+        HashMap<String, Object> message = new HashMap<>();
+        message.put("op", "OBJECT_ADD_ATTR");
+        message.put("id", id);
+        message.put("name", name);
+        message.put("value", value);
+        message.put("date", date);
+
+        mongoSender.send(message);
+        redisSender.send(message);
+
+        return "创建成功！";
+    }
+
     /**
      * 根据key获取最新object
      * @param id 对象id

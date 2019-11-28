@@ -165,6 +165,20 @@ public class MongoObjectService {
     }
 
     /**
+     * 封装this.addValue
+     * @param id 对象id
+     * @param name 属性名
+     * @param value 值
+     * @return true or false
+     */
+    public boolean addAttr(String id, String name, String value, Date date) {
+        MongoAttr mongoAttr = new MongoAttr(value);
+        mongoAttr.setCreateTime(date);
+        mongoAttr.setUpdateTime(date);
+        return addValue(id, name, mongoAttr);
+    }
+
+    /**
      * 根据对象id和属性name添加一条属性值
      * 一个属性块差一条满了以后，将会创建新的属性块，因为这次操作以后就满了
      * 已经满了后，要向新块写属性，并且要更新创世快size
