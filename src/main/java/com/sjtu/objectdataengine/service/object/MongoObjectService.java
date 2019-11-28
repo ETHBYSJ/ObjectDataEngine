@@ -46,16 +46,16 @@ public class MongoObjectService {
      * @param kv 属性kv对
      * @param events 关联事件集合
      */
-    public void create(String id, String name, String intro, String template, HashMap<String, String> kv, List<String> events) {
+    public void create(String id, String name, String intro, String template, HashMap<String, String> kv, List<String> events, Date date) {
         HashMap<String, String> attrsMap = mongoTemplateDAO.findByKey(template).getAttrs();
         HashMap<String, MongoAttr> hashMap = new HashMap<>();
         for (String attr : attrsMap.keySet()) {
             String value = kv.get(attr)==null ? "" : kv.get(attr);
-            createHeader(id, attr);
-            MongoAttr mongoAttr = createAttr(id, attr, value, 1);
+            createHeader(id, attr, date);
+            MongoAttr mongoAttr = createAttr(id, attr, value, date,1);
             hashMap.put(attr, mongoAttr);
         }
-        createObject(id, name, intro, template, events, hashMap);
+        createObject(id, name, intro, template, events, hashMap, date);
     }
 
     /**
@@ -67,7 +67,7 @@ public class MongoObjectService {
      * @param eventsList 对象关联
      * @param hashMap kv对
      */
-    private void createObject(String id, String name, String intro, String template, List<String> eventsList, HashMap<String, MongoAttr> hashMap) {
+    private void createObject(String id, String name, String intro, String template, List<String> eventsList, HashMap<String, MongoAttr> hashMap, Date date) {
         // 加入template的列表
         mongoTemplateDAO.opObjects(template, id, "add");
         ObjectTemplate objectTemplate = mongoTemplateDAO.findByKey(template);
@@ -75,12 +75,14 @@ public class MongoObjectService {
 
         // 组装events，加入event的列表
         HashMap<String, Date> events = new HashMap<>();
-        Date now = new Date();
+
         for (String event : eventsList) {
-            events.put(event, now);
+            events.put(event, date);
             mongoEventDAO.opObjects(event, id, "add");
         }
         CommonObject commonObject = new CommonObject(id, name, intro, type, template, hashMap, events);
+        commonObject.setCreateTime(date);
+        commonObject.setUpdateTime(date);
         mongoObjectDAO.create(commonObject);             //创建object
     }
 
@@ -89,10 +91,12 @@ public class MongoObjectService {
      * @param id 对象id
      * @param name 属性名称
      */
-    private void createHeader(String id, String name) {
+    private void createHeader(String id, String name, Date date) {
         //先创建header
         String headerId = id + name + "0";
         AttrsHeader attrsHeader = new AttrsHeader(headerId, id, name, 1);
+        attrsHeader.setCreateTime(date);
+        attrsHeader.setUpdateTime(date);
         mongoHeaderDAO.create(attrsHeader);
     }
 
@@ -104,18 +108,18 @@ public class MongoObjectService {
      * @param size 属性块index
      * @return 返回初始的属性，封装成MongoAttr
      */
-    private MongoAttr createAttr(String id, String name, String value, int size) {
+    private MongoAttr createAttr(String id, String name, String value, Date date, int size) {
         //再创建属性文档
-        Date later = new Date();
         String attrId = id + name + size;
         List<MongoAttr> mongoAttrList = new ArrayList<>();
         //创建一条属性的一个mongo attr
         MongoAttr mongoAttr = new MongoAttr(value);
-        mongoAttr.setCreateTime(later);
-        mongoAttr.setUpdateTime(later);
+        mongoAttr.setUpdateTime(date);
         //加入属性的mongo attr列表
         mongoAttrList.add(mongoAttr);
         MongoAttrs mongoAttrs = new MongoAttrs(attrId, mongoAttrList, size);
+        mongoAttrs.setCreateTime(date);
+        mongoAttrs.setUpdateTime(date);
         mongoAttrsDAO.create(mongoAttrs);
         return mongoAttr;
     }
@@ -173,7 +177,6 @@ public class MongoObjectService {
      */
     public boolean addAttr(String id, String name, String value, Date date) {
         MongoAttr mongoAttr = new MongoAttr(value);
-        mongoAttr.setCreateTime(date);
         mongoAttr.setUpdateTime(date);
         return addValue(id, name, mongoAttr);
     }
@@ -336,14 +339,23 @@ public class MongoObjectService {
      * 查找某个时间段的属性
      */
     public List<MongoAttr> findAttrByStartAndEnd(String id, String name, Date st, Date et) {
+        // st <= et
+        if (st.after(et)) return null;
         int cSize = getAttrChainSize(id, name); //chain size
         //找到起止块index
-        MongoAttrs startMongoAttrs = divFindAttrsByTime(id, name, st, cSize);
+        // 如果et早于开始时间，就会查到null，说明应该返回空
         MongoAttrs endMongoAttrs = divFindAttrsByTime(id, name, et, cSize);
+        if (endMongoAttrs == null) {
+            return new ArrayList<>();
+        }
+        MongoAttrs startMongoAttrs = divFindAttrsByTime(id, name, st, cSize);
+        // 如果st早于开始时间，就会查到null，说明起始index应该为1
+        if (startMongoAttrs == null) {
+            startMongoAttrs = mongoAttrsDAO.findByKey(id+name+"1");
+        }
         int startIndex = startMongoAttrs.getIndex();
         int endIndex = endMongoAttrs.getIndex();
-        //System.out.println(startIndex);
-        //System.out.println(endIndex);
+
         //mongoAttrList 用于返回
         List<MongoAttr> mongoAttrList = new ArrayList<>();
         //找到开始块内ct的index
@@ -355,10 +367,6 @@ public class MongoObjectService {
         MongoAttr endAttr = divFindAttrByTime(endMongoAttrs, et);
         List<MongoAttr> endAttrsList = endMongoAttrs.getAttrs();
         int endAttrIndex = endAttrsList.indexOf(endAttr);
-
-        //System.out.println(startAttrIndex);
-        //System.out.println(endAttrIndex);
-
 
         if (startIndex < endIndex) {
             //开始块
@@ -388,7 +396,6 @@ public class MongoObjectService {
                 mongoAttrList.add(startAttrsList.get(j));
             }
         }
-
 
         return mongoAttrList;
     }
@@ -428,6 +435,10 @@ public class MongoObjectService {
             //每个属性至少有一个初始值，不会有空的
             dateSet.add(mongoAttr.getUpdateTime());
         }
+        // System.out.println(dateSet);
+        // for (Date date : dateSet) {
+        //     System.out.println(date.getTime());
+        //}
         List<Date> dateList = new ArrayList<>(dateSet);
         Collections.sort(dateList);
         int len = 0;
@@ -443,11 +454,13 @@ public class MongoObjectService {
         for (int j=0; j<len; ++j) {
             dateList.remove(0);
         }
-        System.out.println(dateList);
+        //System.out.println(dateList);
 
         List<CommonObject> commonObjectList = new ArrayList<>();
         for (Date date : dateList) {
-            commonObjectList.add(findObjectByTime(id, date));
+            // commonObjectList.add(findObjectByTime(id, date));
+            System.out.println(date + " " + date.getTime());
+            System.out.println(findObjectByTime(id, date));
         }
 
         return commonObjectList;
@@ -487,13 +500,14 @@ public class MongoObjectService {
     private MongoAttrs divFindAttrsByTime(String id, String name, Date time, int cSize) {
         int high = cSize;
         int low = 1;
-        //System.out.println(id+name+time+cSize);
+        // System.out.println(id+name+time+cSize);
         MongoAttrs endBlock = findAttrsByBlock(id, name, cSize);
         List<MongoAttr> endBlockList = endBlock.getAttrs();
-        //System.out.println(endBlockList);
+        // System.out.println(endBlockList);
+        // System.out.println(endBlockList.get(endBlockList.size()-1));
         Date endTime = endBlockList.get(endBlockList.size()-1).getUpdateTime();
         if (endTime.before(time)) {
-            //System.out.println("return endBlock");
+            // System.out.println("return endBlock");
             return endBlock;
         }
 

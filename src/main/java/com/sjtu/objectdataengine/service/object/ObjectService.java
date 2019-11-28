@@ -69,7 +69,6 @@ public class ObjectService {
         } else {
             return "events必须指定（可为空列表)";
         }
-
         // 检查events的合法性
         for (String event : events) {
             if (event == null || event.equals("")) return "events列表不合法";
@@ -77,7 +76,7 @@ public class ObjectService {
                 return "eventId=" + event + "不存在";
             }
         }
-
+        // attrs解析
         JSONObject attrObject = jsonObject.getJSONObject("attrs");
         HashMap<String, String> attrs = new HashMap<>();
         if (attrObject != null) {
@@ -87,7 +86,8 @@ public class ObjectService {
                 attrs.put(key, value);
             }
         }
-
+        // 获取日期
+        Date date = new Date();
         //组装message
         HashMap<String, Object> message = new HashMap<>();
         message.put("op", "OBJECT_CREATE");
@@ -97,7 +97,7 @@ public class ObjectService {
         message.put("template", template);
         message.put("events", events);
         message.put("attrs", attrs);
-
+        message.put("date", date);
         mongoSender.send(message);
         redisSender.send(message);
 

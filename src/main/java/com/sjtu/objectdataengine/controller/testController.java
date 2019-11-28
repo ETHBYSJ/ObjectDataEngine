@@ -34,7 +34,6 @@ public class testController {
     public boolean add(@RequestParam String id, @RequestParam String name, @RequestParam String value) {
         Date now = new Date();
         MongoAttr mongoAttr = new MongoAttr(value);
-        mongoAttr.setCreateTime(now);
         mongoAttr.setUpdateTime(now);
         return mongoObjectService.addValue(id, name, mongoAttr);
     }

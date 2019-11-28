@@ -2,6 +2,7 @@ package com.sjtu.objectdataengine.service.template;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.sjtu.objectdataengine.model.object.CommonObject;
 import com.sjtu.objectdataengine.model.tree.TreeNode;
 import com.sjtu.objectdataengine.model.template.ObjectTemplate;
 import com.sjtu.objectdataengine.rabbitMQ.mongodb.MongoSender;
@@ -171,5 +172,10 @@ public class TemplateService {
         }
 
         return "删除失败";
+    }
+
+    public ObjectTemplate get(String id) {
+        if (id == null || id.equals("")) return null;
+        return mongoTemplateService.findTemplateById(id);
     }
 }

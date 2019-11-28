@@ -7,7 +7,6 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
 
-import java.util.Date;
 import java.util.List;
 
 public abstract class MongoBaseDAO<T extends MongoBase> {
@@ -20,9 +19,6 @@ public abstract class MongoBaseDAO<T extends MongoBase> {
      * @return 布尔，1表示成功
      */
     public boolean create(T t) {
-        Date date = new Date();
-        t.setCreateTime(date);
-        t.setUpdateTime(date);
         try {
             mongoTemplate.insert(t);
             return true;

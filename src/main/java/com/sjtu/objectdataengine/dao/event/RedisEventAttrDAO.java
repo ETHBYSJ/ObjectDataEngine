@@ -22,7 +22,6 @@ public class RedisEventAttrDAO extends RedisDAO {
         Date attrUpdateTime = (Date) hget(key, "updateTime");
         String value = (String) hget(key, "value");
         MongoAttr mongoAttr = new MongoAttr(value);
-        mongoAttr.setCreateTime(attrCreateTime);
         mongoAttr.setUpdateTime(attrUpdateTime);
         return mongoAttr;
     }

@@ -1,10 +1,11 @@
 package com.sjtu.objectdataengine.utils;
 
-import com.sjtu.objectdataengine.model.MongoBase;
+import java.util.Date;
 
-public class MongoAttr extends MongoBase {
+public class MongoAttr {
 
     private String value;
+    private Date updateTime;
 
     public MongoAttr(String value) {
         this.value = value;
@@ -18,9 +19,19 @@ public class MongoAttr extends MongoBase {
         this.value = value;
     }
 
+
+
     @Override
     public String toString() {
         return value + " " + getUpdateTime();
+    }
+
+    public Date getUpdateTime() {
+        return updateTime;
+    }
+
+    public void setUpdateTime(Date updateTime) {
+        this.updateTime = updateTime;
     }
 
     @Override
@@ -34,7 +45,7 @@ public class MongoAttr extends MongoBase {
         }
         if (object instanceof MongoAttr) {
             MongoAttr obj = (MongoAttr) object;
-            return (this.value.equals(obj.value) && this.getUpdateTime().equals(obj.getUpdateTime()) && this.getCreateTime().equals(obj.getCreateTime()));
+            return (this.value.equals(obj.value) && this.getUpdateTime().equals(obj.getUpdateTime()));
         }
         return false;
     }

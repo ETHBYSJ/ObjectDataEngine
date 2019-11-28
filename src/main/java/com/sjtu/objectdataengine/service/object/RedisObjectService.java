@@ -107,7 +107,6 @@ public class RedisObjectService {
             MongoAttr mongoAttr = entry.getValue();
             Date attrCT = date;
             Date attrUT = date;
-            mongoAttr.setCreateTime(attrCT);
             mongoAttr.setUpdateTime(attrUT);
             //插入属性
             addAttrByObjectId(id, attrName);
@@ -352,7 +351,6 @@ public class RedisObjectService {
             Date attrCreateTime = (Date) redisObjectDAO.hget(id + '#' + attr, "createTime");
 
             mongoAttr.setUpdateTime(attrUpdateTime);
-            mongoAttr.setCreateTime(attrCreateTime);
             return mongoAttr;
         }
         return null;
@@ -379,7 +377,6 @@ public class RedisObjectService {
         ZSetOperations.TypedTuple<Object> lastValue = delIt.next();
         MongoAttr mongoAttr = new MongoAttr(lastValue.getValue().toString());
         Date attrCreateTime = (Date) redisObjectDAO.hget(id + '#' + attr, "createTime");
-        mongoAttr.setCreateTime(attrCreateTime);
         Date attrUpdateTime = new Date(lastValue.getScore().longValue());
         mongoAttr.setUpdateTime(attrUpdateTime);
         return mongoAttr;
@@ -534,7 +531,6 @@ public class RedisObjectService {
             MongoAttr mongoAttr = new MongoAttr(value);
             mongoAttr.setUpdateTime(updateTime);
             Date createTime = (Date) redisObjectDAO.hget(id + '#' + name, "createTime");
-            mongoAttr.setCreateTime(createTime);
             retList.add(mongoAttr);
         }
         return retList;
@@ -658,7 +654,6 @@ public class RedisObjectService {
                         attrUpdateTime = new Date(pre.get(i).getScore().longValue());
                         mongoAttr.setUpdateTime(attrUpdateTime);
                     }
-                    mongoAttr.setCreateTime(attrCreateTime);
                     HashMap<String, Date> cutMap = cutObjects(commonObject.getUpdateTime(), id);
                     commonObject.setEvents(cutMap);
                     commonObject.putAttr(attrName, mongoAttr);

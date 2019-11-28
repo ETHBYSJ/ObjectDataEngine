@@ -1,5 +1,6 @@
 package com.sjtu.objectdataengine.controller;
 
+import com.sjtu.objectdataengine.model.template.ObjectTemplate;
 import com.sjtu.objectdataengine.service.template.TemplateService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -39,5 +40,10 @@ public class TemplateController {
     @GetMapping("/del_attr")
     public String delAttr(@RequestParam String id, @RequestParam String name) {
         return templateService.delAttr(id, name);
+    }
+
+    @GetMapping("/get")
+    public ObjectTemplate get(@RequestParam String id) {
+        return templateService.get(id);
     }
 }
