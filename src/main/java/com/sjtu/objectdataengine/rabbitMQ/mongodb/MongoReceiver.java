@@ -1,4 +1,4 @@
-package com.sjtu.objectdataengine.rabbitMQ;
+package com.sjtu.objectdataengine.rabbitMQ.mongodb;
 
 import com.sjtu.objectdataengine.service.event.MongoEventService;
 import com.sjtu.objectdataengine.service.object.MongoObjectService;
@@ -55,6 +55,14 @@ public class MongoReceiver {
                 break;
             }
 
+            case "OBJECT_ADD_ATTR": {
+                String id = message.get("id").toString();
+                String name = message.get("name").toString();
+                String value = message.get("value").toString();
+                Date date = (Date) message.get("date");
+                mongoObjectService.addAttr(id, name, value, date);
+                break;
+            }
 
             /*
              * 创建知识树节点

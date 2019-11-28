@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.sjtu.objectdataengine.model.tree.TreeNode;
 import com.sjtu.objectdataengine.model.tree.TreeNodeReturn;
-import com.sjtu.objectdataengine.rabbitMQ.MongoSender;
+import com.sjtu.objectdataengine.rabbitMQ.mongodb.MongoSender;
 import com.sjtu.objectdataengine.service.template.RedisTemplateService;
 import org.springframework.stereotype.Component;
 

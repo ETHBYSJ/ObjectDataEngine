@@ -3,14 +3,12 @@ package com.sjtu.objectdataengine.service.object;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.sjtu.objectdataengine.model.event.EventObject;
 import com.sjtu.objectdataengine.model.object.CommonObject;
 import com.sjtu.objectdataengine.model.template.ObjectTemplate;
 import com.sjtu.objectdataengine.model.tree.TreeNode;
-import com.sjtu.objectdataengine.rabbitMQ.MongoSender;
-import com.sjtu.objectdataengine.rabbitMQ.RedisSender;
+import com.sjtu.objectdataengine.rabbitMQ.mongodb.MongoSender;
+import com.sjtu.objectdataengine.rabbitMQ.redis.RedisSender;
 import com.sjtu.objectdataengine.service.event.RedisEventService;
-import com.sjtu.objectdataengine.service.template.MongoTemplateService;
 import com.sjtu.objectdataengine.service.template.RedisTemplateService;
 import com.sjtu.objectdataengine.service.tree.RedisTreeService;
 import org.springframework.stereotype.Component;
@@ -97,6 +95,25 @@ public class ObjectService {
         message.put("template", template);
         message.put("events", events);
         message.put("attrs", attrs);
+
+        mongoSender.send(message);
+        redisSender.send(message);
+
+        return "创建成功！";
+    }
+
+    public String addAttr(String id, String name, String value) {
+        if (id == null || id.equals("")) return "ID不能为空！";
+        if (name == null || name.equals("")) return "name不能为空";
+        if (value == null) return "value不能为空";
+
+        Date date = new Date();
+        HashMap<String, Object> message = new HashMap<>();
+        message.put("op", "OBJECT_ADD_ATTR");
+        message.put("id", id);
+        message.put("name", name);
+        message.put("value", value);
+        message.put("date", date);
 
         mongoSender.send(message);
         redisSender.send(message);
