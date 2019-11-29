@@ -32,12 +32,12 @@ public class RedisEventService {
      * @param attrs 属性集合
      * @return true代表创建成功，false代表创建失败
      */
-    public boolean create(String id, String name, String intro, String template, HashMap<String, String> attrs) {
+    public boolean create(String id, String name, String intro, String template, HashMap<String, String> attrs, Date date) {
         if(redisEventDAO.hasKey(id + "#base")) {
             return false;
         }
         ObjectTemplate objectTemplate = redisTemplateDAO.findById(template);
-        Date now = new Date();
+
         String baseKey = id + "#base";
         redisEventDAO.hset(baseKey, "name", name);
         redisEventDAO.hset(baseKey, "intro", intro);
@@ -49,14 +49,14 @@ public class RedisEventService {
             String value = attrs.get(attrName) != null ? "" : attrs.get(attrName);
             //存储各属性值
             redisEventDAO.lSet(id, attrName);
-            redisEventAttrDAO.hset(key, "createTime", now);
-            redisEventAttrDAO.hset(key, "updateTime", now);
+            redisEventAttrDAO.hset(key, "createTime", date);
+            redisEventAttrDAO.hset(key, "updateTime", date);
             redisEventAttrDAO.hset(key, "value", value);
         }
         //事件开始时间
-        redisEventDAO.hset(baseKey, "startTime", now);
-        redisEventDAO.hset(baseKey, "createTime", now);
-        redisEventDAO.hset(baseKey, "updateTime", now);
+        redisEventDAO.hset(baseKey, "startTime", date);
+        redisEventDAO.hset(baseKey, "createTime", date);
+        redisEventDAO.hset(baseKey, "updateTime", date);
         //状态
         redisEventDAO.hset(baseKey, "status", true);
         //索引表更新
@@ -151,14 +151,14 @@ public class RedisEventService {
      * @param stage 对象状态
      * @return
      */
-    public boolean updateBaseInfo(String id, String name, String intro, String stage) {
+    public boolean updateBaseInfo(String id, String name, String intro, String stage, Date date) {
         try {
             String baseKey = id + "#base";
             if(name != null) redisEventDAO.hset(baseKey, "name", name);
             if(intro != null) redisEventDAO.hset(baseKey, "intro", intro);
             if(stage != null) redisEventDAO.hset(baseKey, "stage", stage);
             //设置更新时间
-            redisEventDAO.hset(baseKey, "updateTime", new Date());
+            redisEventDAO.hset(baseKey, "updateTime", date);
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -173,16 +173,15 @@ public class RedisEventService {
      * @param value 更新后的属性值
      * @return true代表更新成功，false代表更新失败
      */
-    public boolean updateAttr(String id, String name, String value) {
+    public boolean updateAttr(String id, String name, String value, Date date) {
         try {
             String baseKey = id + "#base";
             String attrKey = id + '#' + name;
-            Date now = new Date();
-            redisEventDAO.hset(baseKey, "updateTime", now);
+            redisEventDAO.hset(baseKey, "updateTime", date);
             if(!redisEventAttrDAO.hasKey(attrKey)) {
-                redisEventAttrDAO.hset(attrKey, "createTime", now);
+                redisEventAttrDAO.hset(attrKey, "createTime", date);
             }
-            redisEventAttrDAO.hset(attrKey, "updateTime", now);
+            redisEventAttrDAO.hset(attrKey, "updateTime", date);
             redisEventAttrDAO.hset(attrKey, "value", value);
             return true;
         } catch(Exception e) {

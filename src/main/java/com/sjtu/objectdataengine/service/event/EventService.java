@@ -46,7 +46,6 @@ public class EventService {
 
         String template = jsonObject.getString("template");
         if(template == null || template.equals("")) return "template不能为空！";
-        //else if (!redisTemplateService.hasKey(template)) return "template不存在";
         else if(!redisTemplateService.hasTemplate(template)) return "template不存在";
         //待完成：检查template是否是event类型
         JSONObject attrObject = jsonObject.getJSONObject("attrs");
@@ -186,8 +185,8 @@ public class EventService {
         if (value == null) return "属性值不能为空";
         modifyMessage.put("value", value);
         // 日期date
-        Date date = new Date;
-        modifyMessage.put("date", date)
+        Date date = new Date();
+        modifyMessage.put("date", date);
         mongoSender.send(modifyMessage);
         if (redisEventService.updateAttr(id, name, value, date)) {
             return  "更新属性成功";
