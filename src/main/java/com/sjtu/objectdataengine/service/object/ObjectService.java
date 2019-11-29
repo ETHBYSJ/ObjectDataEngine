@@ -183,4 +183,12 @@ public class ObjectService {
         }
         return result;
     }
+
+    public String addEventToObject(String id, String eventId) {
+        /*if (id == null || id.equals("")) return "ID不能为空";
+        else if ()
+        if (eventId == null || eventId.equals("")) return "event不能为空";
+        */
+        return "增加失败";
+    }
 }

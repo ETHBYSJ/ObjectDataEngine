@@ -76,4 +76,9 @@ public class MongoAttrs extends MongoBase {
     public void setIndex(int index) {
         this.index = index;
     }
+
+    @Override
+    public String toString() {
+        return "MongoAttrs: { id: " + id + ", size: " + size + " }";
+    }
 }
