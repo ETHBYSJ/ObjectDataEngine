@@ -230,7 +230,6 @@ public class MongoObjectService {
             MongoCondition mongoCondition = new MongoCondition();
             mongoCondition.addQuery("id", newKey);
             mongoCondition.addUpdate("createTime", ut);
-            //System.out.println(mongoCondition.getUpdate());
             return mongoAttrsDAO.update(mongoCondition);
         } catch (Exception e) {
             e.printStackTrace();
@@ -288,7 +287,6 @@ public class MongoObjectService {
         MongoCondition mongoCondition = new MongoCondition();
         mongoCondition.addQuery("id", key0);
         mongoCondition.addUpdate("size", size + 1);
-        //System.out.println(mongoCondition.getUpdate());
         return mongoHeaderDAO.update(mongoCondition);
     }
 
@@ -323,12 +321,11 @@ public class MongoObjectService {
      * 查找某个时间点的属性
      */
     public MongoAttr findAttrByTime(String id, String name, Date time) {
-        System.out.println("params: " + id + " " + name + " " + time);
-        int cSize = getAttrChainSize(id, name); //chain size
+        // 获取到对应属性链的长度
+        int cSize = getAttrChainSize(id, name);
         MongoAttrs mongoAttrs = divFindAttrsByTime(id, name, time, cSize);
         if (mongoAttrs == null) return null;
         Date firstUt = mongoAttrs.getAttrs().get(0).getUpdateTime();
-        //System.out.println(mongoAttrs.getAttrs());
         //如果发现第一个ut都大于这个时间，说明是上一块的最后一个
         if (time.before(firstUt) && cSize > 1) {
             MongoAttrs mongoAttrs1 = findAttrsByBlock(id, name, cSize-1);
@@ -408,13 +405,22 @@ public class MongoObjectService {
      * 查找某个时间点的obj
      */
     public CommonObject findObjectByTime(String id, Date time) {
+        // System.out.println("findObjectByTime: id = " + id + ", time = " + time + ", time.getTime() = " + time.getTime());
+        // 初始化Date为0
         Date ut = new Date(0);
+        // 取下最新的属性，作为模板，更换对应时间的属性
         CommonObject commonObject = mongoObjectDAO.findByKey(id);
+        // 如果早过创建时间，就返回空
+        if (time.before(commonObject.getCreateTime())) return null;
+        // 取出属性列表的key集合
         Set<String> attrName = commonObject.getAttr().keySet();
+        // 对每个属性循环
         for(String name : attrName) {
-            MongoAttr mongoAttr = findAttrByTime(id, name, time);
-            System.out.println(mongoAttr);
+            // 找到对应时间点的属性
+            MongoAttr mongoAttr = findAttrByTime(id, name, time); // error: time=createTime为null
+            // 放入模板object中
             commonObject.putAttr(name, mongoAttr);
+            // 比较更新updateTime
             if(ut.before(mongoAttr.getUpdateTime())) {
                 ut = mongoAttr.getUpdateTime();
             }
@@ -426,46 +432,43 @@ public class MongoObjectService {
 
     /**
      * 查找某个时间段的obj
+     * @param id 查询obj的id
+     * @param st 查询开始时间
+     * @param et 查询结束时间
      */
     public List<CommonObject> findObjectByStartAndEnd(String id, Date st, Date et) {
         Set<Date> dateSet = new HashSet<>();
         CommonObject commonObject = mongoObjectDAO.findByKey(id);
+        // 如果et
+        Date createTime = commonObject.getCreateTime();
+        if (et.before(createTime)) return null;
+
+        Date startTime = st;
+        // 先修剪st, 如果st小于createTime，就把它变成createTime
+        if (st.before(createTime)) {
+            startTime = createTime;
+        }
 
         Set<String> attrName = commonObject.getAttr().keySet();
         List<MongoAttr> mongoAttrList = new ArrayList<>();
         for (String name : attrName) {
-            mongoAttrList.addAll(findAttrByStartAndEnd(id, name, st, et));
+            mongoAttrList.addAll(findAttrByStartAndEnd(id, name, createTime, et));
         }
+        // 避免重复，先使用set
+        // 先加入st
+        dateSet.add(startTime);
         for (MongoAttr mongoAttr : mongoAttrList) {
-            //每个属性至少有一个初始值，不会有空的
-            dateSet.add(mongoAttr.getUpdateTime());
+            // 加入所有st之后更新的时间，不包括st
+            if (mongoAttr.getUpdateTime().after(startTime))
+                dateSet.add(mongoAttr.getUpdateTime());
         }
-        // System.out.println(dateSet);
-        // for (Date date : dateSet) {
-        //     System.out.println(date.getTime());
-        //}
         List<Date> dateList = new ArrayList<>(dateSet);
         Collections.sort(dateList);
-        int len = 0;
-        for(int i=0; i<dateList.size(); ++i) {
-            //i <= st && i+1 <= st
-            if((dateList.get(i).before(st) || dateList.get(i).equals(st)) && dateList.get(i+1).before(st) || dateList.get(i+1).equals(st)) {
-                len += 1;
-            } else {
-                break;
-            }
-        }
-        //System.out.println(dateList);
-        for (int j=0; j<len; ++j) {
-            dateList.remove(0);
-        }
-        //System.out.println(dateList);
-
         List<CommonObject> commonObjectList = new ArrayList<>();
         for (Date date : dateList) {
-            // commonObjectList.add(findObjectByTime(id, date));
-            System.out.println(date + " " + date.getTime());
-            System.out.println(findObjectByTime(id, date));
+            CommonObject temp = findObjectByTime(id, date);
+            // 如果开始时间早于创建时间，会出现null
+            if (temp != null) commonObjectList.add(temp);
         }
 
         return commonObjectList;
@@ -476,6 +479,7 @@ public class MongoObjectService {
      */
     private MongoAttr divFindAttrByTime(MongoAttrs mongoAttrs, Date time) {
         List<MongoAttr> mongoAttrList = mongoAttrs.getAttrs();
+        //System.out.println("div:" + time + mongoAttrs);
         int low = 0;
         int high = mongoAttrList.size()-1;
         while(high - low > 1) {
@@ -503,33 +507,47 @@ public class MongoObjectService {
      * @return 返回块
      */
     private MongoAttrs divFindAttrsByTime(String id, String name, Date time, int cSize) {
+        // System.out.println("divFindAttrsByTime: id = " + id + ", name = " + name + ", time.getTime() = " + time.getTime() + ", cSize = " + cSize);
         int high = cSize;
         int low = 1;
-        // System.out.println(id+name+time+cSize);
+        // 当前链的第一块
+        MongoAttrs startBlock = findAttrsByBlock(id, name, 1);
+        // 第一块的创建时间
+        Date startTime = startBlock.getCreateTime();
+        // 当前链的最后一块
         MongoAttrs endBlock = findAttrsByBlock(id, name, cSize);
-        List<MongoAttr> endBlockList = endBlock.getAttrs();
-        // System.out.println(endBlockList);
-        // System.out.println(endBlockList.get(endBlockList.size()-1));
-        Date endTime = endBlockList.get(endBlockList.size()-1).getUpdateTime();
-        if (endTime.before(time)) {
-            // System.out.println("return endBlock");
+        // 最后一块的最后更新时间
+        Date endTime = endBlock.getUpdateTime();
+        // 如果查询时间>=最后更新时间，那就是最后一块
+        if (!time.before(endTime)) {
             return endBlock;
         }
-
+        // 如果查询时间=开始时间，那就是第一块
+        else if (time.equals(startTime)) {
+            return startBlock;
+        }
+        // 如果查询时间<开始时间，那就是null
+        else if (time.before(startTime)) {
+            return null;
+        }
+        /* 否则就用二分法
+         * 这里，关于ut和ct有以下规律
+         * 只有第一块的第一个属性updateTime和createTime相同，其他的createTime都小于第一块的updateTime
+         * 一个满块的updateTime和下一块的createTime是相同的
+         */
         while (low <= high) {
             int mid = (low + high) / 2;
-            //System.out.println(low + " " + high + " " + mid);
             MongoAttrs mongoAttrs = findAttrsByBlock(id, name, mid);
             Date ct = mongoAttrs.getCreateTime();
             Date ut = mongoAttrs.getUpdateTime();
-            //time.before(ct)<=> time < ct
+            //time <= ct
             if (time.before(ct) || time.equals(ct)) {
                 high = mid - 1;
             } //time > ct && time <= ut
-            else if (time.after(ct) && (time.before(ut) || time.equals(ut))) {
-                //System.out.println();
+            else if (time.before(ut) || time.equals(ut)) {
                 return mongoAttrs;
-            } else if (time.after(ct) && time.after(ut)) {
+            } // time > ct && time > ut
+            else if (time.after(ut)) {
                 low = mid + 1;
             }
         }

@@ -55,4 +55,12 @@ public class testController {
         return mongoObjectService.findObjectByStartAndEnd(id ,st, et);
     }
 
+    @GetMapping("time_debug")
+    public CommonObject findObjByTimeDEBUG(@RequestParam String id, @RequestParam long time) {
+        Date date = new Date(time);
+        return mongoObjectService.findObjectByTime(id, date);
+    }
+
+
+
 }
