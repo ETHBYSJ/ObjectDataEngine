@@ -52,7 +52,6 @@ public class MongoReceiver {
                 List<String> events = TypeConversion.cast(message.get("events"));
                 HashMap<String, String> attrs = TypeConversion.cast(message.get("attrs"));
                 Date date = (Date) message.get("date");
-                //System.out.println(message);
                 mongoObjectService.create(id, name, intro, template, attrs, events, date);
                 break;
             }
@@ -185,7 +184,8 @@ public class MongoReceiver {
                 String intro = message.get("intro").toString();
                 String template = message.get("template").toString();
                 HashMap<String, String> attrs = TypeConversion.cast(message.get("attrs"));
-                mongoEventService.create(id, name, intro, template, attrs);
+                Date date = (Date) message.get("date");
+                mongoEventService.create(id, name, intro, template, attrs, date);
                 break;
             }
 
@@ -208,7 +208,8 @@ public class MongoReceiver {
                 if (message.get("stage") != null)
                     stage = message.get("stage").toString();
                 else stage = null;
-                mongoEventService.updateBaseInfo(id, name, intro, stage);
+                Date date = (Date) message.get("date");
+                mongoEventService.updateBaseInfo(id, name, intro, stage, date);
                 break;
             }
 
@@ -216,7 +217,8 @@ public class MongoReceiver {
                 String id = message.get("id").toString();
                 String name = message.get("name").toString();
                 String value = message.get("value").toString();
-                mongoEventService.modifyAttr(id, name, value);
+                Date date = (Date) message.get("date");
+                mongoEventService.modifyAttr(id, name, value, date);
                 break;
             }
 

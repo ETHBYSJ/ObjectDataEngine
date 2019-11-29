@@ -23,18 +23,21 @@ public class MongoEventService {
     @Resource
     MongoTemplateDAO mongoTemplateDAO;
 
-    public void create(String id, String name, String intro, String template, HashMap<String, String> attrsKv) {
+    public void create(String id, String name, String intro, String template, HashMap<String, String> attrsKv, Date date) {
         List<String> objects = new ArrayList<>();
         HashMap<String, String> attrsMap = mongoTemplateDAO.findByKey(template).getAttrs();
         HashMap<String, MongoAttr> attrs = new HashMap<>();
         for (String attr : attrsMap.keySet()) {
             String value = attrsKv.get(attr)==null ? "" : attrsKv.get(attr);
             MongoAttr mongoAttr = new MongoAttr(value);
+            mongoAttr.setUpdateTime(date);
             attrs.put(attr, mongoAttr);
         }
         EventObject eventObject = new EventObject(id, name, intro, template, objects, attrs);
+        eventObject.setCreateTime(date);
+        eventObject.setUpdateTime(date);
         // 设置创建时间为开始时间
-        eventObject.setStartTime(new Date());
+        eventObject.setStartTime(date);
         mongoEventDAO.create(eventObject);
     }
 
@@ -52,24 +55,39 @@ public class MongoEventService {
         mongoEventDAO.update(mongoCondition);
     }
 
-    public void updateBaseInfo(String id, String name, String intro, String stage) {
+    public void updateBaseInfo(String id, String name, String intro, String stage, Date date) {
+        boolean flag = false;
         MongoCondition mongoCondition = new MongoCondition();
         mongoCondition.addQuery("id", id);
-        if (name != null) mongoCondition.addUpdate("name", name);
-        if (intro != null) mongoCondition.addUpdate("intro", intro);
-        if (stage != null) mongoCondition.addUpdate("stage", stage);
-        mongoEventDAO.update(mongoCondition);
+        if (name != null) {
+            mongoCondition.addUpdate("name", name);
+            flag = true;
+        }
+        if (intro != null) {
+            mongoCondition.addUpdate("intro", intro);
+            flag = true;
+        }
+        if (stage != null) {
+            mongoCondition.addUpdate("stage", stage);
+            flag = true;
+        }
+        if (flag) {
+            mongoCondition.addUpdate("updateTime", date);
+            mongoEventDAO.update(mongoCondition);
+        }
     }
 
     EventObject findEventObjectById(String id) {
         return mongoEventDAO.findByKey(id);
     }
 
-    public void modifyAttr(String id, String name, String value) {
+    public void modifyAttr(String id, String name, String value, Date date) {
         MongoCondition mongoCondition = new MongoCondition();
         mongoCondition.addQuery("id", id);
         MongoAttr mongoAttr = new MongoAttr(value);
+        mongoAttr.setUpdateTime(date);
         mongoCondition.addUpdate("attrs." + name, mongoAttr);
+        mongoCondition.addUpdate("updateTime", date);
         mongoEventDAO.update(mongoCondition);
     }
 

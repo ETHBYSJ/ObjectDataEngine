@@ -8,6 +8,7 @@ import com.sjtu.objectdataengine.service.template.RedisTemplateService;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,6 +58,7 @@ public class EventService {
                 attrs.put(key, value);
             }
         }
+        Date date = new Date();
         //组装message
         HashMap<String, Object> message = new HashMap<>();
         message.put("op", "EVENT_CREATE");
@@ -65,8 +67,9 @@ public class EventService {
         message.put("intro", intro);
         message.put("template", template);
         message.put("attrs", attrs);
+        message.put("date", date);
 
-        if (redisEventService.create(id, name, intro, template, attrs)) {
+        if (redisEventService.create(id, name, intro, template, attrs, date)) {
             mongoSender.send(message);
             return "创建成功";
         }
@@ -125,9 +128,11 @@ public class EventService {
         if (stage != null) {
             modifyMessage.put("stage", stage);
         }
-
+        // 日期
+        Date date = new Date();
+        modifyMessage.put("date", date);
         mongoSender.send(modifyMessage);
-        if (redisEventService.updateBaseInfo(id, name, intro, stage)) {
+        if (redisEventService.updateBaseInfo(id, name, intro, stage, date)) {
             return "修改成功";
         }
         return "修改失败";
@@ -141,8 +146,10 @@ public class EventService {
 
         HashMap<String, Object> endMessage = new HashMap<>();
 
+        Date date = new Date();
         endMessage.put("op", "EVENT_END");
         endMessage.put("id", id);
+        endMessage.put("date", date);
 
         mongoSender.send(endMessage);
         // 删除redis中的已结束事件
@@ -178,9 +185,11 @@ public class EventService {
         String value = jsonObject.getString("value");
         if (value == null) return "属性值不能为空";
         modifyMessage.put("value", value);
-
+        // 日期date
+        Date date = new Date;
+        modifyMessage.put("date", date)
         mongoSender.send(modifyMessage);
-        if (redisEventService.updateAttr(id, name, value)) {
+        if (redisEventService.updateAttr(id, name, value, date)) {
             return  "更新属性成功";
         }
         return "更新属性失败";
