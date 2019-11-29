@@ -59,6 +59,8 @@ public class RedisEventService {
         redisEventDAO.hset(baseKey, "updateTime", now);
         //状态
         redisEventDAO.hset(baseKey, "status", true);
+        //索引表更新
+        redisEventDAO.lSet("index", id);
         return true;
     }
 
@@ -136,6 +138,8 @@ public class RedisEventService {
         }
         //解除模板的关联
         redisTemplateDAO.lRemove(template + "#objects", 1, id);
+        //索引表删除
+        redisEventDAO.lRemove("index", 1, id);
         return true;
     }
 

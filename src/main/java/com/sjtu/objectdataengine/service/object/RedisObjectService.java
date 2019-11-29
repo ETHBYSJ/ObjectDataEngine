@@ -77,6 +77,8 @@ public class RedisObjectService {
      * @return true代表创建成功，false代表创建失败
      */
     private boolean createObject(String id, String name, String intro, ObjectTemplate objectTemplate, List<String> events, HashMap<String, MongoAttr> hashMap, Date date) {
+        //更新索引表
+        redisAttrDAO.lSet("index", id);
         if(intro == null) intro = "";
         String templateId = objectTemplate.getId();
         redisTemplateDAO.opObject(templateId, id, "add");
