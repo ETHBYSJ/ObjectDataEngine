@@ -3,6 +3,7 @@ package com.sjtu.objectdataengine.service.event;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.sjtu.objectdataengine.model.event.EventObject;
+import com.sjtu.objectdataengine.model.template.ObjectTemplate;
 import com.sjtu.objectdataengine.rabbitMQ.mongodb.MongoSender;
 import com.sjtu.objectdataengine.service.template.RedisTemplateService;
 import org.springframework.stereotype.Component;
@@ -46,8 +47,10 @@ public class EventService {
 
         String template = jsonObject.getString("template");
         if(template == null || template.equals("")) return "template不能为空！";
-        else if(!redisTemplateService.hasTemplate(template)) return "template不存在";
-        //待完成：检查template是否是event类型
+        ObjectTemplate objectTemplate = redisTemplateService.findTemplateById(template);
+        if(objectTemplate == null) return "template不存在";
+        else if (!objectTemplate.getType().equals("event")) return "模板不是事件模板！";
+
         JSONObject attrObject = jsonObject.getJSONObject("attrs");
         HashMap<String, String> attrs = new HashMap<>();
         if (attrObject != null) {

@@ -60,7 +60,9 @@ public class ObjectService {
 
         String template = jsonObject.getString("template");
         if(template == null || template.equals("")) return "template不能为空！";
-        else if (!redisTemplateService.hasTemplate(template)) return "template不存在";
+        ObjectTemplate objectTemplate = redisTemplateService.findTemplateById(template);
+        if(objectTemplate == null) return "template不存在";
+        else if (!objectTemplate.getType().equals("entity")) return "模板不是实体模板！";
 
         JSONArray eventsArray = jsonObject.getJSONArray("events");
         List<String> events = new ArrayList<>();
