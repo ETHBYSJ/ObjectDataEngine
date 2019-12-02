@@ -58,7 +58,6 @@ public class MongoObjectDAO extends MongoBaseDAO<CommonObject> {
     public boolean update(MongoCondition mongoCondition) {
         Query query = mongoCondition.getQuery();
         Update update = mongoCondition.getUpdate();
-        update.set("updateTime", new Date());
         try {
             mongoTemplate.updateMulti(query, update, CommonObject.class);
             return true;

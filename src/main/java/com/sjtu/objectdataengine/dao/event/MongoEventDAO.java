@@ -58,7 +58,6 @@ public class MongoEventDAO extends MongoBaseDAO<EventObject> {
     public boolean update(MongoCondition mongoCondition) {
         Query query = mongoCondition.getQuery();
         Update update = mongoCondition.getUpdate();
-        update.set("updateTime", new Date());
         try {
             mongoTemplate.updateMulti(query, update, EventObject.class);
             return true;

@@ -123,7 +123,7 @@ public class TreeService {
         }
 
         mongoSender.send(modifyMessage);
-        if (redisTreeService.updateNodeByKey(id, name, intro, parent)) {//redisTreeService.updateNodeByKey(id, name, template, parentsArray)) { //改成上面几个
+        if (redisTreeService.updateNodeByKey(id, name, intro, parent)) {
             return "修改成功";
         }
         return "修改失败";

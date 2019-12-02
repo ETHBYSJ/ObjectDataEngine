@@ -37,7 +37,6 @@ public class MongoHeaderDAO extends MongoBaseDAO<AttrsHeader> {
     public boolean update(MongoCondition mongoCondition) {
         Query query = mongoCondition.getQuery();
         Update update = mongoCondition.getUpdate();
-        update.set("updateTime", new Date());
         try {
             mongoTemplate.updateMulti(query, update, AttrsHeader.class);
             return true;

@@ -39,7 +39,6 @@ public class MongoTreeDAO extends MongoBaseDAO<TreeNode> {
        try {
             Query query = mongoCondition.getQuery();
             Update update = mongoCondition.getUpdate();
-            update.set("updateTime", new Date());
             mongoTemplate.updateMulti(query, update, TreeNode.class);
             return true;
         } catch (Exception e) {

@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitConfigTest {
     @Bean
-    public ConnectionFactory connectionFactory(){
+    public ConnectionFactory connectionFactory() {
         CachingConnectionFactory connectionFactory = new CachingConnectionFactory();
         connectionFactory.setAddresses("localhost:5672");
         connectionFactory.setUsername("guest");

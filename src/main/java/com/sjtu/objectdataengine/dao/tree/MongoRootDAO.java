@@ -48,15 +48,7 @@ public class MongoRootDAO extends MongoBaseDAO<RootMessage> {
         return null;
     }
 
-    /**
-     * 更新对象
-     *
-     * @param mongoCondition 更新条件
-     */
-    @Override
-    public boolean update(MongoCondition mongoCondition) {
-        return false;
-    }
+
 
     /**
      * 模糊查询

@@ -56,7 +56,6 @@ public class MongoTemplateDAO extends MongoBaseDAO<ObjectTemplate> {
     public boolean update(MongoCondition mongoCondition) {
         Query query = mongoCondition.getQuery();
         Update update = mongoCondition.getUpdate();
-        update.set("updateTime", new Date());
         try {
             mongoTemplate.updateMulti(query, update, ObjectTemplate.class);
             return true;
