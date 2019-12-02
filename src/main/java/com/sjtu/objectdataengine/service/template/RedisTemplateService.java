@@ -26,8 +26,8 @@ public class RedisTemplateService {
      * @param attrs 属性列表
      * @return true代表创建成功，false代表创建失败
      */
-    boolean createTemplate(String id, String name, String intro, String type, String nodeId, HashMap<String, String> attrs) {
-        Date now = new Date();
+    boolean createTemplate(String id, String name, String intro, String type, String nodeId, HashMap<String, String> attrs, Date date) {
+        //Date now = new Date();
         //创建模板
         //id索引表
         String indexKey = "index";
@@ -54,8 +54,8 @@ public class RedisTemplateService {
         if(redisTreeDAO.sHasKey("index", nodeId)) {
             redisTreeDAO.hset(nodeId + "#base", "template", id);
         }
-        redisTemplateDAO.hset(baseKey, "createTime", now);
-        redisTemplateDAO.hset(baseKey, "updateTime", now);
+        redisTemplateDAO.hset(baseKey, "createTime", date);
+        redisTemplateDAO.hset(baseKey, "updateTime", date);
         return true;
     }
 
@@ -81,12 +81,12 @@ public class RedisTemplateService {
      * @param id 模板id
      * @return true代表删除成功，false代表删除失败
      */
-    boolean deleteTemplateById(String id) {
+    boolean deleteTemplateById(String id, Date date) {
         //解除树节点的绑定
         Object nodeId = redisTemplateDAO.hget(id + "#base", "nodeId");
         if(nodeId != null) {
             redisTreeDAO.hset(nodeId + "#base", "template", "");
-            redisTreeDAO.hset(nodeId + "#base", "updateTime", new Date());
+            redisTreeDAO.hset(nodeId + "#base", "updateTime", date);
         }
         return redisTemplateDAO.deleteById(id);
     }
@@ -97,11 +97,13 @@ public class RedisTemplateService {
     public boolean hasTemplate(String id) {
         return redisTemplateDAO.sHasKey("index", id);
     }
-    boolean addAttrs(String id, String name, String nickname) {
+    boolean addAttrs(String id, String name, String nickname, Date date) {
+        redisTemplateDAO.hset(id + "#base", "updateTime", date);
         return redisTemplateDAO.hset(id + "#attrs", name, nickname);
     }
 
-    boolean delAttrs(String id, String name) {
+    boolean delAttrs(String id, String name, Date date) {
+        redisTemplateDAO.hset(id + "#base", "updateTime", date);
         return (redisTemplateDAO.hdel(id + "#attrs", name) > 0);
     }
 
@@ -118,7 +120,7 @@ public class RedisTemplateService {
      * @param id ID
      * @return true or false
      */
-    boolean updateBaseInfo(String id, String name, String intro){
+    boolean updateBaseInfo(String id, String name, String intro, Date date){
         String baseKey = id + "#base";
         if(id == null) return false;
         if(!this.hasKey(id)) return false;
@@ -128,6 +130,7 @@ public class RedisTemplateService {
         if(intro != null) {
             redisTemplateDAO.hset(baseKey, "intro", intro);
         }
+        redisTemplateDAO.hset(baseKey, "updateTime", date);
         return true;
     }
 

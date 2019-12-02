@@ -28,11 +28,13 @@ public class MongoTemplateService {
      * 创建新的对象模板
      * @param id ID
      */
-    public void createObjectTemplate(String id, String name, String intro, String nodeId, String type, HashMap<String, String> attrs) {
+    public void createObjectTemplate(String id, String name, String intro, String nodeId, String type, HashMap<String, String> attrs, Date date) {
         List<String> objects = new ArrayList<>();
         ObjectTemplate objectTemplate = new ObjectTemplate(id, name, intro, nodeId, type, attrs, objects);
+        objectTemplate.setCreateTime(date);
+        objectTemplate.setUpdateTime(date);
         if(mongoTemplateDAO.create(objectTemplate)) {
-            this.bindToNode(nodeId, id);
+            this.bindToNode(nodeId, id, date);
         }
     }
 
@@ -69,11 +71,12 @@ public class MongoTemplateService {
      * 根据id删除对象模板
      * @param key 对象模板id
      */
-    public void deleteTemplateById(String key, String nodeId) {
+    public void deleteTemplateById(String key, String nodeId, Date date) {
         MongoCondition mongoCondition = new MongoCondition();
         if (!nodeId.equals("")) {
             mongoCondition.addQuery("id", nodeId);
             mongoCondition.addUpdate("template", "");
+            mongoCondition.addUpdate("updateTime", date);
             mongoTreeDAO.update(mongoCondition);
         }
         mongoTemplateDAO.deleteByKey(key);
@@ -83,20 +86,21 @@ public class MongoTemplateService {
      * 根据条件更新对象模板
      * @param id ID
      */
-    public void updateBaseInfo(String id, String name, String intro){
+    public void updateBaseInfo(String id, String name, String intro, Date date){
         MongoCondition mongoCondition = new MongoCondition();
         mongoCondition.addQuery("id", id);
         if (name != null) mongoCondition.addUpdate("name", name);
         if (intro != null) mongoCondition.addUpdate("intro", intro);
+        mongoCondition.addUpdate("updateTime", date);
         mongoTemplateDAO.update(mongoCondition);
     }
 
-    public void addAttrs(String id, String name, String nickname) {
-        mongoTemplateDAO.opAttr(id, name, nickname, "add");
+    public void addAttrs(String id, String name, String nickname, Date date) {
+        mongoTemplateDAO.opAttr(id, name, nickname, "add", date);
     }
 
-    public void delAttrs(String id, String name) {
-        mongoTemplateDAO.opAttr(id, name, "del");
+    public void delAttrs(String id, String name, Date date) {
+        mongoTemplateDAO.opAttr(id, name, "del", date);
     }
 
     /**
@@ -113,13 +117,13 @@ public class MongoTemplateService {
         return mongoTemplateDAO.opObjects(id, objId, "del");
     }
 
-    private void bindToNode(String nodeId, String template) {
+    private void bindToNode(String nodeId, String template, Date date) {
         MongoCondition mongoCondition = new MongoCondition();
         // 绑定, 把对应nodeId的node上的template改成当前的template
         if (!nodeId.equals("")) {
             mongoCondition.addQuery("id", nodeId);
             mongoCondition.addUpdate("template", template);
-            mongoCondition.addUpdate("updateTime", new Date());
+            mongoCondition.addUpdate("updateTime", date);
             mongoTreeDAO.update(mongoCondition);
         }
     }

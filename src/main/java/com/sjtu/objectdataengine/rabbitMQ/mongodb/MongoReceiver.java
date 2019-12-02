@@ -77,7 +77,8 @@ public class MongoReceiver {
                 String intro = message.get("intro").toString();
                 String parent = message.get("parent").toString();
                 List<String> children = new ArrayList<>();
-                mongoTreeService.createTreeNode(id, name, intro, parent, children);
+                Date date = (Date) message.get("date");
+                mongoTreeService.createTreeNode(id, name, intro, parent, children, date);
                 break;
             }
 
@@ -88,7 +89,8 @@ public class MongoReceiver {
                 String id = message.get("id").toString();
                 // 传过来的是""或者是数字,没有null
                 String template = message.get("template").toString();
-                mongoTreeService.deleteWholeNodeByKey(id, template);
+                Date date = (Date) message.get("date");
+                mongoTreeService.deleteWholeNodeByKey(id, template, date);
                 break;
             }
 
@@ -107,7 +109,8 @@ public class MongoReceiver {
                 if (message.get("parents") != null)
                     parent = message.get("parent").toString();
                 else parent = null;
-                mongoTreeService.updateNodeByKey(id, name, intro, parent);
+                Date date = (Date) message.get("date");
+                mongoTreeService.updateNodeByKey(id, name, intro, parent, date);
                 break;
             }
 
@@ -121,7 +124,8 @@ public class MongoReceiver {
                 String nodeId = message.get("nodeId").toString();
                 String type = message.get("type").toString();
                 HashMap<String, String> attrs = TypeConversion.cast(message.get("attrs"));
-                mongoTemplateService.createObjectTemplate(id, name, intro, nodeId, type, attrs);
+                Date date = (Date) message.get("date");
+                mongoTemplateService.createObjectTemplate(id, name, intro, nodeId, type, attrs, date);
                 break;
             }
 
@@ -131,7 +135,8 @@ public class MongoReceiver {
             case "TEMP_DELETE": {
                 String id = message.get("id").toString();
                 String nodeId = message.get("nodeId").toString();
-                mongoTemplateService.deleteTemplateById(id, nodeId);
+                Date date = (Date) message.get("date");
+                mongoTemplateService.deleteTemplateById(id, nodeId, date);
                 break;
             }
 
@@ -148,7 +153,8 @@ public class MongoReceiver {
                 if (message.get("intro") != null)
                     intro = message.get("intro").toString();
                 else intro = null;
-                mongoTemplateService.updateBaseInfo(id, name, intro);
+                Date date = (Date) message.get("date");
+                mongoTemplateService.updateBaseInfo(id, name, intro, date);
                 break;
             }
 
@@ -160,7 +166,8 @@ public class MongoReceiver {
                 String id = message.get("id").toString();
                 String name = message.get("name").toString();
                 String nickname = message.get("nickname").toString();
-                mongoTemplateService.addAttrs(id, name, nickname);
+                Date date = (Date) message.get("date");
+                mongoTemplateService.addAttrs(id, name, nickname, date);
                 break;
             }
 
@@ -171,7 +178,8 @@ public class MongoReceiver {
             case "TEMP_DEL_ATTR": {
                 String id = message.get("id").toString();
                 String name = message.get("name").toString();
-                mongoTemplateService.delAttrs(id, name);
+                Date date = (Date) message.get("date");
+                mongoTemplateService.delAttrs(id, name, date);
                 break;
             }
 

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -50,7 +51,7 @@ public class TreeService {
         if (parent  == null) return "父节点不能为空";
 
         List<String> children = new ArrayList<>();
-
+        Date date = new Date();
         //组装message
         HashMap<String, Object> message = new HashMap<>();
         message.put("op", "NODE_CREATE");
@@ -58,10 +59,11 @@ public class TreeService {
         message.put("name", name);
         message.put("parent", parent);
         message.put("intro", intro);
+        message.put("date", date);
 
         // 双写
         mongoSender.send(message);
-        if(redisTreeService.createTreeNode(id, name, intro, parent, children))//redisTreeService.createTreeNode(id, name, template, parentsArray, children)) //改成上面参数的形式
+        if(redisTreeService.createTreeNode(id, name, intro, parent, children, date))//redisTreeService.createTreeNode(id, name, template, parentsArray, children)) //改成上面参数的形式
            return "创建成功！";
 
         this.delete(id);
@@ -75,14 +77,15 @@ public class TreeService {
         if (treeNode == null) return "没有该节点";
 
         String template = treeNode.getTemplate();
-
+        Date date = new Date();
         HashMap<String, Object> message = new HashMap<>();
         message.put("op", "NODE_DELETE");
         message.put("id", id);
         message.put("template", template);
+        message.put("date", date);
 
         mongoSender.send(message);
-        if (redisTreeService.deleteWholeNodeByKey(id)) { //删除node要把对应template删了
+        if (redisTreeService.deleteWholeNodeByKey(id, date)) { //删除node要把对应template删了
             return  "删除成功！";
         }
         return "删除失败！";
@@ -96,6 +99,7 @@ public class TreeService {
      * @return 结果说明
      */
     public String modify(String request) {
+        Date date = new Date();
         // 解析
         JSONObject jsonObject = JSON.parseObject(request);
         HashMap<String, Object> modifyMessage = new HashMap<>();
@@ -121,9 +125,10 @@ public class TreeService {
         if(parent != null) {
             modifyMessage.put("parent", parent);
         }
-
+        modifyMessage.put("date", date);
         mongoSender.send(modifyMessage);
-        if (redisTreeService.updateNodeByKey(id, name, intro, parent)) {
+
+        if (redisTreeService.updateNodeByKey(id, name, intro, parent, date)) {
             return "修改成功";
         }
         return "修改失败";

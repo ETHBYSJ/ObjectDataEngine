@@ -78,18 +78,19 @@ public class MongoTemplateDAO extends MongoBaseDAO<ObjectTemplate> {
         return mongoTemplate.findAllAndRemove(query, ObjectTemplate.class);
     }
 
-    public void opAttr(String id, String name, String op) {
+    public void opAttr(String id, String name, String op, Date date) {
         if(op.equals("del")) {
-            opAttr(id, name, null, op);
+            opAttr(id, name, null, op, date);
         }
     }
 
-    public void opAttr(String id, String name, String nickname, String op) {
+    public void opAttr(String id, String name, String nickname, String op, Date date) {
         Query query = new Query();
         Criteria criteria = Criteria.where("id").is(id);
         query.addCriteria(criteria);
 
         Update update = new Update();
+        update.set("updateTime", date);
         if (op.equals("add")) {
             update.set("attrs." + name, nickname);
         } else if (op.equals("del")) {
