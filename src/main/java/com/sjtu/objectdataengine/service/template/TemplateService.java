@@ -11,6 +11,7 @@ import com.sjtu.objectdataengine.utils.TypeConversion;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.HashMap;
 
 @Component
@@ -54,7 +55,7 @@ public class TemplateService {
         JSONObject attrsJson = jsonObject.getJSONObject("attrs");
         if (attrsJson == null) return "属性不能为空";
         HashMap<String, String> attrs = TypeConversion.JsonToMap(attrsJson);
-
+        Date date = new Date();
         HashMap<String, Object> createMessage = new HashMap<>();
         createMessage.put("op", "TEMP_CREATE");
         createMessage.put("id", id);
@@ -63,10 +64,11 @@ public class TemplateService {
         createMessage.put("nodeId", nodeId);
         createMessage.put("type", type);
         createMessage.put("attrs", attrs);
+        createMessage.put("date", date);
 
         mongoSender.send(createMessage);
 
-        if(redisTemplateService.createTemplate(id, name, intro, type, nodeId, attrs)) {
+        if(redisTemplateService.createTemplate(id, name, intro, type, nodeId, attrs, date)) {
             return "创建成功";
         }
         this.delete(id);
@@ -82,22 +84,26 @@ public class TemplateService {
         String nodeId = objectTemplate.getNodeId();
 
         HashMap<String, Object> message = new HashMap<>();
+        Date date = new Date();
         message.put("op", "TEMP_DELETE");
         message.put("id", id);
         message.put("nodeId", nodeId);
+        message.put("date", date);
 
         mongoSender.send(message);
-        if (redisTemplateService.deleteTemplateById(id)) {
+        if (redisTemplateService.deleteTemplateById(id, date)) {
             return  "删除成功！";
         }
         return "删除失败！";
     }
 
     public String modifyBaseInfo(String request) {
+        Date date = new Date();
         // 解析
         JSONObject jsonObject = JSON.parseObject(request);
         HashMap<String, Object> modifyMessage = new HashMap<>();
         modifyMessage.put("op", "TEMP_MODIFY_BASE");
+        modifyMessage.put("date", date);
         // id必须要有
         String id = jsonObject.getString("id");
         if (id == null || id.equals("")) return "ID不能为空";
@@ -116,7 +122,7 @@ public class TemplateService {
         }
         // System.out.println(modifyMessage);
         mongoSender.send(modifyMessage);
-        if (redisTemplateService.updateBaseInfo(id, name, intro)) {
+        if (redisTemplateService.updateBaseInfo(id, name, intro, date)) {
             return "修改成功";
         }
         return "修改失败";
@@ -137,14 +143,15 @@ public class TemplateService {
         if (nickname == null || nickname.equals("")) return "nickname不能为空";
 
         HashMap<String, Object> opAttrMessage = new HashMap<>();
-
+        Date date = new Date();
         opAttrMessage.put("op", "TEMP_ADD_ATTR");
         opAttrMessage.put("id", id);
         opAttrMessage.put("name", name);
         opAttrMessage.put("nickname", nickname);
+        opAttrMessage.put("date", date);
 
         mongoSender.send(opAttrMessage);
-        if (redisTemplateService.addAttrs(id, name, nickname)) {
+        if (redisTemplateService.addAttrs(id, name, nickname, date)) {
             return "操作成功";
         } else {
             opAttrMessage.put("op", "TEMP_DEL_ATTR");
@@ -155,7 +162,7 @@ public class TemplateService {
     }
 
     public String delAttr(String id, String name) {
-
+        Date date = new Date();
         if (id == null || id.equals("")) return "ID不能为空";
         if (!redisTemplateService.hasKey(id)) return "ID不存在";
         // name
@@ -167,9 +174,10 @@ public class TemplateService {
         delAttrMessage.put("op", "TEMP_DEL_ATTR");
         delAttrMessage.put("id", id);
         delAttrMessage.put("name", name);
+        delAttrMessage.put("date", date);
 
         mongoSender.send(delAttrMessage);
-        if (redisTemplateService.delAttrs(id, name)) {
+        if (redisTemplateService.delAttrs(id, name, date)) {
             return "删除成功";
         }
 

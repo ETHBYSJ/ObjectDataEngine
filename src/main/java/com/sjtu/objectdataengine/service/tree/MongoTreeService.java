@@ -30,14 +30,14 @@ public class MongoTreeService {
      * @param parent 父节点id
      * @param children 子节点id
      */
-    public void createTreeNode(String id, String name, String intro, String parent, List<String> children) {
+    public void createTreeNode(String id, String name, String intro, String parent, List<String> children, Date date) {
         TreeNode treeNode = new TreeNode(id, name, intro, "", parent, children);
         if(mongoTreeDAO.create(treeNode)) {
             if(parent.equals("root")) {
-                mongoRootDAO.addNewRoot(id , name);
+                mongoRootDAO.addNewRoot(id , name, date);
             } else {
                 //为其父结点添加关系
-                opParents(id, parent, true);
+                opParents(id, parent, true, date);
             }
         }
     }
@@ -48,7 +48,7 @@ public class MongoTreeService {
      * @param parent 父结点id
      * @param flag true表示增加，false表示减少
      */
-    private boolean opParents(String child, String parent, boolean flag) {
+    private boolean opParents(String child, String parent, boolean flag, Date date) {
         MongoCondition mongoCondition = new MongoCondition();
         try {
             List<String> childrenList = mongoTreeDAO.findByKey(parent).getChildren();
@@ -59,6 +59,7 @@ public class MongoTreeService {
             }
             mongoCondition.addQuery("id", parent);
             mongoCondition.addUpdate("children", childrenList);
+            mongoCondition.addUpdate("updateTime", date);
             mongoTreeDAO.update(mongoCondition);
             mongoCondition.clearQuery();
             mongoCondition.clearUpdate();
@@ -75,13 +76,13 @@ public class MongoTreeService {
      * @param children 子结点id列表
      * @return true表示成功，false表示失败
      */
-    private boolean opChildren(String parent, List<String> children) {
+    private boolean opChildren(String parent, List<String> children, Date date) {
         MongoCondition mongoCondition = new MongoCondition();
         try {
             for (String child : children) {
                 mongoCondition.addQuery("id", child);
                 mongoCondition.addUpdate("parent", parent);
-                mongoCondition.addUpdate("updateTime", new Date());
+                mongoCondition.addUpdate("updateTime", date);
                 mongoTreeDAO.update(mongoCondition);
                 mongoCondition.clearQuery();
                 mongoCondition.clearUpdate();
@@ -125,9 +126,9 @@ public class MongoTreeService {
      * @param child 子结点id
      * @param parent 父结点id
      */
-    private boolean deleteParentsEdge(String child, String parent) {
+    private boolean deleteParentsEdge(String child, String parent, Date date) {
         //opParents false操作
-        if (opParents(child, parent,false)) {
+        if (opParents(child, parent,false, date)) {
             return updateParent(child, "");
         } else {
             return false;
@@ -139,9 +140,9 @@ public class MongoTreeService {
      * 注意这里只删除边，父子结点依旧存在，父结点的删除在deleteNode中
      * @param children 子结点id列表
      */
-    private boolean deleteChildrenEdge(List<String> children) {
+    private boolean deleteChildrenEdge(List<String> children, Date date) {
         //opChildren false操作
-        return opChildren("", children);
+        return opChildren("", children, date);
 
     }
 
@@ -167,20 +168,20 @@ public class MongoTreeService {
      * 完全删除指定key的节点，删除其所有边和本身，保留其孩子和父亲
      * @param key 节点key:id
      */
-    public void deleteWholeNodeByKey(String key, String template) {
+    public void deleteWholeNodeByKey(String key, String template, Date date) {
         TreeNode treeNode = findNodeByKey(key);
         String parent = treeNode.getParent();
         List<String> children = treeNode.getChildren();
-        deleteChildrenEdge(children);
+        deleteChildrenEdge(children, date);
         // 删除template中的node
         if (!template.equals("")) {
             // 处理方式为删掉模板
             mongoTemplateDAO.deleteByKey(template);
         }
         if (!parent.equals("root")) {
-            deleteParentsEdge(key, parent);
+            deleteParentsEdge(key, parent, date);
         } else {
-            deleteRootEdges(key);
+            deleteRootEdges(key, date);
         }
         deleteNodeByKey(key);
     }
@@ -190,7 +191,7 @@ public class MongoTreeService {
      * @param id ID
      * @return true表示成功，false反之
      */
-    public boolean updateNodeByKey(String id, String name, String intro, String parent) {
+    public boolean updateNodeByKey(String id, String name, String intro, String parent, Date date) {
         MongoCondition mongoCondition = new MongoCondition();
         mongoCondition.addQuery("id", id);
         //改名字
@@ -201,9 +202,9 @@ public class MongoTreeService {
         if (parent!=null) {
             String oldParent = mongoTreeDAO.findByKey(id).getParent();
             // 在oldParent结点的children中删除该结点
-            opParents(id, oldParent, false);
+            opParents(id, oldParent, false, date);
             // 在新的parent结点的children中添加该结点
-            opParents(id, parent, true);
+            opParents(id, parent, true, date);
             // 把该结点的parent改成当前parent
             mongoCondition.addUpdate("parent", parent);
         }
@@ -215,9 +216,10 @@ public class MongoTreeService {
     /**
      * 如果是根节点，删除root内的备份
      * @param key id
+     * @param date 更新时间
      */
-    private void deleteRootEdges(String key) {
-        mongoRootDAO.deleteRoot(key);
+    private void deleteRootEdges(String key, Date date) {
+        mongoRootDAO.deleteRoot(key, date);
     }
 
 }

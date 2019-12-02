@@ -40,7 +40,7 @@ public class RootService {
         return mongoRootDAO.findAll().get(0);
     }
 
-    public void addNewRoot(String id, String name) {
-        mongoRootDAO.addNewRoot(id, name);
+    public void addNewRoot(String id, String name, Date date) {
+        mongoRootDAO.addNewRoot(id, name, date);
     }
 }
