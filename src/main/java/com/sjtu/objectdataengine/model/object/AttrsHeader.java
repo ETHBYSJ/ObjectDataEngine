@@ -1,11 +1,11 @@
 package com.sjtu.objectdataengine.model.object;
 
-import com.sjtu.objectdataengine.model.MongoBase;
+import com.sjtu.objectdataengine.model.BaseModel;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "mongoHeader")
-public class AttrsHeader extends MongoBase {
+public class AttrsHeader extends BaseModel {
     @Id
     private String id;
     private String objId;

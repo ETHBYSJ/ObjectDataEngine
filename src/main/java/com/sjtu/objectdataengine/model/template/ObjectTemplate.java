@@ -1,15 +1,14 @@
 package com.sjtu.objectdataengine.model.template;
 
-import com.sjtu.objectdataengine.model.MongoBase;
+import com.sjtu.objectdataengine.model.BaseModel;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 
 @Document(collection="objectTemplate")
-public class ObjectTemplate extends MongoBase {
+public class ObjectTemplate extends BaseModel {
     @Id
     private String id;                          // 对象模板id
     private String name;                        // 对象模板name

@@ -47,8 +47,10 @@ public class TemplateService {
         } else if(!treeNode.getTemplate().equals("")) {
             return "指定的node上已存在模板，若想创建新模板请先删除旧模板";
         }
+        // 检查type
         String type = jsonObject.getString("type");
         if (type == null || type.equals("")) return "类型不能为空";
+        // 检查attrs
         JSONObject attrsJson = jsonObject.getJSONObject("attrs");
         if (attrsJson == null) return "属性不能为空";
         HashMap<String, String> attrs = TypeConversion.JsonToMap(attrsJson);

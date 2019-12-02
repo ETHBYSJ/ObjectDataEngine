@@ -1,13 +1,13 @@
 package com.sjtu.objectdataengine.model.tree;
 
-import com.sjtu.objectdataengine.model.MongoBase;
+import com.sjtu.objectdataengine.model.BaseModel;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.HashMap;
 
 @Document(collection="knowledgeTree")
-public class RootMessage extends MongoBase {
+public class RootMessage extends BaseModel {
     @Id
     private String id;
     private HashMap<String, String> roots;

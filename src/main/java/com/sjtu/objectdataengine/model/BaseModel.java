@@ -2,7 +2,7 @@ package com.sjtu.objectdataengine.model;
 
 import java.util.Date;
 
-public class MongoBase {
+public class BaseModel {
     private Date createTime;
     private Date updateTime;
 

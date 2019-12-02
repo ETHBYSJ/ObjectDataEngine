@@ -5,10 +5,9 @@ import com.sjtu.objectdataengine.dao.object.MongoAttrsDAO;
 import com.sjtu.objectdataengine.dao.object.MongoHeaderDAO;
 import com.sjtu.objectdataengine.dao.object.MongoObjectDAO;
 import com.sjtu.objectdataengine.dao.template.MongoTemplateDAO;
-import com.sjtu.objectdataengine.dao.tree.MongoTreeDAO;
 import com.sjtu.objectdataengine.model.object.AttrsHeader;
+import com.sjtu.objectdataengine.model.object.AttrsModel;
 import com.sjtu.objectdataengine.model.object.CommonObject;
-import com.sjtu.objectdataengine.model.object.MongoAttrs;
 import com.sjtu.objectdataengine.model.template.ObjectTemplate;
 import com.sjtu.objectdataengine.utils.MongoAttr;
 import com.sjtu.objectdataengine.utils.MongoCondition;
@@ -117,7 +116,7 @@ public class MongoObjectService {
         mongoAttr.setUpdateTime(date);
         //加入属性的mongo attr列表
         mongoAttrList.add(mongoAttr);
-        MongoAttrs mongoAttrs = new MongoAttrs(attrId, mongoAttrList, size);
+        AttrsModel mongoAttrs = new AttrsModel(attrId, mongoAttrList, size);
         mongoAttrs.setCreateTime(date);
         mongoAttrs.setUpdateTime(date);
         mongoAttrsDAO.create(mongoAttrs);
@@ -130,8 +129,8 @@ public class MongoObjectService {
      * @param name 属性名字
      * @return 一条属性所有记录
      */
-    public List<MongoAttrs> findAttrsByKey(String id, String name) {
-        List<MongoAttrs> mongoAttrsList = new ArrayList<>();
+    public List<AttrsModel> findAttrsByKey(String id, String name) {
+        List<AttrsModel> mongoAttrsList = new ArrayList<>();
         int size = getAttrChainSize(id, name);
         if (size == 0) return mongoAttrsList; //空列表
         for (int i=1; i<=size; ++i) {
@@ -148,7 +147,7 @@ public class MongoObjectService {
      * @param index 第几块
      * @return 一条属性的一块记录
      */
-    private MongoAttrs findAttrsByBlock(String id, String name, int index) {
+    private AttrsModel findAttrsByBlock(String id, String name, int index) {
         String key = id + name + index;
         return mongoAttrsDAO.findByKey(key);
     }
@@ -163,7 +162,7 @@ public class MongoObjectService {
         int size = getAttrChainSize(id, name);
         if (size == 0) return null; //null
         String key = id + name + size;
-        MongoAttrs mongoAttrs = mongoAttrsDAO.findByKey(key);
+        AttrsModel mongoAttrs = mongoAttrsDAO.findByKey(key);
         List<MongoAttr> mongoValueList =  mongoAttrs.getAttrs();
         return mongoValueList.get(mongoAttrs.getSize()-1);
     }
@@ -193,7 +192,7 @@ public class MongoObjectService {
     private boolean addValue(String id, String name, MongoAttr mongoAttr, Date date) {
         int size = getAttrChainSize(id, name);
         String key = id + name + size;
-        MongoAttrs mongoAttrs = mongoAttrsDAO.findByKey(key);
+        AttrsModel mongoAttrs = mongoAttrsDAO.findByKey(key);
 
         // 在object表里更新
         updateObject(id, name, mongoAttr, date);
@@ -225,7 +224,7 @@ public class MongoObjectService {
         try{
             int newSize = size + 1;
             String newKey = id + name + newSize;
-            MongoAttrs preMongoAttrs = findAttrsByBlock(id, name ,size);
+            AttrsModel preMongoAttrs = findAttrsByBlock(id, name ,size);
             Date ut = preMongoAttrs.getUpdateTime();
             MongoCondition mongoCondition = new MongoCondition();
             mongoCondition.addQuery("id", newKey);
@@ -257,7 +256,7 @@ public class MongoObjectService {
     private boolean addAttrs(String id, String name, int size) {
         String newKey = id + name + size;
         //创建一个空的
-        MongoAttrs mongoAttrs = new MongoAttrs(newKey, new ArrayList<>(), size);
+        AttrsModel mongoAttrs = new AttrsModel(newKey, new ArrayList<>(), size);
         return mongoAttrsDAO.create(mongoAttrs);
     }
 
@@ -297,10 +296,10 @@ public class MongoObjectService {
      * @return 实际size
      */
     public int findActualSize(String id, String name) {
-        List<MongoAttrs> mongoAttrsList = findAttrsByKey(id, name);
+        List<AttrsModel> mongoAttrsList = findAttrsByKey(id, name);
         int size = mongoAttrsList.size();
         if (size == 0) return 0;
-        MongoAttrs mongoAttrs = mongoAttrsList.get(size-1);
+        AttrsModel mongoAttrs = mongoAttrsList.get(size-1);
         if (mongoAttrs.getAttrs().size() == 0) {
             return size - 1;
         } else {
@@ -323,12 +322,12 @@ public class MongoObjectService {
     public MongoAttr findAttrByTime(String id, String name, Date time) {
         // 获取到对应属性链的长度
         int cSize = getAttrChainSize(id, name);
-        MongoAttrs mongoAttrs = divFindAttrsByTime(id, name, time, cSize);
+        AttrsModel mongoAttrs = divFindAttrsByTime(id, name, time, cSize);
         if (mongoAttrs == null) return null;
         Date firstUt = mongoAttrs.getAttrs().get(0).getUpdateTime();
         //如果发现第一个ut都大于这个时间，说明是上一块的最后一个
         if (time.before(firstUt) && cSize > 1) {
-            MongoAttrs mongoAttrs1 = findAttrsByBlock(id, name, cSize-1);
+            AttrsModel mongoAttrs1 = findAttrsByBlock(id, name, cSize-1);
             List<MongoAttr> mongoAttrList = mongoAttrs1.getAttrs();
             return mongoAttrList.get(mongoAttrs1.getSize()-1);
         }
@@ -345,11 +344,11 @@ public class MongoObjectService {
         int cSize = getAttrChainSize(id, name); //chain size
         //找到起止块index
         // 如果et早于开始时间，就会查到null，说明应该返回空
-        MongoAttrs endMongoAttrs = divFindAttrsByTime(id, name, et, cSize);
+        AttrsModel endMongoAttrs = divFindAttrsByTime(id, name, et, cSize);
         if (endMongoAttrs == null) {
             return new ArrayList<>();
         }
-        MongoAttrs startMongoAttrs = divFindAttrsByTime(id, name, st, cSize);
+        AttrsModel startMongoAttrs = divFindAttrsByTime(id, name, st, cSize);
         // 如果st早于开始时间，就会查到null，说明起始index应该为1
         if (startMongoAttrs == null) {
             startMongoAttrs = mongoAttrsDAO.findByKey(id+name+"1");
@@ -379,7 +378,7 @@ public class MongoObjectService {
 
             //中间块
             for (int i=startIndex+1; i<endIndex; ++i) {
-                MongoAttrs mongoAttrs1 = findAttrsByBlock(id, name, i);
+                AttrsModel mongoAttrs1 = findAttrsByBlock(id, name, i);
                 if(mongoAttrs1!=null) {
                     List<MongoAttr> mongoAttrList1 = mongoAttrs1.getAttrs();
                     mongoAttrList.addAll(mongoAttrList1);
@@ -477,7 +476,7 @@ public class MongoObjectService {
     /**
      * 二分法在指定的属性块内，查找对应时间点的属性
      */
-    private MongoAttr divFindAttrByTime(MongoAttrs mongoAttrs, Date time) {
+    private MongoAttr divFindAttrByTime(AttrsModel mongoAttrs, Date time) {
         List<MongoAttr> mongoAttrList = mongoAttrs.getAttrs();
         //System.out.println("div:" + time + mongoAttrs);
         int low = 0;
@@ -506,16 +505,16 @@ public class MongoObjectService {
      * 二分法查找对应时间点的属性块
      * @return 返回块
      */
-    private MongoAttrs divFindAttrsByTime(String id, String name, Date time, int cSize) {
+    private AttrsModel divFindAttrsByTime(String id, String name, Date time, int cSize) {
         // System.out.println("divFindAttrsByTime: id = " + id + ", name = " + name + ", time.getTime() = " + time.getTime() + ", cSize = " + cSize);
         int high = cSize;
         int low = 1;
         // 当前链的第一块
-        MongoAttrs startBlock = findAttrsByBlock(id, name, 1);
+        AttrsModel startBlock = findAttrsByBlock(id, name, 1);
         // 第一块的创建时间
         Date startTime = startBlock.getCreateTime();
         // 当前链的最后一块
-        MongoAttrs endBlock = findAttrsByBlock(id, name, cSize);
+        AttrsModel endBlock = findAttrsByBlock(id, name, cSize);
         // 最后一块的最后更新时间
         Date endTime = endBlock.getUpdateTime();
         // 如果查询时间>=最后更新时间，那就是最后一块
@@ -537,7 +536,7 @@ public class MongoObjectService {
          */
         while (low <= high) {
             int mid = (low + high) / 2;
-            MongoAttrs mongoAttrs = findAttrsByBlock(id, name, mid);
+            AttrsModel mongoAttrs = findAttrsByBlock(id, name, mid);
             Date ct = mongoAttrs.getCreateTime();
             Date ut = mongoAttrs.getUpdateTime();
             //time <= ct

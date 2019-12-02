@@ -1,15 +1,12 @@
 package com.sjtu.objectdataengine.model.tree;
 
-import com.sjtu.objectdataengine.model.MongoBase;
+import com.sjtu.objectdataengine.model.BaseModel;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Document(collection="knowledgeTree")
-public class TreeNode extends MongoBase {
+public class TreeNode extends BaseModel {
     private String id;          // 结点id
     private String name;        // 名称 (英文概念)
     private String intro;       // 中文概念名

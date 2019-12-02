@@ -1,6 +1,6 @@
 package com.sjtu.objectdataengine.dao;
 
-import com.sjtu.objectdataengine.model.MongoBase;
+import com.sjtu.objectdataengine.model.BaseModel;
 import com.sjtu.objectdataengine.utils.MongoCondition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
@@ -9,7 +9,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 
 import java.util.List;
 
-public abstract class MongoBaseDAO<T extends MongoBase> {
+public abstract class MongoBaseDAO<T extends BaseModel> {
     @Autowired
     protected MongoTemplate mongoTemplate;
 

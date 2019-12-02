@@ -12,17 +12,6 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitConfigTest {
-    /*
-    private final RabbitAdmin rabbitAdmin;
-
-    private final RabbitTemplate rabbitTemplate;
-
-    @Autowired
-    public RabbitConfigTest(RabbitAdmin rabbitAdmin, RabbitTemplate rabbitTemplate){
-        this.rabbitAdmin = rabbitAdmin;
-        this.rabbitTemplate = rabbitTemplate;
-    }
-    */
     @Bean
     public ConnectionFactory connectionFactory(){
         CachingConnectionFactory connectionFactory = new CachingConnectionFactory();
@@ -34,8 +23,7 @@ public class RabbitConfigTest {
     }
     @Bean
     public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
-        RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
-        return rabbitTemplate;
+        return new RabbitTemplate(connectionFactory);
     }
     @Bean
     public RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory) {

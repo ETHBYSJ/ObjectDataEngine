@@ -1,6 +1,6 @@
 package com.sjtu.objectdataengine.model.object;
 
-import com.sjtu.objectdataengine.model.MongoBase;
+import com.sjtu.objectdataengine.model.BaseModel;
 import com.sjtu.objectdataengine.utils.MongoAttr;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -12,7 +12,7 @@ import java.util.List;
  */
 
 @Document(collection = "mongoAttrs")
-public class MongoAttrs extends MongoBase {
+public class AttrsModel extends BaseModel {
     @Id
     private String id;
 
@@ -22,7 +22,7 @@ public class MongoAttrs extends MongoBase {
     private int index; //位置
     private int size; //已有长度
 
-    public MongoAttrs(String id, List<MongoAttr> attrs, int index) {
+    public AttrsModel(String id, List<MongoAttr> attrs, int index) {
         this.id = id;
         this.attrs = attrs;
         this.size = attrs.size();
@@ -79,6 +79,6 @@ public class MongoAttrs extends MongoBase {
 
     @Override
     public String toString() {
-        return "MongoAttrs: { id: " + id + ", size: " + size + " }";
+        return "AttrsModel: { id: " + id + ", size: " + size + " }";
     }
 }

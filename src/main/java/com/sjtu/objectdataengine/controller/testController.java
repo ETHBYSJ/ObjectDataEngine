@@ -1,7 +1,7 @@
 package com.sjtu.objectdataengine.controller;
 
+import com.sjtu.objectdataengine.model.object.AttrsModel;
 import com.sjtu.objectdataengine.utils.MongoAttr;
-import com.sjtu.objectdataengine.model.object.MongoAttrs;
 import com.sjtu.objectdataengine.model.object.CommonObject;
 import com.sjtu.objectdataengine.service.object.MongoObjectService;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -21,7 +21,7 @@ public class testController {
     private MongoObjectService mongoObjectService;
 
     @GetMapping("find")
-    public List<MongoAttrs> find(@RequestParam String id, @RequestParam String name) {
+    public List<AttrsModel> find(@RequestParam String id, @RequestParam String name) {
         return mongoObjectService.findAttrsByKey(id, name);
     }
 

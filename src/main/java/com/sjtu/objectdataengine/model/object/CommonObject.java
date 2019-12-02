@@ -1,6 +1,6 @@
 package com.sjtu.objectdataengine.model.object;
 
-import com.sjtu.objectdataengine.model.MongoBase;
+import com.sjtu.objectdataengine.model.BaseModel;
 import com.sjtu.objectdataengine.utils.MongoAttr;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Set;
 
 @Document(collection = "mongoObjects")
-public class CommonObject extends MongoBase {
+public class CommonObject extends BaseModel {
     @Id
     private String id;              // 对象id
     private String name;            // 英文

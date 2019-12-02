@@ -1,12 +1,12 @@
 package com.sjtu.objectdataengine.model.tree;
 
-import com.sjtu.objectdataengine.model.MongoBase;
+import com.sjtu.objectdataengine.model.BaseModel;
 
 import java.util.HashMap;
 import java.util.List;
 
 
-public class TreeNodeReturn extends MongoBase {
+public class TreeNodeReturn extends BaseModel {
     private String id;      //结点id
     private String name;    //名称
     private String template;    //对象模板

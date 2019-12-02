@@ -1,7 +1,7 @@
 package com.sjtu.objectdataengine.dao.object;
 
 import com.sjtu.objectdataengine.dao.MongoBaseDAO;
-import com.sjtu.objectdataengine.model.object.MongoAttrs;
+import com.sjtu.objectdataengine.model.object.AttrsModel;
 import com.sjtu.objectdataengine.utils.MongoAttr;
 import com.sjtu.objectdataengine.utils.MongoCondition;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -13,15 +13,15 @@ import java.util.Date;
 import java.util.List;
 
 @Component
-public class MongoAttrsDAO extends MongoBaseDAO<MongoAttrs> {
+public class MongoAttrsDAO extends MongoBaseDAO<AttrsModel> {
 
     /**
      * 查找全部属性
      * @return list
      */
     @Override
-    public List<MongoAttrs> findAll() {
-        return mongoTemplate.findAll(MongoAttrs.class);
+    public List<AttrsModel> findAll() {
+        return mongoTemplate.findAll(AttrsModel.class);
     }
 
     /**
@@ -30,16 +30,16 @@ public class MongoAttrsDAO extends MongoBaseDAO<MongoAttrs> {
      * @return 对象
      */
     @Override
-    public MongoAttrs findByKey(String key) {
+    public AttrsModel findByKey(String key) {
         Query query = new Query();
         Criteria criteria = Criteria.where("_id").is(key);
         query.addCriteria(criteria);
         //System.out.println(query);
-        return mongoTemplate.findOne(query, MongoAttrs.class);
+        return mongoTemplate.findOne(query, AttrsModel.class);
     }
 
     @Override
-    public List<MongoAttrs> findByArgs(MongoCondition mongoCondition) {
+    public List<AttrsModel> findByArgs(MongoCondition mongoCondition) {
         return null;
     }
 
@@ -51,7 +51,7 @@ public class MongoAttrsDAO extends MongoBaseDAO<MongoAttrs> {
         Update update = mongoCondition.getUpdate();
         update.set("updateTime", new Date());
         try {
-            mongoTemplate.updateMulti(query, update, MongoAttrs.class);
+            mongoTemplate.updateMulti(query, update, AttrsModel.class);
             return true;
         } catch (Exception e) {
             return false;
@@ -75,7 +75,7 @@ public class MongoAttrsDAO extends MongoBaseDAO<MongoAttrs> {
             update.addToSet("attrs", mongoAttr);
             update.set("size", size + 1);
             update.set("updateTime", date);
-            mongoTemplate.updateMulti(query, update, MongoAttrs.class);
+            mongoTemplate.updateMulti(query, update, AttrsModel.class);
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -84,7 +84,7 @@ public class MongoAttrsDAO extends MongoBaseDAO<MongoAttrs> {
     }
 
     @Override
-    public List<MongoAttrs> fuzzySearch(String search) {
+    public List<AttrsModel> fuzzySearch(String search) {
         return null;
     }
 
