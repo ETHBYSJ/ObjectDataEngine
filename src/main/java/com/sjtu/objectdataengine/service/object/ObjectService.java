@@ -4,13 +4,17 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.sjtu.objectdataengine.model.object.CommonObject;
+import com.sjtu.objectdataengine.model.subscribe.SubscribeMessage;
 import com.sjtu.objectdataengine.model.template.ObjectTemplate;
 import com.sjtu.objectdataengine.model.tree.TreeNode;
 import com.sjtu.objectdataengine.rabbitMQ.mongodb.MongoSender;
 import com.sjtu.objectdataengine.rabbitMQ.redis.RedisSender;
+import com.sjtu.objectdataengine.rabbitMQ.subscribe.SubscribeSender;
 import com.sjtu.objectdataengine.service.event.RedisEventService;
+import com.sjtu.objectdataengine.service.subscribe.SubscribeService;
 import com.sjtu.objectdataengine.service.template.RedisTemplateService;
 import com.sjtu.objectdataengine.service.tree.RedisTreeService;
+import com.sjtu.objectdataengine.utils.TypeConversion;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -24,6 +28,12 @@ public class ObjectService {
 
     @Resource
     RedisSender redisSender;
+
+    @Resource
+    SubscribeSender subscribeSender;
+
+    @Resource
+    SubscribeService subscribeService;
 
     @Resource
     MongoObjectService mongoObjectService;
@@ -100,9 +110,11 @@ public class ObjectService {
         message.put("events", events);
         message.put("attrs", attrs);
         message.put("date", date);
+        // 发送更新信息
         mongoSender.send(message);
         redisSender.send(message);
-
+        // 创建订阅表
+        subscribeService.create(id, "entity");
         return "创建成功！";
     }
 
@@ -122,6 +134,16 @@ public class ObjectService {
         mongoSender.send(message);
         redisSender.send(message);
 
+        // 发送订阅信息
+        String msg = "对象(" + "ID=" + id + ")的属性(" + name + ") 增加了一条新属性，属性值为 " + value + "\n更新时间：" + date;
+        SubscribeMessage subscribeMessage = subscribeService.findByIdAndType(id, "entity");
+        List<String> userList = subscribeMessage.getAttrsSubscriber().get(name);
+        // 去重复
+        userList.addAll(subscribeMessage.getObjectSubscriber());
+        HashSet<String> userSet = new HashSet<>(userList);
+        for (String user : userSet) {
+            subscribeSender.send(msg, user);
+        }
         return "创建成功！";
     }
 

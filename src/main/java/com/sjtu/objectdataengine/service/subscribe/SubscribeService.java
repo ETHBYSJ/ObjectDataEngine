@@ -156,4 +156,11 @@ public class SubscribeService {
         }
         return "删除失败";
     }
+
+    /**
+     *
+     */
+    public SubscribeMessage findByIdAndType(String objId, String type) {
+        return subscribeDAO.findByKey(objId + type);
+    }
 }

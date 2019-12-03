@@ -49,7 +49,17 @@ public class MongoRootDAO extends MongoBaseDAO<RootMessage> {
         return null;
     }
 
-
+    @Override
+    public boolean update(MongoCondition mongoCondition) {
+        try {
+            Query query = mongoCondition.getQuery();
+            Update update = mongoCondition.getUpdate();
+            mongoTemplate.updateMulti(query, update, RootMessage.class);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
     /**
      * 模糊查询
