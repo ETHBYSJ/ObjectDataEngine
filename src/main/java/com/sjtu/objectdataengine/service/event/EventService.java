@@ -2,14 +2,13 @@ package com.sjtu.objectdataengine.service.event;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.sjtu.objectdataengine.dao.subscribe.SubscribeDAO;
-import com.sjtu.objectdataengine.dao.subscribe.UserDAO;
 import com.sjtu.objectdataengine.model.event.EventObject;
 import com.sjtu.objectdataengine.model.subscribe.SubscribeMessage;
 import com.sjtu.objectdataengine.model.template.ObjectTemplate;
 import com.sjtu.objectdataengine.rabbitMQ.mongodb.MongoSender;
 import com.sjtu.objectdataengine.service.subscribe.SubscribeService;
 import com.sjtu.objectdataengine.service.subscribe.UserService;
+import com.sjtu.objectdataengine.rabbitMQ.subscribe.SubscribeSender;
 import com.sjtu.objectdataengine.service.template.RedisTemplateService;
 import org.springframework.stereotype.Component;
 
@@ -39,7 +38,11 @@ public class EventService {
 
     @Resource
     SubscribeService subscribeService;
-    
+
+    @Resource
+    SubscribeSender subscribeSender;
+
+
     /**
      * 创建一个事件
      * id, name, intro, template都必须是不为空的
@@ -83,8 +86,15 @@ public class EventService {
         message.put("attrs", attrs);
         message.put("date", date);
 
+        mongoSender.send(message);
         if (redisEventService.create(id, name, intro, template, attrs, date)) {
-            mongoSender.send(message);
+            // 通知模板订阅者
+            final String msg1 = "基于模板(ID=" + template + ")创建了新的事件，事件ID为" + id;
+            SubscribeMessage subscribeMessage = subscribeService.findByIdAndType(template, "template");
+            List<String> userList = subscribeMessage.getObjectSubscriber();
+            for (String user : userList) {
+                subscribeSender.send(msg1, user);
+            }
             return "创建成功";
         }
 
@@ -166,6 +176,7 @@ public class EventService {
         endMessage.put("date", date);
 
         mongoSender.send(endMessage);
+
         // 删除redis中的已结束事件
         if (redisEventService.deleteEventById(id, eventObject.getTemplate())) {
             // 查找事件的订阅者
@@ -176,6 +187,23 @@ public class EventService {
             for(String subscriber : eventSubscribers) {
                 // 订阅者取消订阅该事件,可能触发队列的删除操作
                 userService.delObjectSubscribe(subscriber, "event", id, null);
+            }
+
+            // 通知事件订阅者
+            final String msg1 = "事件(ID=" + id + ")结束" + id;
+            //SubscribeMessage subscribeMessage = subscribeService.findByIdAndType(id, "event");
+            List<String> userList = subscribeMessage.getObjectSubscriber();
+            for (String user : userList) {
+                subscribeSender.send(msg1, user);
+            }
+
+            // 通知模板订阅者
+            final String template = mongoEventService.findEventObjectById(id).getTemplate();
+            final String msg2 = "基于模板(ID=" + template + ")创建了新的事件，事件ID为" + id;
+            subscribeMessage = subscribeService.findByIdAndType(template, "template");
+            userList = subscribeMessage.getObjectSubscriber();
+            for (String user : userList) {
+                subscribeSender.send(msg2, user);
             }
             return "事件结束成功";
         }

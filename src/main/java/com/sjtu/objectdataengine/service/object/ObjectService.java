@@ -3,6 +3,7 @@ package com.sjtu.objectdataengine.service.object;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.sjtu.objectdataengine.model.event.EventObject;
 import com.sjtu.objectdataengine.model.object.CommonObject;
 import com.sjtu.objectdataengine.model.subscribe.SubscribeMessage;
 import com.sjtu.objectdataengine.model.template.ObjectTemplate;
@@ -14,7 +15,6 @@ import com.sjtu.objectdataengine.service.event.RedisEventService;
 import com.sjtu.objectdataengine.service.subscribe.SubscribeService;
 import com.sjtu.objectdataengine.service.template.RedisTemplateService;
 import com.sjtu.objectdataengine.service.tree.RedisTreeService;
-import com.sjtu.objectdataengine.utils.TypeConversion;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -115,6 +115,22 @@ public class ObjectService {
         redisSender.send(message);
         // 创建订阅表
         subscribeService.create(id, "entity");
+        // 通知模板订阅者
+        final String msg1 = "基于模板(ID=" + template + ")创建了新的对象，对象ID为" + id;
+        SubscribeMessage subscribeMessage = subscribeService.findByIdAndType(template, "template");
+        List<String> userList = subscribeMessage.getObjectSubscriber();
+        for (String user : userList) {
+            subscribeSender.send(msg1, user);
+        }
+        // 通知事件订阅者
+        for (String event : events) {
+            final String msg2 = "创建了与事件(ID=" + event + ")相关的新的对象，对象ID为" + id;
+            subscribeMessage = subscribeService.findByIdAndType(event, "event");
+            userList = subscribeMessage.getObjectSubscriber();
+            for (String user : userList) {
+                subscribeSender.send(msg2, user);
+            }
+        }
         return "创建成功！";
     }
 
@@ -134,15 +150,39 @@ public class ObjectService {
         mongoSender.send(message);
         redisSender.send(message);
 
-        // 发送订阅信息
-        String msg = "对象(" + "ID=" + id + ")的属性(" + name + ") 增加了一条新属性，属性值为 " + value + "\n更新时间：" + date;
+        final CommonObject commonObject = redisObjectService.findObjectById(id);
+
+        // 通知属性和对象订阅者
+        final String msg1 = "对象(" + "ID=" + id + ")的属性(" + name + ") 增加了一条新属性，属性值为 " + value + "\n更新时间：" + date;
         SubscribeMessage subscribeMessage = subscribeService.findByIdAndType(id, "entity");
         List<String> userList = subscribeMessage.getAttrsSubscriber().get(name);
         // 去重复
         userList.addAll(subscribeMessage.getObjectSubscriber());
         HashSet<String> userSet = new HashSet<>(userList);
         for (String user : userSet) {
-            subscribeSender.send(msg, user);
+            subscribeSender.send(msg1, user);
+        }
+
+        // 通知事件订阅者
+        Set<String> events = commonObject.getEvents().keySet();
+        for (String event : events) {
+            final String msg2 = "与事件(ID=" + event + ")关联的对象(" + "ID=" + id + ")的属性(" + name + ") 增加了一条新属性，属性值为 " + value + "\n更新时间：" + date;
+            subscribeMessage = subscribeService.findByIdAndType(event, "event");
+            if (subscribeMessage != null) {
+                userList = subscribeMessage.getObjectSubscriber();
+                for (String user : userList) {
+                    subscribeSender.send(msg2, user);
+                }
+            }
+        }
+
+        // 通知模板订阅者
+        String template = commonObject.getTemplate();
+        final String msg3 = "与模板(ID=" + template + ")关联的对象(" + "ID=" + id + ")的属性(" + name + ") 增加了一条新属性，属性值为 " + value + "\n更新时间：" + date;
+        subscribeMessage = subscribeService.findByIdAndType(template, "template");
+        userList = subscribeMessage.getObjectSubscriber();
+        for (String user : userList) {
+            subscribeSender.send(msg3, user);
         }
         return "创建成功！";
     }
