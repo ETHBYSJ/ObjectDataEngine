@@ -168,4 +168,5 @@ public class SubscribeDAO extends MongoBaseDAO<SubscribeMessage> {
         return mongoTemplate.updateMulti(query, update, SubscribeMessage.class).getModifiedCount() > 0;
     }
 
+
 }
