@@ -125,7 +125,7 @@ public class SubscribeService {
         if (!(type.equals("entity") || type.equals("template") || type.equals("event"))) return "类型错误";
         if (user == null || user.equals("")) return "用户ID不能为空";
 
-        if (subscribeDAO.addAttrSubscriber(objId, type, name, user)) {
+        if (subscribeDAO.delAttrSubscriber(objId, type, name, user)) {
             if(type.equals("entity")) {
                 userDAO.delObjectSubscribe(user, objId, name);
             }

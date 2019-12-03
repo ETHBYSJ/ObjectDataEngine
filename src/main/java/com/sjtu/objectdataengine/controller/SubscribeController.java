@@ -1,6 +1,7 @@
 package com.sjtu.objectdataengine.controller;
 
 import com.sjtu.objectdataengine.service.subscribe.SubscribeService;
+import com.sjtu.objectdataengine.service.subscribe.UserService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -14,7 +15,16 @@ public class SubscribeController {
 
     @Resource
     SubscribeService subscribeService;
-
+    @Resource
+    UserService userService;
+    @GetMapping("/create_user")
+    public boolean createUser(@RequestParam String id, @RequestParam String name, @RequestParam String intro) {
+        return userService.create(id, name, intro);
+    }
+    @GetMapping("/create")
+    public boolean create(@RequestParam String objId, @RequestParam String type) {
+        return subscribeService.create(objId, type);
+    }
     @GetMapping("/add_attr")
     public String addAttrSubscriber(@RequestParam String objId, @RequestParam String type, @RequestParam String name, @RequestParam String userId) {
         return  subscribeService.addAttrSubscriber(objId, type, name, userId);
