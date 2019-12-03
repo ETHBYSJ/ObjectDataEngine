@@ -11,13 +11,17 @@ public class User extends BaseModel {
     private String id;
     private String name;
     private String intro;
-    private List<String> subscribeList;
+    private List<String> eventSubscribe;
+    private List<String> objectSubscribe;
+    private List<String> templateSubscribe;
 
     public User(String id, String name, String intro) {
         this.id = id;
         this.name = name;
         this.intro = intro;
-        this.subscribeList = new ArrayList<>();
+        this.eventSubscribe = new ArrayList<>();
+        this.objectSubscribe = new ArrayList<>();
+        this.templateSubscribe = new ArrayList<>();
     }
 
     public String getId() {
@@ -44,11 +48,27 @@ public class User extends BaseModel {
         this.intro = intro;
     }
 
-    public List<String> getSubscribeList() {
-        return subscribeList;
+    public List<String> getEventSubscribe() {
+        return eventSubscribe;
     }
 
-    public void setSubscribeList(List<String> subscribeList) {
-        this.subscribeList = subscribeList;
+    public void setEventSubscribe(List<String> eventSubscribe) {
+        this.eventSubscribe = eventSubscribe;
+    }
+
+    public List<String> getObjectSubscribe() {
+        return objectSubscribe;
+    }
+
+    public void setObjectSubscribe(List<String> objectSubscribe) {
+        this.objectSubscribe = objectSubscribe;
+    }
+
+    public List<String> getTemplateSubscribe() {
+        return templateSubscribe;
+    }
+
+    public void setTemplateSubscribe(List<String> templateSubscribe) {
+        this.templateSubscribe = templateSubscribe;
     }
 }
