@@ -6,6 +6,7 @@ import com.sjtu.objectdataengine.dao.subscribe.SubscribeDAO;
 import com.sjtu.objectdataengine.dao.subscribe.UserDAO;
 import com.sjtu.objectdataengine.dao.template.MongoTemplateDAO;
 import com.sjtu.objectdataengine.model.subscribe.SubscribeMessage;
+import com.sjtu.objectdataengine.model.subscribe.User;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -88,8 +89,21 @@ public class SubscribeService {
         if (type == null || type.equals("")) return "类型不能为空";
         if (!(type.equals("entity") || type.equals("template") || type.equals("event"))) return "类型错误";
         if (user == null || user.equals("")) return "用户ID不能为空";
-
+        // 检测用户是否存在
+        if(!userDAO.hasUser(user)) {
+            return "用户不存在";
+        }
         if (subscribeDAO.addAttrSubscriber(objId, type, name, user)) {
+            if(type.equals("entity")) {
+                userDAO.addObjectSubscribe(user, objId, name);
+            }
+            else if(type.equals("template")) {
+                userDAO.addTemplateSubscribe(user, objId, name);
+            }
+            else {
+                // event
+                userDAO.addEventSubscribe(user, objId, name);
+            }
             return "增加成功";
         }
         return "增加失败";
@@ -112,6 +126,16 @@ public class SubscribeService {
         if (user == null || user.equals("")) return "用户ID不能为空";
 
         if (subscribeDAO.addAttrSubscriber(objId, type, name, user)) {
+            if(type.equals("entity")) {
+                userDAO.delObjectSubscribe(user, objId, name);
+            }
+            else if(type.equals("template")) {
+                userDAO.delTemplateSubscribe(user, objId, name);
+            }
+            else {
+                // event
+                userDAO.delEventSubscribe(user, objId, name);
+            }
             return "删除成功";
         }
         return "删除失败";
@@ -120,7 +144,6 @@ public class SubscribeService {
     /**
      * 增加对象订阅者
      * @param objId 对象id
-     * @param type 类型
      * @param user 订阅者id
      * @return 结果说明
      */
@@ -130,8 +153,21 @@ public class SubscribeService {
         if (type == null || type.equals("")) return "类型不能为空";
         if (!(type.equals("entity") || type.equals("template") || type.equals("event"))) return "类型错误";
         if (user == null || user.equals("")) return "用户ID不能为空";
-
+        // 检测用户是否存在
+        if(!userDAO.hasUser(user)) {
+            return "用户不存在";
+        }
         if (subscribeDAO.addObjectSubscriber(objId, type, user)) {
+            if(type.equals("entity")) {
+                userDAO.addObjectSubscribe(user, objId);
+            }
+            else if(type.equals("template")) {
+                userDAO.addTemplateSubscribe(user, objId);
+            }
+            else {
+                // event
+                userDAO.addEventSubscribe(user, objId);
+            }
             return "增加成功";
         }
         return "增加失败";
@@ -140,7 +176,6 @@ public class SubscribeService {
     /**
      * 删除对象订阅者
      * @param objId 对象id
-     * @param type 类型
      * @param user 订阅者id
      * @return 结果说明
      */
@@ -150,10 +185,24 @@ public class SubscribeService {
         if (type == null || type.equals("")) return "类型不能为空";
         if (!(type.equals("entity") || type.equals("template") || type.equals("event"))) return "类型错误";
         if (user == null || user.equals("")) return "用户ID不能为空";
-
+        // 检测用户是否存在
+        if(!userDAO.hasUser(user)) {
+            return "用户不存在";
+        }
         if (subscribeDAO.delObjectSubscriber(objId, type, user)) {
+            if(type.equals("entity")) {
+                userDAO.delObjectSubscribe(user, objId);
+            }
+            else if(type.equals("template")) {
+                userDAO.delTemplateSubscribe(user, objId);
+            }
+            else {
+                // event
+                userDAO.delEventSubscribe(user, objId);
+            }
             return "删除成功";
         }
         return "删除失败";
     }
+
 }
