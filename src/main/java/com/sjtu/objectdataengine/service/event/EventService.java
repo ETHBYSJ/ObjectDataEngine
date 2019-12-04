@@ -6,8 +6,9 @@ import com.sjtu.objectdataengine.model.event.EventObject;
 import com.sjtu.objectdataengine.model.subscribe.SubscribeMessage;
 import com.sjtu.objectdataengine.model.template.ObjectTemplate;
 import com.sjtu.objectdataengine.rabbitMQ.mongodb.MongoSender;
-import com.sjtu.objectdataengine.rabbitMQ.subscribe.SubscribeSender;
 import com.sjtu.objectdataengine.service.subscribe.SubscribeService;
+import com.sjtu.objectdataengine.service.subscribe.UserService;
+import com.sjtu.objectdataengine.rabbitMQ.subscribe.SubscribeSender;
 import com.sjtu.objectdataengine.service.template.RedisTemplateService;
 import org.springframework.stereotype.Component;
 
@@ -33,10 +34,14 @@ public class EventService {
     MongoEventService mongoEventService;
 
     @Resource
+    UserService userService;
+
+    @Resource
     SubscribeService subscribeService;
 
     @Resource
     SubscribeSender subscribeSender;
+
 
     /**
      * 创建一个事件
@@ -174,9 +179,19 @@ public class EventService {
 
         // 删除redis中的已结束事件
         if (redisEventService.deleteEventById(id, eventObject.getTemplate())) {
+            // 查找事件的订阅者
+            SubscribeMessage subscribeMessage = subscribeService.findByIdAndType(id, "event");
+            List<String> eventSubscribers = subscribeMessage.getObjectSubscriber();
+            //删除订阅表
+            subscribeService.deleteByIdAndType(id, "event");
+            for(String subscriber : eventSubscribers) {
+                // 订阅者取消订阅该事件,可能触发队列的删除操作
+                userService.delObjectSubscribe(subscriber, "event", id, null);
+            }
+
             // 通知事件订阅者
             final String msg1 = "事件(ID=" + id + ")结束" + id;
-            SubscribeMessage subscribeMessage = subscribeService.findByIdAndType(id, "event");
+            //SubscribeMessage subscribeMessage = subscribeService.findByIdAndType(id, "event");
             List<String> userList = subscribeMessage.getObjectSubscriber();
             for (String user : userList) {
                 subscribeSender.send(msg1, user);
@@ -190,7 +205,6 @@ public class EventService {
             for (String user : userList) {
                 subscribeSender.send(msg2, user);
             }
-
             return "事件结束成功";
         }
         return "事件结束失败";

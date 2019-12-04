@@ -31,6 +31,15 @@ public class SubscribeService {
     UserDAO userDAO;
 
     /**
+     * 删除订阅表
+     * @param id 表id
+     * @return true or false
+     */
+    public boolean deleteByIdAndType(String id, String type) {
+        SubscribeMessage subscribeMessage = this.findByIdAndType(id, type);
+        return subscribeDAO.deleteByKey(id + type);
+    }
+    /**
      * 对内自动创建
      * @param objId 对象id
      * @param type 对象类型

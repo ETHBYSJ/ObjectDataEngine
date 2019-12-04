@@ -36,9 +36,39 @@ public class RedisObjectService {
     @Resource
     private RedisSender redisSender;
 
-
     private static final Logger logger = LoggerFactory.getLogger(RedisObjectService.class);
 
+    /**
+     * 获得某对象某属性最早的时间
+     * @param id 对象id
+     * @param name 属性名
+     * @return 时间，不存在返回null
+     */
+    public Date getEarliestDate(String id, String name) {
+        if(id == null || name == null) return null;
+        Object date = redisObjectDAO.hget(id + '#' + name, "time");
+        if(date != null) return (Date) date;
+        return null;
+    }
+
+    /**
+     * 获得某对象可以获得的最早的时间
+     * @param id 对象id
+     * @return 时间，不存在返回null
+     */
+    public Date getEarliestDateObj(String id) {
+        if(id == null || !redisObjectDAO.hasKey(id + '#' + "META")) return null;
+        List<String> attrList = (List<String>) redisAttrDAO.lGet(id, 0, -1);
+        if(attrList == null || attrList.size() == 0) return null;
+        Date earliestDate = (Date) redisObjectDAO.hget(id + '#' + attrList.get(0), "time");
+        for(int i = 1; i < attrList.size(); i++) {
+            Date d = (Date) redisObjectDAO.hget(id + '#' + attrList.get(i), "time");
+            if(d.before(earliestDate)) {
+                earliestDate = d;
+            }
+        }
+        return earliestDate;
+    }
     /**
      * 创建新对象
      * @param id 对象id
@@ -120,7 +150,12 @@ public class RedisObjectService {
         }
         return true;
     }
-
+    public boolean addEvent(String objId, String eventId, Date d) {
+        if(objId == null || eventId == null || d == null) return false;
+        if(!redisAttrDAO.hasKey(objId + "#META")) return false;
+        redisAttrDAO.hset(objId + "#events", eventId, d);
+        return true;
+    }
     /**
      * 反向关联对象
      * @param id 对象id
@@ -473,8 +508,13 @@ public class RedisObjectService {
         if(attrList == null || attrList.size() == 0) {
             return null;
         }
+
         CommonObject commonObject = findById(id);
         if(commonObject == null) {
+            return null;
+        }
+        Date createTime = commonObject.getCreateTime();
+        if(createTime.before(date)) {
             return null;
         }
         Date ut = new Date(0);
