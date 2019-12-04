@@ -150,11 +150,34 @@ public class RedisObjectService {
         }
         return true;
     }
+
+    /**
+     * 对象关联事件
+     * @param objId 对象id
+     * @param eventId 事件id
+     * @param d 关联时间
+     * @return true代表操作成功，false代表操作失败
+     */
     public boolean addEvent(String objId, String eventId, Date d) {
         if(objId == null || eventId == null || d == null) return false;
         if(!redisAttrDAO.hasKey(objId + "#META")) return false;
         redisAttrDAO.hset(objId + "#events", eventId, d);
+        redisAttrDAO.hset(objId + "#META", "updateTime", d);
         return true;
+    }
+
+    /**
+     * 对象解除事件关联
+     * @param objId 对象id
+     * @param eventId 事件id
+     * @param d 时间
+     * @return true代表操作成功，false代表操作失败
+     */
+    public boolean delEvent(String objId, String eventId, Date d) {
+        if(objId == null || eventId == null || d == null) return false;
+        if(!redisAttrDAO.hasKey(objId + "#META")) return false;
+        redisAttrDAO.hset(objId + "#META", "updateTime", d);
+        return redisAttrDAO.hdel(objId + "#events", eventId) > 0;
     }
     /**
      * 反向关联对象
