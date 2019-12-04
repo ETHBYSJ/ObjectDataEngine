@@ -473,8 +473,13 @@ public class RedisObjectService {
         if(attrList == null || attrList.size() == 0) {
             return null;
         }
+
         CommonObject commonObject = findById(id);
         if(commonObject == null) {
+            return null;
+        }
+        Date createTime = commonObject.getCreateTime();
+        if(createTime.before(date)) {
             return null;
         }
         Date ut = new Date(0);

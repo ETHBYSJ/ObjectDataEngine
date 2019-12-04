@@ -14,7 +14,13 @@ public class UserService {
     private UserDAO userDAO;
     @Resource
     private RabbitMQService rabbitMQService;
-
+    public String register(String queueName, String routingKey) {
+        if(userDAO.findByKey(queueName) != null) {
+            return "队列名重复";
+        }
+        rabbitMQService.addQueue(queueName, routingKey);
+        return "创建成功";
+    }
     public boolean create(String id, String name, String intro) {
         User user = new User(id, name, intro);
         return userDAO.create(user);
