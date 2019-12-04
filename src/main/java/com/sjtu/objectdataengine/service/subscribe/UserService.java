@@ -15,7 +15,7 @@ public class UserService {
     @Resource
     private RabbitMQService rabbitMQService;
     public String register(String queueName, String routingKey) {
-        if(userDAO.findByKey(queueName) != null) {
+        if(userDAO.findById(queueName, User.class) != null) {
             return "队列名重复";
         }
         rabbitMQService.addQueue(queueName, routingKey);
@@ -26,7 +26,7 @@ public class UserService {
         return userDAO.create(user);
     }
     public boolean isUserEmpty(String id) {
-        User user = userDAO.findByKey(id);
+        User user = userDAO.findById(id, User.class);
         return user.getEventSubscribe().size() == 0 && user.getObjectSubscribe().size() == 0 && user.getTemplateSubscribe().size() == 0;
     }
     public String addObjectSubscribe(String userId, String type, String objId, String name) {
@@ -58,7 +58,7 @@ public class UserService {
         if(type.equals("entity")) {
             userDAO.delObjectSubscribe(userId, objId, name);
             if(isUserEmpty(userId)) {
-                userDAO.deleteByKey(userId);
+                userDAO.deleteById(userId, User.class);
                 // 删除队列(队列名是否是userId?)
                 rabbitMQService.delQueue(userId);
             }
@@ -66,7 +66,7 @@ public class UserService {
         else if(type.equals("template")) {
             userDAO.delTemplateSubscribe(userId, objId, name);
             if(isUserEmpty(userId)) {
-                userDAO.deleteByKey(userId);
+                userDAO.deleteById(userId, User.class);
                 // 删除队列(队列名是否是userId?)
                 rabbitMQService.delQueue(userId);
             }
@@ -75,7 +75,7 @@ public class UserService {
             // event
             userDAO.delEventSubscribe(userId, objId, name);
             if(isUserEmpty(userId)) {
-                userDAO.deleteByKey(userId);
+                userDAO.deleteById(userId, User.class);
                 // 删除队列(队列名是否是userId?)
                 rabbitMQService.delQueue(userId);
             }

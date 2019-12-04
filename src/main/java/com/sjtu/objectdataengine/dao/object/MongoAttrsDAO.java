@@ -3,7 +3,7 @@ package com.sjtu.objectdataengine.dao.object;
 import com.sjtu.objectdataengine.dao.MongoBaseDAO;
 import com.sjtu.objectdataengine.model.object.AttrsModel;
 import com.sjtu.objectdataengine.utils.MongoAttr;
-import com.sjtu.objectdataengine.utils.MongoCondition;
+import com.sjtu.objectdataengine.utils.MongoConditionn;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -14,49 +14,6 @@ import java.util.List;
 
 @Component
 public class MongoAttrsDAO extends MongoBaseDAO<AttrsModel> {
-
-    /**
-     * 查找全部属性
-     * @return list
-     */
-    @Override
-    public List<AttrsModel> findAll() {
-        return mongoTemplate.findAll(AttrsModel.class);
-    }
-
-    /**
-     * 根据主键id查询某条属性
-     * @param key 主键key
-     * @return 对象
-     */
-    @Override
-    public AttrsModel findByKey(String key) {
-        Query query = new Query();
-        Criteria criteria = Criteria.where("_id").is(key);
-        query.addCriteria(criteria);
-        //System.out.println(query);
-        return mongoTemplate.findOne(query, AttrsModel.class);
-    }
-
-    @Override
-    public List<AttrsModel> findByArgs(MongoCondition mongoCondition) {
-        return null;
-    }
-
-
-
-    @Override
-    public boolean update(MongoCondition mongoCondition) {
-        Query query = mongoCondition.getQuery();
-        Update update = mongoCondition.getUpdate();
-        try {
-            mongoTemplate.updateMulti(query, update, AttrsModel.class);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
     /**
      * 在一个属性里增加一个值，包括update time，用mongoAttr封装
      * @param key 属性id
@@ -81,14 +38,4 @@ public class MongoAttrsDAO extends MongoBaseDAO<AttrsModel> {
             return false;
         }
     }
-
-    @Override
-    public List<AttrsModel> fuzzySearch(String search) {
-        return null;
-    }
-
-
-
-
-
 }

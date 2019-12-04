@@ -5,7 +5,7 @@ import com.sjtu.objectdataengine.dao.template.MongoTemplateDAO;
 import com.sjtu.objectdataengine.model.event.EventObject;
 import com.sjtu.objectdataengine.model.template.ObjectTemplate;
 import com.sjtu.objectdataengine.utils.MongoAttr;
-import com.sjtu.objectdataengine.utils.MongoCondition;
+import com.sjtu.objectdataengine.utils.MongoConditionn;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -25,7 +25,7 @@ public class MongoEventService {
 
     public void create(String id, String name, String intro, String template, HashMap<String, String> attrsKv, Date date) {
         List<String> objects = new ArrayList<>();
-        HashMap<String, String> attrsMap = mongoTemplateDAO.findByKey(template).getAttrs();
+        HashMap<String, String> attrsMap = mongoTemplateDAO.findById(template, ObjectTemplate.class).getAttrs();
         HashMap<String, MongoAttr> attrs = new HashMap<>();
         for (String attr : attrsMap.keySet()) {
             String value = attrsKv.get(attr)==null ? "" : attrsKv.get(attr);
@@ -43,52 +43,52 @@ public class MongoEventService {
 
     public void delete(String id, String template) {
         if (mongoTemplateDAO.opObjects(template, id, "del")) {
-            mongoEventDAO.deleteByKey(id);
+            mongoEventDAO.deleteById(id, EventObject.class);
         }
     }
 
     public void end(String id) {
-        MongoCondition mongoCondition = new MongoCondition();
-        mongoCondition.addQuery("id", id);
-        mongoCondition.addUpdate("endTime", new Date());
-        mongoCondition.addUpdate("status", false);
-        mongoEventDAO.update(mongoCondition);
+        MongoConditionn mongoConditionn = new MongoConditionn();
+        mongoConditionn.addQuery("id", id);
+        mongoConditionn.addUpdate("endTime", new Date());
+        mongoConditionn.addUpdate("status", false);
+        mongoEventDAO.update(mongoConditionn, EventObject.class);
     }
 
     public void updateBaseInfo(String id, String name, String intro, String stage, Date date) {
         boolean flag = false;
-        MongoCondition mongoCondition = new MongoCondition();
-        mongoCondition.addQuery("id", id);
+        MongoConditionn mongoConditionn = new MongoConditionn();
+        mongoConditionn.addQuery("id", id);
         if (name != null) {
-            mongoCondition.addUpdate("name", name);
+            mongoConditionn.addUpdate("name", name);
             flag = true;
         }
         if (intro != null) {
-            mongoCondition.addUpdate("intro", intro);
+            mongoConditionn.addUpdate("intro", intro);
             flag = true;
         }
         if (stage != null) {
-            mongoCondition.addUpdate("stage", stage);
+            mongoConditionn.addUpdate("stage", stage);
             flag = true;
         }
         if (flag) {
-            mongoCondition.addUpdate("updateTime", date);
-            mongoEventDAO.update(mongoCondition);
+            mongoConditionn.addUpdate("updateTime", date);
+            mongoEventDAO.update(mongoConditionn, EventObject.class);
         }
     }
 
     EventObject findEventObjectById(String id) {
-        return mongoEventDAO.findByKey(id);
+        return mongoEventDAO.findById(id, EventObject.class);
     }
 
     public void modifyAttr(String id, String name, String value, Date date) {
-        MongoCondition mongoCondition = new MongoCondition();
-        mongoCondition.addQuery("id", id);
+        MongoConditionn mongoConditionn = new MongoConditionn();
+        mongoConditionn.addQuery("id", id);
         MongoAttr mongoAttr = new MongoAttr(value);
         mongoAttr.setUpdateTime(date);
-        mongoCondition.addUpdate("attrs." + name, mongoAttr);
-        mongoCondition.addUpdate("updateTime", date);
-        mongoEventDAO.update(mongoCondition);
+        mongoConditionn.addUpdate("attrs." + name, mongoAttr);
+        mongoConditionn.addUpdate("updateTime", date);
+        mongoEventDAO.update(mongoConditionn, EventObject.class);
     }
 
     public void addObject(String id, String objId) {

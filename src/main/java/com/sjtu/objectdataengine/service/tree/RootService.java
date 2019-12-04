@@ -31,13 +31,13 @@ public class RootService {
     }
 
     public RootMessage find() {
-        if (mongoRootDAO.findAll().size()==0) {
+        if (mongoRootDAO.findAll(RootMessage.class).size()==0) {
             this.create();
         }
         if(!redisRootDAO.hasRootMessage()) {
             this.createRedisRoot();
         }
-        return mongoRootDAO.findAll().get(0);
+        return mongoRootDAO.findAll(RootMessage.class).get(0);
     }
 
     public void addNewRoot(String id, String name, Date date) {

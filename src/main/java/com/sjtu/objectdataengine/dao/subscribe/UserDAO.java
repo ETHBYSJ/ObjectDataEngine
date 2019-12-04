@@ -2,7 +2,7 @@ package com.sjtu.objectdataengine.dao.subscribe;
 
 import com.sjtu.objectdataengine.dao.MongoBaseDAO;
 import com.sjtu.objectdataengine.model.subscribe.User;
-import com.sjtu.objectdataengine.utils.MongoCondition;
+import com.sjtu.objectdataengine.utils.MongoConditionn;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -12,59 +12,6 @@ import java.util.List;
 
 @Component
 public class UserDAO extends MongoBaseDAO<User> {
-    /**
-     * 查询全部
-     *
-     * @return List类型，返回集合所有数据
-     */
-    @Override
-    public List<User> findAll() {
-        return mongoTemplate.findAll(User.class);
-    }
-
-    /**
-     * 根据主键key查询
-     *
-     * @param key 主键key
-     * @return T类型，返回某条数据
-     */
-    @Override
-    public User findByKey(String key) {
-        Query query = new Query();
-        query.addCriteria(Criteria.where("_id").is(key));
-        return mongoTemplate.findOne(query, User.class);
-    }
-
-    /**
-     * 根据其他关键字查询
-     *
-     * @param mongoCondition 查询条件
-     * @return List类型，返回查询到的所有数据
-     */
-    @Override
-    public List<User> findByArgs(MongoCondition mongoCondition) {
-        return null;
-    }
-
-    /**
-     * 更新对象
-     *
-     * @param mongoCondition 更新条件
-     */
-    @Override
-    public boolean update(MongoCondition mongoCondition) {
-        return false;
-    }
-
-    /**
-     * 模糊查询
-     *
-     * @param search 查询条件
-     */
-    @Override
-    public List<User> fuzzySearch(String search) {
-        return null;
-    }
 
     /**
      * 是否含有该user Id
@@ -72,7 +19,7 @@ public class UserDAO extends MongoBaseDAO<User> {
      * @return true or false
      */
     public boolean hasUser(String id) {
-        return findByKey(id) != null;
+        return findById(id, User.class) != null;
     }
 
     /**

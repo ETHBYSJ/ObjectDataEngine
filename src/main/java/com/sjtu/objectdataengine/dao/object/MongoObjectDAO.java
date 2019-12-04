@@ -3,7 +3,7 @@ package com.sjtu.objectdataengine.dao.object;
 import com.sjtu.objectdataengine.dao.MongoBaseDAO;
 import com.sjtu.objectdataengine.utils.MongoAttr;
 import com.sjtu.objectdataengine.model.object.CommonObject;
-import com.sjtu.objectdataengine.utils.MongoCondition;
+import com.sjtu.objectdataengine.utils.MongoConditionn;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -14,58 +14,6 @@ import java.util.List;
 
 @Component
 public class MongoObjectDAO extends MongoBaseDAO<CommonObject> {
-    /**
-     * 查询全部
-     *
-     * @return List类型，返回集合所有数据
-     */
-    @Override
-    public List<CommonObject> findAll() {
-        return mongoTemplate.findAll(CommonObject.class);
-    }
-
-    /**
-     * 根据主键key查询
-     *
-     * @param key 主键key
-     * @return CommonObject类型，返回某条数据
-     */
-    @Override
-    public CommonObject findByKey(String key) {
-        Query query = new Query();
-        Criteria criteria = Criteria.where("_id").is(key);
-        query.addCriteria(criteria);
-        return mongoTemplate.findOne(query, CommonObject.class);
-    }
-
-    /**
-     * 根据其他关键字查询
-     *
-     * @param mongoCondition 查询条件
-     * @return List类型，返回查询到的所有数据
-     */
-    @Override
-    public List<CommonObject> findByArgs(MongoCondition mongoCondition) {
-        return null;
-    }
-
-    /**
-     * 更新对象
-     *
-     * @param mongoCondition 更新条件
-     */
-    @Override
-    public boolean update(MongoCondition mongoCondition) {
-        Query query = mongoCondition.getQuery();
-        Update update = mongoCondition.getUpdate();
-        try {
-            mongoTemplate.updateMulti(query, update, CommonObject.class);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
     /**
      * 在一个属性里增加一个值，包括update time，用mongoAttr封装
      * @param key 属性id
@@ -90,20 +38,15 @@ public class MongoObjectDAO extends MongoBaseDAO<CommonObject> {
     }
 
     /**
-     * 模糊查询
+     * 删除一个event
      *
-     * @param search 查询条件
+     * @param id 查询条件
      */
-    @Override
-    public List<CommonObject> fuzzySearch(String search) {
-        return null;
-    }
-
     public void delEvent(String id, String eventId, Date date) {
         Query query = new Query();
         query.addCriteria(Criteria.where("_id").is(id));
         Update update = new Update();
-        update.unset("events." + id);
+        update.unset("events." + eventId);
         update.set("updateTime", date);
         mongoTemplate.updateMulti(query, update, CommonObject.class);
     }

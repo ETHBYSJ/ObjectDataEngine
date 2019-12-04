@@ -5,8 +5,10 @@ import com.sjtu.objectdataengine.dao.object.MongoObjectDAO;
 import com.sjtu.objectdataengine.dao.subscribe.SubscribeDAO;
 import com.sjtu.objectdataengine.dao.subscribe.UserDAO;
 import com.sjtu.objectdataengine.dao.template.MongoTemplateDAO;
+import com.sjtu.objectdataengine.model.event.EventObject;
+import com.sjtu.objectdataengine.model.object.CommonObject;
 import com.sjtu.objectdataengine.model.subscribe.SubscribeMessage;
-import com.sjtu.objectdataengine.model.subscribe.User;
+import com.sjtu.objectdataengine.model.template.ObjectTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -37,7 +39,7 @@ public class SubscribeService {
      */
     public boolean deleteByIdAndType(String id, String type) {
         SubscribeMessage subscribeMessage = this.findByIdAndType(id, type);
-        return subscribeDAO.deleteByKey(id + type);
+        return subscribeDAO.deleteById(id + type, SubscribeMessage.class);
     }
     /**
      * 对内自动创建
@@ -51,7 +53,7 @@ public class SubscribeService {
         // 实体对象订阅
         switch (type) {
             case "entity": {
-                Set<String> attrs = mongoObjectDAO.findByKey(objId).getAttr().keySet();
+                Set<String> attrs = mongoObjectDAO.findById(objId, CommonObject.class).getAttr().keySet();
                 for (String attr : attrs) {
                     attrsMap.put(attr, new ArrayList<>());
                 }
@@ -59,7 +61,7 @@ public class SubscribeService {
             }
             // 事件对象订阅
             case "event": {
-                Set<String> attrs = mongoEventDAO.findByKey(objId).getAttrs().keySet();
+                Set<String> attrs = mongoEventDAO.findById(objId, EventObject.class).getAttrs().keySet();
                 for (String attr : attrs) {
                     attrsMap.put(attr, new ArrayList<>());
                 }
@@ -67,7 +69,7 @@ public class SubscribeService {
             }
             // 根据模板订阅
             case "template": {
-                Set<String> attrs = mongoTemplateDAO.findByKey(objId).getAttrs().keySet();
+                Set<String> attrs = mongoTemplateDAO.findById(objId, ObjectTemplate.class).getAttrs().keySet();
                 for (String attr : attrs) {
                     attrsMap.put(attr, new ArrayList<>());
                 }
@@ -218,6 +220,6 @@ public class SubscribeService {
      *
      */
     public SubscribeMessage findByIdAndType(String objId, String type) {
-        return subscribeDAO.findByKey(objId + type);
+        return subscribeDAO.findById(objId + type, SubscribeMessage.class);
     }
 }

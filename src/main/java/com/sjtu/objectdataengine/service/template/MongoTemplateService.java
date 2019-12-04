@@ -4,7 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sjtu.objectdataengine.dao.template.MongoTemplateDAO;
 import com.sjtu.objectdataengine.dao.tree.MongoTreeDAO;
 import com.sjtu.objectdataengine.model.template.ObjectTemplate;
-import com.sjtu.objectdataengine.utils.MongoCondition;
+import com.sjtu.objectdataengine.model.tree.TreeNode;
+import com.sjtu.objectdataengine.utils.MongoConditionn;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -43,7 +44,7 @@ public class MongoTemplateService {
      * @return 全部模板
      */
     public List<ObjectTemplate> findAllTemplate() {
-        return mongoTemplateDAO.findAll();
+        return mongoTemplateDAO.findAll(ObjectTemplate.class);
     }
 
     /**
@@ -52,7 +53,7 @@ public class MongoTemplateService {
      * @return 返回对象模板
      */
     public ObjectTemplate findTemplateById(String key) {
-        return mongoTemplateDAO.findByKey(key);
+        return mongoTemplateDAO.findById(key, ObjectTemplate.class);
     }
 
     /**
@@ -63,8 +64,8 @@ public class MongoTemplateService {
      */
     public List<ObjectTemplate> findTemplate(String request) throws Exception{
         HashMap<String, Object> queryMap = MAPPER.readValue(request, HashMap.class);
-        MongoCondition mongoCondition = new MongoCondition("query", queryMap, queryMap);
-        return mongoTemplateDAO.findByArgs(mongoCondition);
+        MongoConditionn mongoConditionn = new MongoConditionn("query", queryMap, queryMap);
+        return mongoTemplateDAO.findByArgs(mongoConditionn, ObjectTemplate.class);
     }
 
     /**
@@ -72,14 +73,14 @@ public class MongoTemplateService {
      * @param key 对象模板id
      */
     public void deleteTemplateById(String key, String nodeId, Date date) {
-        MongoCondition mongoCondition = new MongoCondition();
+        MongoConditionn mongoConditionn = new MongoConditionn();
         if (!nodeId.equals("")) {
-            mongoCondition.addQuery("id", nodeId);
-            mongoCondition.addUpdate("template", "");
-            mongoCondition.addUpdate("updateTime", date);
-            mongoTreeDAO.update(mongoCondition);
+            mongoConditionn.addQuery("id", nodeId);
+            mongoConditionn.addUpdate("template", "");
+            mongoConditionn.addUpdate("updateTime", date);
+            mongoTreeDAO.update(mongoConditionn, TreeNode.class);
         }
-        mongoTemplateDAO.deleteByKey(key);
+        mongoTemplateDAO.deleteById(key, ObjectTemplate.class);
     }
 
     /**
@@ -87,12 +88,12 @@ public class MongoTemplateService {
      * @param id ID
      */
     public void updateBaseInfo(String id, String name, String intro, Date date){
-        MongoCondition mongoCondition = new MongoCondition();
-        mongoCondition.addQuery("id", id);
-        if (name != null) mongoCondition.addUpdate("name", name);
-        if (intro != null) mongoCondition.addUpdate("intro", intro);
-        mongoCondition.addUpdate("updateTime", date);
-        mongoTemplateDAO.update(mongoCondition);
+        MongoConditionn mongoConditionn = new MongoConditionn();
+        mongoConditionn.addQuery("id", id);
+        if (name != null) mongoConditionn.addUpdate("name", name);
+        if (intro != null) mongoConditionn.addUpdate("intro", intro);
+        mongoConditionn.addUpdate("updateTime", date);
+        mongoTemplateDAO.update(mongoConditionn, ObjectTemplate.class);
     }
 
     public void addAttrs(String id, String name, String nickname, Date date) {
@@ -118,13 +119,13 @@ public class MongoTemplateService {
     }
 
     private void bindToNode(String nodeId, String template, Date date) {
-        MongoCondition mongoCondition = new MongoCondition();
+        MongoConditionn mongoConditionn = new MongoConditionn();
         // 绑定, 把对应nodeId的node上的template改成当前的template
         if (!nodeId.equals("")) {
-            mongoCondition.addQuery("id", nodeId);
-            mongoCondition.addUpdate("template", template);
-            mongoCondition.addUpdate("updateTime", date);
-            mongoTreeDAO.update(mongoCondition);
+            mongoConditionn.addQuery("id", nodeId);
+            mongoConditionn.addUpdate("template", template);
+            mongoConditionn.addUpdate("updateTime", date);
+            mongoTreeDAO.update(mongoConditionn, TreeNode.class);
         }
     }
 }

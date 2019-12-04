@@ -2,7 +2,7 @@ package com.sjtu.objectdataengine.dao.subscribe;
 
 import com.sjtu.objectdataengine.dao.MongoBaseDAO;
 import com.sjtu.objectdataengine.model.subscribe.SubscribeMessage;
-import com.sjtu.objectdataengine.utils.MongoCondition;
+import com.sjtu.objectdataengine.utils.MongoConditionn;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -15,61 +15,6 @@ import java.util.List;
 @Component
 
 public class SubscribeDAO extends MongoBaseDAO<SubscribeMessage> {
-
-    /**
-     * 查询全部
-     *
-     * @return List类型，返回集合所有数据
-     */
-    @Override
-    public List<SubscribeMessage> findAll() {
-        return mongoTemplate.findAll(SubscribeMessage.class);
-    }
-
-    /**
-     * 根据主键key查询
-     *
-     * @param key 主键key
-     * @return T类型，返回某条数据
-     */
-    @Override
-    public SubscribeMessage findByKey(String key) {
-        Query query = new Query();
-        query.addCriteria(Criteria.where("_id").is(key));
-        return mongoTemplate.findOne(query, SubscribeMessage.class);
-    }
-
-    /**
-     * 根据其他关键字查询
-     *
-     * @param mongoCondition 查询条件
-     * @return List类型，返回查询到的所有数据
-     */
-    @Override
-    public List<SubscribeMessage> findByArgs(MongoCondition mongoCondition) {
-        return null;
-    }
-
-    /**
-     * 更新对象
-     *
-     * @param mongoCondition 更新条件
-     */
-    @Override
-    public boolean update(MongoCondition mongoCondition) {
-        return false;
-    }
-
-    /**
-     * 模糊查询
-     *
-     * @param search 查询条件
-     */
-    @Override
-    public List<SubscribeMessage> fuzzySearch(String search) {
-        return null;
-    }
-
     /**
      * 增加一个属性订阅者
      *
