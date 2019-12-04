@@ -98,4 +98,13 @@ public class MongoObjectDAO extends MongoBaseDAO<CommonObject> {
     public List<CommonObject> fuzzySearch(String search) {
         return null;
     }
+
+    public void delEvent(String id, String eventId, Date date) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("_id").is(id));
+        Update update = new Update();
+        update.unset("events." + id);
+        update.set("updateTime", date);
+        mongoTemplate.updateMulti(query, update, CommonObject.class);
+    }
 }

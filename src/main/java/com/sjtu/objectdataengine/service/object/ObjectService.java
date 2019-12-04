@@ -15,6 +15,7 @@ import com.sjtu.objectdataengine.service.event.RedisEventService;
 import com.sjtu.objectdataengine.service.subscribe.SubscribeService;
 import com.sjtu.objectdataengine.service.template.RedisTemplateService;
 import com.sjtu.objectdataengine.service.tree.RedisTreeService;
+import com.sjtu.objectdataengine.utils.MongoAttr;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -201,6 +202,34 @@ public class ObjectService {
     }
 
     /**
+     * 根据id name time获取指定时间的某条属性
+     * @param id 对象id
+     * @param name 属性name
+     * @param time 时间
+     * @return 属性值
+     */
+    public MongoAttr findAttrByTime(String id, String name, Date time) {
+        MongoAttr redisResult = redisObjectService.findAttrByTime(id, name, time);
+        if (redisResult == null) {
+            return mongoObjectService.findAttrByTime(id, name, time);
+        }
+        return redisResult;
+    }
+
+    /**
+     * 根据时间查找属性
+     * @param id 对象id
+     * @param name 属性name
+     * @param start 开始时间
+     * @param end 结束时间
+     * @return 属性列表
+     */
+    public List<MongoAttr> findAttrByTimes(String id, String name, Date start, Date end) {
+        if (start.after(end)) return null;
+        return mongoObjectService.findAttrByStartAndEnd(id, name, start, end);
+    }
+
+    /**
      * 根据key获取对应time的object
      * @param id 对象id
      * @param time 时间
@@ -209,8 +238,10 @@ public class ObjectService {
     public CommonObject findObjectByTime(String id, Date time) {
         CommonObject redisResult = redisObjectService.findObjectById(id, time);
         if (redisResult == null) {
+            System.out.println("from mongo");
             return mongoObjectService.findObjectByTime(id, time);
         }
+        System.out.println("from redis");
         return redisResult;
     }
 
@@ -248,11 +279,33 @@ public class ObjectService {
         return result;
     }
 
-    public String addEventToObject(String id, String eventId) {
-        /*if (id == null || id.equals("")) return "ID不能为空";
-        else if ()
-        if (eventId == null || eventId.equals("")) return "event不能为空";
-        */
+    /**
+     * 关联事件和对象
+     * @param objId 对象id
+     * @param eventId 事件id
+     * @return 结果说明
+     */
+    public String bindEventAndObject(String objId, String eventId) {
+        // 检查ID和事件ID存在与否
+        if (objId == null || objId.equals("")) return "ID不能为空";
+        else if (redisObjectService.findObjectById(objId) == null) return "ID不存在";
+        if (eventId == null || eventId.equals("")) return "事件不能为空";
+        else if (redisEventService.findEventObjectById(eventId) == null) return "事件ID不存在";
+        // 组装信息
+        Date date = new Date();
+        HashMap<String, Object> bindMessage = new HashMap<>();
+        bindMessage.put("objId", objId);
+        bindMessage.put("eventId", eventId);
+        bindMessage.put("date", date);
+        // 添加事件id到对象的事件列表中
+        redisObjectService.addEvent(objId, eventId, date);
+        bindMessage.put("op", "OBJECT_ADD_EVENT");
+        mongoSender.send(bindMessage);
+        // 添加id到事件的对象列表中
+        redisEventService.addObject(eventId, objId);
+        bindMessage.put("op", "EVENT_ADD_OBJECT");
+        mongoSender.send(bindMessage);
+
         return "增加失败";
     }
 }

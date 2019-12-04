@@ -553,4 +553,30 @@ public class MongoObjectService {
         return null;
     }
 
+    /**
+     * 为对象增加一个关联事件
+     * @param id 对象id
+     * @param eventId 事件id
+     * @param date 时间
+     */
+    public void addEvent(String id, String eventId, Date date) {
+        MongoCondition mongoCondition = new MongoCondition();
+        mongoCondition.addQuery("id", id);
+        mongoCondition.addUpdate("events." + eventId, date);
+        mongoCondition.addUpdate("updateTime", date);
+        mongoObjectDAO.update(mongoCondition);
+    }
+
+    /**
+     * 为对象删除一个关联事件
+     * @param id 对象id
+     * @param eventId 事件id
+     * @param date 时间
+     */
+    public void delEvent(String id, String eventId, Date date) {
+        mongoObjectDAO.delEvent(id, eventId, date);
+    }
+
+
+
 }

@@ -69,6 +69,17 @@ public class MongoReceiver {
             }
 
             /*
+             * 增加一个关联事件
+             */
+            case "OBJECT_ADD_EVENT": {
+                String objId = message.get("objId").toString();
+                String eventId = message.get("eventId").toString();
+                Date date = (Date) message.get("date");
+                mongoObjectService.addEvent(objId, eventId, date);
+                break;
+            }
+
+            /*
              * 创建知识树节点
              */
             case "NODE_CREATE": {
@@ -197,12 +208,19 @@ public class MongoReceiver {
                 break;
             }
 
+            /*
+             * 删除一个事件
+             */
             case "EVENT_DELETE" : {
                 String id = message.get("id").toString();
                 String template = message.get("template").toString();
                 mongoEventService.delete(id, template);
                 break;
             }
+
+            /*
+             * 修改事件基础信息
+             */
 
             case "EVENT_MODIFY_BASE": {
                 String id = message.get("id").toString();
@@ -221,6 +239,9 @@ public class MongoReceiver {
                 break;
             }
 
+            /*
+             * 事件属性修改
+             */
             case "EVENT_MODIFY_ATTR": {
                 String id = message.get("id").toString();
                 String name = message.get("name").toString();
@@ -230,6 +251,19 @@ public class MongoReceiver {
                 break;
             }
 
+            /*
+             * 事件添加绑定对象
+             */
+            case "EVENT_ADD_OBJECT": {
+                String objId = message.get("objId").toString();
+                String eventId = message.get("eventId").toString();
+                mongoEventService.addObject(eventId, objId);
+                break;
+            }
+
+            /*
+             * 事件结束
+             */
             case "EVENT_END" : {
                 String id = message.get("id").toString();
                 mongoEventService.end(id);
