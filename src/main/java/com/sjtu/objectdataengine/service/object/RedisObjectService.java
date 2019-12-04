@@ -150,7 +150,12 @@ public class RedisObjectService {
         }
         return true;
     }
-
+    public boolean addEvent(String objId, String eventId, Date d) {
+        if(objId == null || eventId == null || d == null) return false;
+        if(!redisAttrDAO.hasKey(objId + "#META")) return false;
+        redisAttrDAO.hset(objId + "#events", eventId, d);
+        return true;
+    }
     /**
      * 反向关联对象
      * @param id 对象id
