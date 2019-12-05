@@ -17,9 +17,9 @@ public class SubscribeController {
     SubscribeService subscribeService;
     @Resource
     UserService userService;
-    @GetMapping("/create_user")
-    public boolean createUser(@RequestParam String id, @RequestParam String name, @RequestParam String intro) {
-        return userService.create(id, name, intro);
+    @GetMapping("/register")
+    public String register(@RequestParam String name, @RequestParam String intro) {
+        return userService.register(name, intro);
     }
     @GetMapping("/create")
     public boolean create(@RequestParam String objId, @RequestParam String type) {
