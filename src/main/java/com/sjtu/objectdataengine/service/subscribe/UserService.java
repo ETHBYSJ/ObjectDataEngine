@@ -3,6 +3,7 @@ package com.sjtu.objectdataengine.service.subscribe;
 import com.sjtu.objectdataengine.dao.subscribe.UserDAO;
 import com.sjtu.objectdataengine.model.subscribe.User;
 import com.sjtu.objectdataengine.service.rabbit.RabbitMQService;
+import com.sjtu.objectdataengine.utils.MongoAutoIdUtil;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -14,17 +15,27 @@ public class UserService {
     private UserDAO userDAO;
     @Resource
     private RabbitMQService rabbitMQService;
-    public String register(String queueName, String routingKey) {
-        if(userDAO.findById(queueName, User.class) != null) {
-            return "队列名重复";
-        }
-        rabbitMQService.addQueue(queueName, routingKey);
-        return "创建成功";
+    @Resource
+    private MongoAutoIdUtil mongoAutoIdUtil;
+
+    /**
+     * 用户注册，注册时分配唯一id
+     * @param name 用户名
+     * @param intro 简介
+     * @return 注册相关信息
+     */
+    public String register(String name, String intro) {
+        String id = mongoAutoIdUtil.getNextId("seq_user").toString();
+        this.create(id, name, intro);
+        rabbitMQService.addQueue(id, id);
+        return "注册成功" + id;
     }
-    public boolean create(String id, String name, String intro) {
+
+    private boolean create(String id, String name, String intro) {
         User user = new User(id, name, intro);
         return userDAO.create(user);
     }
+
     public boolean isUserEmpty(String id) {
         User user = userDAO.findById(id, User.class);
         return user.getEventSubscribe().size() == 0 && user.getObjectSubscribe().size() == 0 && user.getTemplateSubscribe().size() == 0;
@@ -57,28 +68,34 @@ public class UserService {
 
         if(type.equals("entity")) {
             userDAO.delObjectSubscribe(userId, objId, name);
+            /*
             if(isUserEmpty(userId)) {
                 userDAO.deleteById(userId, User.class);
                 // 删除队列(队列名是否是userId?)
                 rabbitMQService.delQueue(userId);
             }
+            */
         }
         else if(type.equals("template")) {
             userDAO.delTemplateSubscribe(userId, objId, name);
+            /*
             if(isUserEmpty(userId)) {
                 userDAO.deleteById(userId, User.class);
                 // 删除队列(队列名是否是userId?)
                 rabbitMQService.delQueue(userId);
             }
+            */
         }
         else {
             // event
             userDAO.delEventSubscribe(userId, objId, name);
+            /*
             if(isUserEmpty(userId)) {
                 userDAO.deleteById(userId, User.class);
                 // 删除队列(队列名是否是userId?)
                 rabbitMQService.delQueue(userId);
             }
+            */
         }
         return "删除成功";
     }

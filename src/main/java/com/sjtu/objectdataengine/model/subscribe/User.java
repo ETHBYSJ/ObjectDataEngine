@@ -1,6 +1,7 @@
 package com.sjtu.objectdataengine.model.subscribe;
 
 import com.sjtu.objectdataengine.model.BaseModel;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
@@ -23,7 +24,6 @@ public class User extends BaseModel {
         this.objectSubscribe = new ArrayList<>();
         this.templateSubscribe = new ArrayList<>();
     }
-
     public String getId() {
         return id;
     }

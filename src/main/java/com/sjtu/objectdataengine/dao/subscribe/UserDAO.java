@@ -1,6 +1,7 @@
 package com.sjtu.objectdataengine.dao.subscribe;
 
 import com.sjtu.objectdataengine.dao.MongoBaseDAO;
+import com.sjtu.objectdataengine.model.subscribe.MongoSequence;
 import com.sjtu.objectdataengine.model.subscribe.User;
 import com.sjtu.objectdataengine.utils.MongoConditionn;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -10,9 +11,22 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+import static org.springframework.data.mongodb.core.FindAndModifyOptions.options;
+import static org.springframework.data.mongodb.core.query.Criteria.where;
+import static org.springframework.data.mongodb.core.query.Query.query;
+
 @Component
 public class UserDAO extends MongoBaseDAO<User> {
-
+    /*
+    public Long getNextId(String collectionName) {
+        MongoSequence seq = mongoTemplate.findAndModify(
+                query(where("_id").is(collectionName)),
+                new Update().inc("seq", 1),
+                options().upsert(true).returnNew(true),
+                MongoSequence.class);
+        return seq.getSeq();
+    }
+    */
     /**
      * 是否含有该user Id
      * @param id userId
@@ -29,7 +43,7 @@ public class UserDAO extends MongoBaseDAO<User> {
      */
     public boolean hasUserName(String userName) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("name").is(userName));
+        query.addCriteria(where("name").is(userName));
         return mongoTemplate.findOne(query, User.class) != null;
     }
 
@@ -42,7 +56,7 @@ public class UserDAO extends MongoBaseDAO<User> {
     public void addObjectSubscribe(String userId, String objId, String name) {
         String key = name==null ? objId : objId + ":" + name;
         Query query = new Query();
-        query.addCriteria(Criteria.where("_id").is(userId));
+        query.addCriteria(where("_id").is(userId));
         Update update = new Update();
         update.addToSet("objectSubscribe", key);
         mongoTemplate.updateMulti(query, update, User.class);
@@ -57,7 +71,7 @@ public class UserDAO extends MongoBaseDAO<User> {
     public void delObjectSubscribe(String userId, String objId, String name) {
         String key = name==null ? objId : objId + ":" + name;
         Query query = new Query();
-        query.addCriteria(Criteria.where("_id").is(userId));
+        query.addCriteria(where("_id").is(userId));
         Update update = new Update();
         update.pull("objectSubscribe", key);
         mongoTemplate.updateMulti(query, update, User.class);
@@ -71,7 +85,7 @@ public class UserDAO extends MongoBaseDAO<User> {
     public void addEventSubscribe(String userId, String eventId, String name) {
         String key = name==null ? eventId : eventId + ":" + name;
         Query query = new Query();
-        query.addCriteria(Criteria.where("_id").is(userId));
+        query.addCriteria(where("_id").is(userId));
         Update update = new Update();
         update.addToSet("eventSubscribe", key);
         mongoTemplate.updateMulti(query, update, User.class);
@@ -85,7 +99,7 @@ public class UserDAO extends MongoBaseDAO<User> {
     public void delEventSubscribe(String userId, String eventId, String name) {
         String key = name==null ? eventId : eventId + ":" + name;
         Query query = new Query();
-        query.addCriteria(Criteria.where("_id").is(userId));
+        query.addCriteria(where("_id").is(userId));
         Update update = new Update();
         update.pull("eventSubscribe", key);
         mongoTemplate.updateMulti(query, update, User.class);
@@ -99,7 +113,7 @@ public class UserDAO extends MongoBaseDAO<User> {
     public void addTemplateSubscribe(String userId, String template, String name) {
         String key = name==null ? template : template + ":" + name;
         Query query = new Query();
-        query.addCriteria(Criteria.where("_id").is(userId));
+        query.addCriteria(where("_id").is(userId));
         Update update = new Update();
         update.addToSet("templateSubscribe", key);
         mongoTemplate.updateMulti(query, update, User.class);
@@ -113,7 +127,7 @@ public class UserDAO extends MongoBaseDAO<User> {
     public void delTemplateSubscribe(String userId, String template, String name) {
         String key = name==null ? template : template + ":" + name;
         Query query = new Query();
-        query.addCriteria(Criteria.where("_id").is(userId));
+        query.addCriteria(where("_id").is(userId));
         Update update = new Update();
         update.pull("templateSubscribe", key);
         mongoTemplate.updateMulti(query, update, User.class);
