@@ -266,7 +266,8 @@ public class MongoReceiver {
              */
             case "EVENT_END" : {
                 String id = message.get("id").toString();
-                mongoEventService.end(id);
+                Date date = (Date) message.get("date");
+                mongoEventService.end(id, date);
                 break;
             }
 
