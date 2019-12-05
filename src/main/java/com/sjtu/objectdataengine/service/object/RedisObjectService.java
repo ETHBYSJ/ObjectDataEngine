@@ -39,6 +39,36 @@ public class RedisObjectService {
     private static final Logger logger = LoggerFactory.getLogger(RedisObjectService.class);
 
     /**
+     * 根据id删除对象
+     * @param id 对象id
+     * @param template 模板id
+     * @return true代表删除成功，false代表删除失败
+     */
+    public boolean deleteObjectById(String id, String template) {
+        //没有此对象，删除失败
+        if(!redisAttrDAO.hasKey(id + "#META")) {
+            return false;
+        }
+        //删除基本信息
+        redisAttrDAO.del(id + "#META");
+        //删除关联事件表
+        redisAttrDAO.del(id + "#events");
+        //获得属性表
+        List<String> attrList = (List<String>) redisAttrDAO.lGet(id, 0, -1);
+        //删除属性表
+        redisAttrDAO.del(id);
+        //删除属性值
+        for(String attr : attrList) {
+            redisObjectDAO.del(id + '#' + attr);
+            redisObjectDAO.del(id + '#' + attr + "#time");
+        }
+        //解除模板关联
+        redisTemplateDAO.lRemove(template + "#objects", 1, id);
+        //从索引表删除
+        redisAttrDAO.lRemove("index", 1, id);
+        return true;
+    }
+    /**
      * 获得某对象某属性最早的时间
      * @param id 对象id
      * @param name 属性名
