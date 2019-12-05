@@ -15,7 +15,7 @@ import java.util.Date;
 import java.util.HashMap;
 
 @Component
-public class TemplateService {
+public class APITemplateService {
 
     @Resource
     MongoSender mongoSender;

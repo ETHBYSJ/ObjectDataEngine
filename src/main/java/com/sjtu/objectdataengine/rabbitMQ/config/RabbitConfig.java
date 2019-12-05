@@ -62,6 +62,12 @@ public class RabbitConfig {
         return new Queue("RedisQueue", true); //true 是否持久
     }
 
+    // ObjectRequestQueue 起名：ObjectRequestQueue
+    @Bean
+    public Queue ObjectRequestQueue() {
+        return new Queue("ObjectRequestQueue", true);
+    }
+
     // Direct交换机 起名：DataDirectExchange
     @Bean
     DirectExchange DataDirectExchange() {
@@ -74,6 +80,12 @@ public class RabbitConfig {
         return new DirectExchange("SubscribeExchange");
     }
 
+    // Request交换机 起名：RequestExchange
+    @Bean
+    DirectExchange RequestExchange() {
+        return new DirectExchange("RequestExchange");
+    }
+
     // 静态绑定  将队列和交换机绑定, 并设置用于匹配键
     @Bean
     Binding bindingExchangeMongo() {
@@ -83,5 +95,10 @@ public class RabbitConfig {
     @Bean
     Binding bindingExchangeRedis() {
         return BindingBuilder.bind(RedisQueue()).to(DataDirectExchange()).with("REDIS");
+    }
+
+    @Bean
+    Binding bindingExchangeObjectRequest() {
+        return BindingBuilder.bind(ObjectRequestQueue()).to(RequestExchange()).with("OBJECT");
     }
 }

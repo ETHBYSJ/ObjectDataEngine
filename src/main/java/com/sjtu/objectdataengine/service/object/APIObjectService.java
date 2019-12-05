@@ -22,7 +22,7 @@ import javax.annotation.Resource;
 import java.util.*;
 
 @Component
-public class ObjectService {
+public class APIObjectService {
 
     @Resource
     MongoSender mongoSender;
