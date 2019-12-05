@@ -2,7 +2,7 @@ package com.sjtu.objectdataengine.dao.tree;
 
 import com.sjtu.objectdataengine.dao.MongoBaseDAO;
 import com.sjtu.objectdataengine.model.tree.RootMessage;
-import com.sjtu.objectdataengine.utils.MongoConditionn;
+import com.sjtu.objectdataengine.utils.MongoCondition;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;

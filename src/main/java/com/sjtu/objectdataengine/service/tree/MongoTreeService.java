@@ -5,7 +5,7 @@ import com.sjtu.objectdataengine.dao.template.MongoTemplateDAO;
 import com.sjtu.objectdataengine.dao.tree.MongoTreeDAO;
 import com.sjtu.objectdataengine.model.template.ObjectTemplate;
 import com.sjtu.objectdataengine.model.tree.TreeNode;
-import com.sjtu.objectdataengine.utils.MongoConditionn;
+import com.sjtu.objectdataengine.utils.MongoCondition;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -50,7 +50,7 @@ public class MongoTreeService {
      * @param flag true表示增加，false表示减少
      */
     private boolean opParents(String child, String parent, boolean flag, Date date) {
-        MongoConditionn mongoConditionn = new MongoConditionn();
+        MongoCondition mongoCondition = new MongoCondition();
         try {
             List<String> childrenList = mongoTreeDAO.findById(parent, TreeNode.class).getChildren();
             if (flag) {
@@ -58,12 +58,11 @@ public class MongoTreeService {
             } else {
                 childrenList.remove(child);
             }
-            mongoConditionn.addQuery("id", parent);
-            mongoConditionn.addUpdate("children", childrenList);
-            mongoConditionn.addUpdate("updateTime", date);
-            mongoTreeDAO.update(mongoConditionn, TreeNode.class);
-            mongoConditionn.clearQuery();
-            mongoConditionn.clearUpdate();
+            mongoCondition.whereIs("id", parent);
+            mongoCondition.set("children", childrenList);
+            mongoCondition.set("updateTime", date);
+            mongoTreeDAO.update(mongoCondition, TreeNode.class);
+            mongoCondition.clear();
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -78,15 +77,14 @@ public class MongoTreeService {
      * @return true表示成功，false表示失败
      */
     private boolean opChildren(String parent, List<String> children, Date date) {
-        MongoConditionn mongoConditionn = new MongoConditionn();
+        MongoCondition mongoCondition = new MongoCondition();
         try {
             for (String child : children) {
-                mongoConditionn.addQuery("id", child);
-                mongoConditionn.addUpdate("parent", parent);
-                mongoConditionn.addUpdate("updateTime", date);
-                mongoTreeDAO.update(mongoConditionn, TreeNode.class);
-                mongoConditionn.clearQuery();
-                mongoConditionn.clearUpdate();
+                mongoCondition.whereIs("id", child);
+                mongoCondition.set("parent", parent);
+                mongoCondition.set("updateTime", date);
+                mongoTreeDAO.update(mongoCondition, TreeNode.class);
+                mongoCondition.clear();
             }
             return true;
         } catch (Exception e) {
@@ -102,10 +100,10 @@ public class MongoTreeService {
      * @return true表示成功，false反之
      */
     private boolean updateParent(String child, String parent) {
-        MongoConditionn mongoConditionn = new MongoConditionn();
-        mongoConditionn.addQuery("id", child);
-        mongoConditionn.addUpdate("parent", parent);
-        return mongoTreeDAO.update(mongoConditionn, TreeNode.class);
+        MongoCondition mongoCondition = new MongoCondition();
+        mongoCondition.whereIs("id", child);
+        mongoCondition.set("parent", parent);
+        return mongoTreeDAO.update(mongoCondition, TreeNode.class);
     }
 
     /**
@@ -115,10 +113,10 @@ public class MongoTreeService {
      * @return true表示成功，false反之
      */
     private boolean updateChildren(String parent, List<String> children) {
-        MongoConditionn mongoConditionn = new MongoConditionn();
-        mongoConditionn.addQuery("id", parent);
-        mongoConditionn.addUpdate("children", children);
-        return mongoTreeDAO.update(mongoConditionn, TreeNode.class);
+        MongoCondition mongoCondition = new MongoCondition();
+        mongoCondition.whereIs("id", parent);
+        mongoCondition.set("children", children);
+        return mongoTreeDAO.update(mongoCondition, TreeNode.class);
     }
 
     /**
@@ -193,11 +191,11 @@ public class MongoTreeService {
      * @return true表示成功，false反之
      */
     public boolean updateNodeByKey(String id, String name, String intro, String parent, Date date) {
-        MongoConditionn mongoConditionn = new MongoConditionn();
-        mongoConditionn.addQuery("id", id);
+        MongoCondition mongoCondition = new MongoCondition();
+        mongoCondition.whereIs("id", id);
         //改名字
-        if (name != null) mongoConditionn.addUpdate("name", name);
-        if (intro != null) mongoConditionn.addUpdate("intro", intro);
+        if (name != null) mongoCondition.set("name", name);
+        if (intro != null) mongoCondition.set("intro", intro);
 
         //改parents 算法可改进 目前是删掉所有的再重新添加
         if (parent!=null) {
@@ -207,11 +205,11 @@ public class MongoTreeService {
             // 在新的parent结点的children中添加该结点
             opParents(id, parent, true, date);
             // 把该结点的parent改成当前parent
-            mongoConditionn.addUpdate("parent", parent);
+            mongoCondition.set("parent", parent);
         }
 
-        mongoConditionn.addUpdate("updateTime", new Date());
-        return mongoTreeDAO.update(mongoConditionn, TreeNode.class);
+        mongoCondition.set("updateTime", new Date());
+        return mongoTreeDAO.update(mongoCondition, TreeNode.class);
     }
 
     /**

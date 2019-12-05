@@ -1,9 +1,7 @@
 package com.sjtu.objectdataengine.dao;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.sjtu.objectdataengine.model.BaseModel;
-import com.sjtu.objectdataengine.model.object.AttrsModel;
-import com.sjtu.objectdataengine.utils.MongoConditionn;
+import com.sjtu.objectdataengine.utils.MongoCondition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -54,22 +52,22 @@ public abstract class MongoBaseDAO<T extends BaseModel> {
 
     /**
      * 根据其他关键字查询
-     * @param mongoConditionn 查询条件
+     * @param mongoCondition 查询条件
      * @return List类型，返回查询到的所有数据
      */
-    public List<T> findByArgs(MongoConditionn mongoConditionn, Class<T> tClass) {
-        Query query = mongoConditionn.getQuery();
+    public List<T> findByArgs(MongoCondition mongoCondition, Class<T> tClass) {
+        Query query = mongoCondition.getQuery();
         return mongoTemplate.find(query, tClass);
     }
 
     /**
      * 更新对象
-     * @param mongoConditionn 更新条件
+     * @param mongoCondition 更新条件
      * @return true表示更新成功的数量>0
      */
-    public boolean update(MongoConditionn mongoConditionn, Class<T> tClass) {
-        Query query = mongoConditionn.getQuery();
-        Update update = mongoConditionn.getUpdate();
+    public boolean update(MongoCondition mongoCondition, Class<T> tClass) {
+        Query query = mongoCondition.getQuery();
+        Update update = mongoCondition.getUpdate();
         return mongoTemplate.updateMulti(query, update, tClass).getModifiedCount() > 0;
     }
 
@@ -85,11 +83,11 @@ public abstract class MongoBaseDAO<T extends BaseModel> {
 
     /**
      * 根据查询条件删除对象
-     * @param mongoConditionn 删除条件
+     * @param mongoCondition 删除条件
      */
-    public boolean deleteByArgs(MongoConditionn mongoConditionn, Class<T> tClass) {
+    public boolean deleteByArgs(MongoCondition mongoCondition, Class<T> tClass) {
         try {
-            List<T> ts = findByArgs(mongoConditionn, tClass);
+            List<T> ts = findByArgs(mongoCondition, tClass);
             for (T t : ts) {
                 mongoTemplate.remove(t);
             }

@@ -3,15 +3,12 @@ package com.sjtu.objectdataengine.dao.template;
 import com.mongodb.client.result.UpdateResult;
 import com.sjtu.objectdataengine.dao.MongoBaseDAO;
 import com.sjtu.objectdataengine.model.template.ObjectTemplate;
-import com.sjtu.objectdataengine.utils.MongoConditionn;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
-import java.util.List;
-import java.util.regex.Pattern;
 
 @Component
 public class MongoTemplateDAO extends MongoBaseDAO<ObjectTemplate> {

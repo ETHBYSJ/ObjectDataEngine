@@ -10,7 +10,7 @@ import com.sjtu.objectdataengine.model.object.AttrsModel;
 import com.sjtu.objectdataengine.model.object.CommonObject;
 import com.sjtu.objectdataengine.model.template.ObjectTemplate;
 import com.sjtu.objectdataengine.utils.MongoAttr;
-import com.sjtu.objectdataengine.utils.MongoConditionn;
+import com.sjtu.objectdataengine.utils.MongoCondition;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -226,10 +226,10 @@ public class MongoObjectService {
             String newKey = id + name + newSize;
             AttrsModel preMongoAttrs = findAttrsByBlock(id, name ,size);
             Date ut = preMongoAttrs.getUpdateTime();
-            MongoConditionn mongoConditionn = new MongoConditionn();
-            mongoConditionn.addQuery("id", newKey);
-            mongoConditionn.addUpdate("createTime", ut);
-            return mongoAttrsDAO.update(mongoConditionn, AttrsModel.class);
+            MongoCondition mongoCondition = new MongoCondition();
+            mongoCondition.whereIs("id", newKey);
+            mongoCondition.set("createTime", ut);
+            return mongoAttrsDAO.update(mongoCondition, AttrsModel.class);
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -283,10 +283,10 @@ public class MongoObjectService {
      * @return true or false
      */
     private boolean addHeaderSize(String key0, int size) {
-        MongoConditionn mongoConditionn = new MongoConditionn();
-        mongoConditionn.addQuery("id", key0);
-        mongoConditionn.addUpdate("size", size + 1);
-        return mongoHeaderDAO.update(mongoConditionn, AttrsHeader.class);
+        MongoCondition MongoCondition = new MongoCondition();
+        MongoCondition.whereIs("id", key0);
+        MongoCondition.set("size", size + 1);
+        return mongoHeaderDAO.update(MongoCondition, AttrsHeader.class);
     }
 
     /**
@@ -560,11 +560,11 @@ public class MongoObjectService {
      * @param date 时间
      */
     public void addEvent(String id, String eventId, Date date) {
-        MongoConditionn mongoConditionn = new MongoConditionn();
-        mongoConditionn.addQuery("id", id);
-        mongoConditionn.addUpdate("events." + eventId, date);
-        mongoConditionn.addUpdate("updateTime", date);
-        mongoObjectDAO.update(mongoConditionn, CommonObject.class);
+        MongoCondition mongoCondition = new MongoCondition();
+        mongoCondition.whereIs("id", id);
+        mongoCondition.set("events." + eventId, date);
+        mongoCondition.set("updateTime", date);
+        mongoObjectDAO.update(mongoCondition, CommonObject.class);
     }
 
     /**
