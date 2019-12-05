@@ -1,4 +1,4 @@
-package com.sjtu.objectdataengine.rabbitMQ.subscribe;
+package com.sjtu.objectdataengine.rabbitMQ.sender;
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;

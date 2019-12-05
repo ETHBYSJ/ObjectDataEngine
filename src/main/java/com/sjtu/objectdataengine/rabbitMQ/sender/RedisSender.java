@@ -1,4 +1,4 @@
-package com.sjtu.objectdataengine.rabbitMQ.redis;
+package com.sjtu.objectdataengine.rabbitMQ.sender;
 
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;

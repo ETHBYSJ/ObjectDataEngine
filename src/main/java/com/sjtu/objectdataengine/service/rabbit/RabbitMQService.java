@@ -1,6 +1,5 @@
 package com.sjtu.objectdataengine.service.rabbit;
 
-import com.sjtu.objectdataengine.rabbitMQ.subscribe.SubscribeSender;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.stereotype.Service;

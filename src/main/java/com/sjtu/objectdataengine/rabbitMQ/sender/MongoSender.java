@@ -1,4 +1,4 @@
-package com.sjtu.objectdataengine.rabbitMQ.mongodb;
+package com.sjtu.objectdataengine.rabbitMQ.sender;
 
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;

@@ -5,10 +5,10 @@ import com.alibaba.fastjson.JSONObject;
 import com.sjtu.objectdataengine.model.event.EventObject;
 import com.sjtu.objectdataengine.model.subscribe.SubscribeMessage;
 import com.sjtu.objectdataengine.model.template.ObjectTemplate;
-import com.sjtu.objectdataengine.rabbitMQ.mongodb.MongoSender;
+import com.sjtu.objectdataengine.rabbitMQ.sender.MongoSender;
 import com.sjtu.objectdataengine.service.subscribe.SubscribeService;
 import com.sjtu.objectdataengine.service.subscribe.UserService;
-import com.sjtu.objectdataengine.rabbitMQ.subscribe.SubscribeSender;
+import com.sjtu.objectdataengine.rabbitMQ.sender.SubscribeSender;
 import com.sjtu.objectdataengine.service.template.RedisTemplateService;
 import org.springframework.stereotype.Component;
 
