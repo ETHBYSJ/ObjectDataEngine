@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-public class EventService {
+public class APIEventService {
 
     @Resource
     MongoSender mongoSender;

@@ -1,7 +1,7 @@
 package com.sjtu.objectdataengine.controller;
 
 import com.sjtu.objectdataengine.model.event.EventObject;
-import com.sjtu.objectdataengine.service.event.EventService;
+import com.sjtu.objectdataengine.service.event.APIEventService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -11,30 +11,30 @@ import javax.annotation.Resource;
 public class EventController {
 
     @Resource
-    private EventService eventService;
+    private APIEventService APIEventService;
 
     @PostMapping("/create")
     @ResponseBody
     public String create(@RequestBody String request) {
-        return eventService.create(request);
+        return APIEventService.create(request);
     }
 
     @GetMapping("/delete")
     public String delete(@RequestParam String id) {
-        return eventService.delete(id);
+        return APIEventService.delete(id);
     }
 
     @PostMapping("/modify_base")
     @ResponseBody
     public String modifyBase(@RequestBody String request) {
-        return eventService.modifyBase(request);
+        return APIEventService.modifyBase(request);
     }
     @GetMapping("/find")
     public EventObject find(@RequestParam String id) {
-        return eventService.find(id);
+        return APIEventService.find(id);
     }
     @GetMapping("/end")
     public String end(String id) {
-        return eventService.end(id);
+        return APIEventService.end(id);
     }
 }

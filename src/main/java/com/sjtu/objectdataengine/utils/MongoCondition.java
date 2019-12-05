@@ -10,8 +10,8 @@ public class MongoCondition {
     private Update update;
 
     public MongoCondition() {
-        query = new Query();
-        update = new Update();
+        this.query = new Query();
+        this.update = new Update();
     }
 
     public Query getQuery() {
@@ -46,7 +46,12 @@ public class MongoCondition {
         this.update.unset(key);
     }
 
-    public void set(String key, String value) {
+    public void set(String key, Object value) {
         this.update.set(key, value);
+    }
+
+    public void clear() {
+        this.query = new Query();
+        this.update = new Update();
     }
 }

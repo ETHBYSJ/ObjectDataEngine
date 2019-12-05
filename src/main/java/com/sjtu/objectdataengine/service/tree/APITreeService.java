@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 
 @Component
-public class TreeService {
+public class APITreeService {
 
     @Resource
     private MongoSender mongoSender;

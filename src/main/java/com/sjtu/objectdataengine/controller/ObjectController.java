@@ -1,8 +1,7 @@
 package com.sjtu.objectdataengine.controller;
 
 import com.sjtu.objectdataengine.model.object.CommonObject;
-import com.sjtu.objectdataengine.service.object.ObjectService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.sjtu.objectdataengine.service.object.APIObjectService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,7 +14,7 @@ import java.util.List;
 public class ObjectController {
 
     @Resource
-    private ObjectService objectService;
+    private APIObjectService objectService;
 
     @PostMapping("/create")
     @ResponseBody

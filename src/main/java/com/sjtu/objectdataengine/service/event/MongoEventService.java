@@ -5,7 +5,7 @@ import com.sjtu.objectdataengine.dao.template.MongoTemplateDAO;
 import com.sjtu.objectdataengine.model.event.EventObject;
 import com.sjtu.objectdataengine.model.template.ObjectTemplate;
 import com.sjtu.objectdataengine.utils.MongoAttr;
-import com.sjtu.objectdataengine.utils.MongoConditionn;
+import com.sjtu.objectdataengine.utils.MongoCondition;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -48,32 +48,32 @@ public class MongoEventService {
     }
 
     public void end(String id) {
-        MongoConditionn mongoConditionn = new MongoConditionn();
-        mongoConditionn.addQuery("id", id);
-        mongoConditionn.addUpdate("endTime", new Date());
-        mongoConditionn.addUpdate("status", false);
-        mongoEventDAO.update(mongoConditionn, EventObject.class);
+        MongoCondition mongoCondition = new MongoCondition();
+        mongoCondition.whereIs("_id", id);
+        mongoCondition.set("endTime", new Date());
+        mongoCondition.set("status", false);
+        mongoEventDAO.update(mongoCondition, EventObject.class);
     }
 
     public void updateBaseInfo(String id, String name, String intro, String stage, Date date) {
         boolean flag = false;
-        MongoConditionn mongoConditionn = new MongoConditionn();
-        mongoConditionn.addQuery("id", id);
+        MongoCondition mongoCondition = new MongoCondition();
+        mongoCondition.whereIs("id", id);
         if (name != null) {
-            mongoConditionn.addUpdate("name", name);
+            mongoCondition.set("name", name);
             flag = true;
         }
         if (intro != null) {
-            mongoConditionn.addUpdate("intro", intro);
+            mongoCondition.set("intro", intro);
             flag = true;
         }
         if (stage != null) {
-            mongoConditionn.addUpdate("stage", stage);
+            mongoCondition.set("stage", stage);
             flag = true;
         }
         if (flag) {
-            mongoConditionn.addUpdate("updateTime", date);
-            mongoEventDAO.update(mongoConditionn, EventObject.class);
+            mongoCondition.set("updateTime", date);
+            mongoEventDAO.update(mongoCondition, EventObject.class);
         }
     }
 
@@ -82,13 +82,13 @@ public class MongoEventService {
     }
 
     public void modifyAttr(String id, String name, String value, Date date) {
-        MongoConditionn mongoConditionn = new MongoConditionn();
-        mongoConditionn.addQuery("id", id);
+        MongoCondition mongoCondition = new MongoCondition();
+        mongoCondition.whereIs("id", id);
         MongoAttr mongoAttr = new MongoAttr(value);
         mongoAttr.setUpdateTime(date);
-        mongoConditionn.addUpdate("attrs." + name, mongoAttr);
-        mongoConditionn.addUpdate("updateTime", date);
-        mongoEventDAO.update(mongoConditionn, EventObject.class);
+        mongoCondition.set("attrs." + name, mongoAttr);
+        mongoCondition.set("updateTime", date);
+        mongoEventDAO.update(mongoCondition, EventObject.class);
     }
 
     public void addObject(String id, String objId) {
