@@ -6,6 +6,9 @@ import com.sjtu.objectdataengine.model.subscribe.User;
 import com.sjtu.objectdataengine.rabbitMQ.sender.SubscribeSender;
 import com.sjtu.objectdataengine.service.rabbit.RabbitMQService;
 import com.sjtu.objectdataengine.utils.MongoAutoIdUtil;
+import com.sjtu.objectdataengine.utils.MongoCondition;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -32,10 +35,16 @@ public class UserService {
      * @return 分配给用户的唯一id
      */
     public String register(String name, String intro) {
+        MongoCondition mongoCondition = new MongoCondition();
+        mongoCondition.setQuery(new Query().addCriteria(Criteria.where("name").is(name)));
+        if(userDAO.findByArgs(mongoCondition, User.class).size() != 0) {
+            return "用户名重复";
+        }
         String id = mongoAutoIdUtil.getNextId("seq_user").toString();
+        System.out.println(id);
         this.create(id, name, intro);
-        rabbitMQService.addQueue(id, id);
-        //subscribeSender.send
+        rabbitMQService.addQueue(name, id);
+        subscribeSender.send(id, id);
         return id;
     }
 
@@ -68,11 +77,11 @@ public class UserService {
         for(String object : objectSubscribe) {
             String[] objectSplit = object.split(":");
             if(objectSplit.length == 1) {
-                subscribeDAO.delObjectSubscriber(objectSplit[0], "object", id);
+                subscribeDAO.delObjectSubscriber(objectSplit[0], "entity", id);
             }
             else {
                 // objectSplit.length == 2
-                subscribeDAO.delAttrSubscriber(objectSplit[0], "object", objectSplit[1], id);
+                subscribeDAO.delAttrSubscriber(objectSplit[0], "entity", objectSplit[1], id);
             }
         }
         for(String template : templateSubscribe) {

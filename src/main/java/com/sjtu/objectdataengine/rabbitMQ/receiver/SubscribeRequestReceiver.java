@@ -28,6 +28,7 @@ public class SubscribeRequestReceiver {
              * 注册用户
              */
             case "REGISTER" : {
+                System.out.println(message);
                 String name = message.get("name").toString();
                 String intro = message.get("intro").toString();
                 userService.register(name, intro);
@@ -49,8 +50,16 @@ public class SubscribeRequestReceiver {
                 String userId = message.get("id").toString();
                 String objId = message.get("obj").toString();
                 String type = message.get("type").toString();
-                String name = message.get("name") != null ? message.get("name").toString() : null;
-                userService.addObjectSubscribe(userId, type, objId, name);
+                Object name = message.get("name");
+                if(subscribeService.findByIdAndType(objId, type) == null) {
+                    subscribeService.create(objId, type);
+                }
+                if(name == null) {
+                    subscribeService.addObjectSubscriber(objId, type, userId);
+                }
+                else {
+                    subscribeService.addAttrSubscriber(objId, type, name.toString(), userId);
+                }
                 break;
             }
         }
