@@ -90,7 +90,7 @@ public class SubscribeDAO extends MongoBaseDAO<SubscribeMessage> {
      */
     public boolean addAttr(String id, String type, String attr) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("_id").is(id + attr));
+        query.addCriteria(Criteria.where("_id").is(id + type));
         Update update = new Update();
         update.set("attrsSubscriber." + attr, new ArrayList<>());
         update.set("updateTime", new Date());
@@ -106,7 +106,7 @@ public class SubscribeDAO extends MongoBaseDAO<SubscribeMessage> {
      */
     public boolean delAttr(String id, String type, String attr) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("_id").is(id + attr));
+        query.addCriteria(Criteria.where("_id").is(id + type));
         Update update = new Update();
         update.unset("attrsSubscriber." + attr);
         update.set("updateTime", new Date());

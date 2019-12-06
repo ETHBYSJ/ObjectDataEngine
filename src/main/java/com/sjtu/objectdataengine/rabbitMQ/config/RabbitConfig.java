@@ -68,6 +68,12 @@ public class RabbitConfig {
         return new Queue("ObjectRequestQueue", true);
     }
 
+    // SubscribeRequestQueue 起名：SubscribeRequestQueue
+    @Bean
+    public Queue SubscribeRequestQueue() {
+        return new Queue("SubscribeRequestQueue", true);
+    }
+
     // Direct交换机 起名：DataDirectExchange
     @Bean
     DirectExchange DataDirectExchange() {
@@ -100,5 +106,9 @@ public class RabbitConfig {
     @Bean
     Binding bindingExchangeObjectRequest() {
         return BindingBuilder.bind(ObjectRequestQueue()).to(RequestExchange()).with("OBJECT");
+    }
+    @Bean
+    Binding bindingExchangeSubscribeRequest() {
+        return BindingBuilder.bind(SubscribeRequestQueue()).to(RequestExchange()).with("SUB");
     }
 }
