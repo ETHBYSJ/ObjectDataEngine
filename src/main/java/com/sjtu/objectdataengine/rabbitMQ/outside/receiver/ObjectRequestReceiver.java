@@ -70,11 +70,21 @@ public class ObjectRequestReceiver {
                 break;
             }
             case "DELETE": {
+                String id =jsonObject.getString("id");
+                String msg = apiObjectService.deleteObjectById(id);
+                Map<String, Object> result = new HashMap<>();
+                if (msg.equals("删除成功")) {
+                    result.put("status", "SUCC");
+                } else {
+                    result.put("status", "FAIL");
+                }
+                result.put("message", msg);
+                subscribeSender.send(result, clientId);
                 break;
             }
             case "FIND_ID": {
                 String id = jsonObject.getString("id");
-                CommonObject commonObject = apiObjectService.findObjectByKey(id);
+                CommonObject commonObject = apiObjectService.findObjectById(id);
                 Map<String, Object> result = new HashMap<>();
                 if (commonObject != null) {
                     result.put("status", "SUCC");

@@ -104,7 +104,7 @@ public class APIObjectService {
         if (mongoObjectService.create(id, name, intro, template, attrs, events, date) && redisObjectService.create(id, name, intro, template, events, attrs, date)) {
             msg = "创建成功";
         } else {
-            mongoObjectService.deleteById(id);
+            mongoObjectService.deleteObjectById(id, template);
             return msg;
         }
         // 创建订阅表
@@ -190,8 +190,23 @@ public class APIObjectService {
      * @param id ID
      * @return 删除情况
      */
-    public String delete(String id) {
-        return "ok";
+    public String deleteObjectById(String id) {
+        String msg = "删除成功";
+        if (id == null || id.equals("")) return "ID不能为空";
+        CommonObject mongoObject = mongoObjectService.findLatestObjectByKey(id);
+        CommonObject redisObject = redisObjectService.findObjectById(id);
+        if (mongoObject == null && redisObject == null) return "ID不存在";
+        if (mongoObject != null) {
+            if(!mongoObjectService.deleteObjectById(id, mongoObject.getTemplate())) {
+                msg = "删除失败";
+            }
+        }
+        if (redisObject != null) {
+            if(!redisObjectService.deleteObjectById(id, redisObject.getTemplate())) {
+                msg = "删除失败";
+            }
+        }
+        return msg;
     }
 
     /**
@@ -199,7 +214,7 @@ public class APIObjectService {
      * @param id 对象id
      * @return 对象
      */
-    public CommonObject findObjectByKey(String id) {
+    public CommonObject findObjectById(String id) {
         CommonObject redisResult = redisObjectService.findObjectById(id);
         if (redisResult == null) {
             return mongoObjectService.findLatestObjectByKey(id);
@@ -277,7 +292,7 @@ public class APIObjectService {
         ObjectTemplate objectTemplate = redisTemplateService.findTemplateById(treeNode.getTemplate());
         List<String> objList = objectTemplate.getObjects();
         for (String obj : objList) {
-            CommonObject commonObject = this.findObjectByKey(obj);
+            CommonObject commonObject = this.findObjectById(obj);
             if(commonObject.getEvents().get(eventId)!=null) {
                 result.add(commonObject);
             }

@@ -132,14 +132,14 @@ public class MongoObjectService {
     /**
      * 删除一个对象
      * @param id 对象ID
+     * @param template 模板
      */
-    public boolean deleteById(String id) {
+    public boolean deleteObjectById(String id, String template) {
         CommonObject commonObject = findLatestObjectByKey(id);
         if (commonObject == null) return false;
         try {
             Set<String> attrs = commonObject.getAttr().keySet();
             Set<String> events = commonObject.getEvents().keySet();
-            String template = commonObject.getTemplate();
             mongoObjectDAO.deleteById(id, CommonObject.class);
             for (String attr : attrs) {
                 mongoHeaderDAO.deleteAttrs(id,attr, AttrsHeader.class);
