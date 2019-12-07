@@ -47,10 +47,10 @@ public class MongoEventService {
         }
     }
 
-    public void end(String id) {
+    public void end(String id, Date date) {
         MongoCondition mongoCondition = new MongoCondition();
         mongoCondition.whereIs("_id", id);
-        mongoCondition.set("endTime", new Date());
+        mongoCondition.set("endTime", date);
         mongoCondition.set("status", false);
         mongoEventDAO.update(mongoCondition, EventObject.class);
     }

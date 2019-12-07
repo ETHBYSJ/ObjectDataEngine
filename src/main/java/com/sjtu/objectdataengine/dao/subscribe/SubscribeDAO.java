@@ -15,6 +15,7 @@ import java.util.List;
 @Component
 
 public class SubscribeDAO extends MongoBaseDAO<SubscribeMessage> {
+
     /**
      * 增加一个属性订阅者
      *
@@ -24,6 +25,11 @@ public class SubscribeDAO extends MongoBaseDAO<SubscribeMessage> {
      * @param user  用户id
      */
     public boolean addAttrSubscriber(String objId, String type, String name, String user) {
+        /*
+        if(findById(objId + type, SubscribeMessage.class) == null) {
+            this.addAttr(objId, type, name);
+        }
+        */
         Query query = new Query();
         query.addCriteria(Criteria.where("_id").is(objId + type));
         Update update = new Update();
@@ -57,6 +63,11 @@ public class SubscribeDAO extends MongoBaseDAO<SubscribeMessage> {
      * @param user  用户id
      */
     public boolean addObjectSubscriber(String objId, String type, String user) {
+        /*
+        if(findById(objId + type, SubscribeMessage.class) == null) {
+            this.addObj(objId, type);
+        }
+        */
         Query query = new Query();
         query.addCriteria(Criteria.where("_id").is(objId + type));
         Update update = new Update();
@@ -90,7 +101,7 @@ public class SubscribeDAO extends MongoBaseDAO<SubscribeMessage> {
      */
     public boolean addAttr(String id, String type, String attr) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("_id").is(id + attr));
+        query.addCriteria(Criteria.where("_id").is(id + type));
         Update update = new Update();
         update.set("attrsSubscriber." + attr, new ArrayList<>());
         update.set("updateTime", new Date());
@@ -106,12 +117,19 @@ public class SubscribeDAO extends MongoBaseDAO<SubscribeMessage> {
      */
     public boolean delAttr(String id, String type, String attr) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("_id").is(id + attr));
+        query.addCriteria(Criteria.where("_id").is(id + type));
         Update update = new Update();
         update.unset("attrsSubscriber." + attr);
         update.set("updateTime", new Date());
         return mongoTemplate.updateMulti(query, update, SubscribeMessage.class).getModifiedCount() > 0;
     }
-
+    private boolean addObj(String id, String type) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("_id").is(id + type));
+        Update update = new Update();
+        update.set("objectSubscriber", new ArrayList<String>());
+        update.set("updateTime", new Date());
+        return mongoTemplate.updateMulti(query, update, SubscribeMessage.class).getModifiedCount() > 0;
+    }
 
 }
