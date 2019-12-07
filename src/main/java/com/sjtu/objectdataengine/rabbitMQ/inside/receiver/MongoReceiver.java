@@ -1,4 +1,4 @@
-package com.sjtu.objectdataengine.rabbitMQ.receiver;
+package com.sjtu.objectdataengine.rabbitMQ.inside.receiver;
 
 import com.sjtu.objectdataengine.service.event.MongoEventService;
 import com.sjtu.objectdataengine.service.object.MongoObjectService;

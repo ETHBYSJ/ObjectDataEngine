@@ -5,10 +5,10 @@ import com.alibaba.fastjson.JSONObject;
 import com.sjtu.objectdataengine.model.event.EventObject;
 import com.sjtu.objectdataengine.model.subscribe.SubscribeMessage;
 import com.sjtu.objectdataengine.model.template.ObjectTemplate;
-import com.sjtu.objectdataengine.rabbitMQ.sender.MongoSender;
+import com.sjtu.objectdataengine.rabbitMQ.inside.sender.MongoSender;
 import com.sjtu.objectdataengine.service.subscribe.SubscribeService;
 import com.sjtu.objectdataengine.service.subscribe.UserService;
-import com.sjtu.objectdataengine.rabbitMQ.sender.SubscribeSender;
+import com.sjtu.objectdataengine.rabbitMQ.outside.sender.SubscribeSender;
 import com.sjtu.objectdataengine.service.template.RedisTemplateService;
 import org.springframework.stereotype.Component;
 
@@ -88,6 +88,7 @@ public class APIEventService {
 
         mongoSender.send(message);
         if (redisEventService.create(id, name, intro, template, attrs, date)) {
+    /*
             // 通知模板订阅者
             final String msg1 = "基于模板(ID=" + template + ")创建了新的事件，事件ID为" + id;
             SubscribeMessage subscribeMessage = subscribeService.findByIdAndType(template, "template");
@@ -95,6 +96,8 @@ public class APIEventService {
             for (String user : userList) {
                 subscribeSender.send(msg1, user);
             }
+
+     */
             return "创建成功";
         }
 
@@ -188,7 +191,7 @@ public class APIEventService {
                 // 订阅者取消订阅该事件,可能触发队列的删除操作
                 userService.delObjectSubscribe(subscriber, "event", id, null);
             }
-
+/*
             // 通知事件订阅者
             final String msg1 = "事件(ID=" + id + ")结束" + id;
             //SubscribeMessage subscribeMessage = subscribeService.findByIdAndType(id, "event");
@@ -205,6 +208,8 @@ public class APIEventService {
             for (String user : userList) {
                 subscribeSender.send(msg2, user);
             }
+
+ */
             return "事件结束成功";
         }
         return "事件结束失败";

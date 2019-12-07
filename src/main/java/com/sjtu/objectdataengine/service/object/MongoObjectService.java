@@ -45,16 +45,22 @@ public class MongoObjectService {
      * @param kv 属性kv对
      * @param events 关联事件集合
      */
-    public void create(String id, String name, String intro, String template, HashMap<String, String> kv, List<String> events, Date date) {
-        HashMap<String, String> attrsMap = mongoTemplateDAO.findById(template, ObjectTemplate.class).getAttrs();
-        HashMap<String, MongoAttr> hashMap = new HashMap<>();
-        for (String attr : attrsMap.keySet()) {
-            String value = kv.get(attr)==null ? "" : kv.get(attr);
-            createHeader(id, attr, date);
-            MongoAttr mongoAttr = createAttr(id, attr, value, date,1);
-            hashMap.put(attr, mongoAttr);
+    public boolean create(String id, String name, String intro, String template, HashMap<String, String> kv, List<String> events, Date date) {
+        try {
+            HashMap<String, String> attrsMap = mongoTemplateDAO.findById(template, ObjectTemplate.class).getAttrs();
+            HashMap<String, MongoAttr> hashMap = new HashMap<>();
+            for (String attr : attrsMap.keySet()) {
+                String value = kv.get(attr) == null ? "" : kv.get(attr);
+                createHeader(id, attr, date);
+                MongoAttr mongoAttr = createAttr(id, attr, value, date, 1);
+                hashMap.put(attr, mongoAttr);
+            }
+            createObject(id, name, intro, template, events, hashMap, date);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
-        createObject(id, name, intro, template, events, hashMap, date);
     }
 
     /**
@@ -121,6 +127,32 @@ public class MongoObjectService {
         mongoAttrs.setUpdateTime(date);
         mongoAttrsDAO.create(mongoAttrs);
         return mongoAttr;
+    }
+
+    /**
+     * 删除一个对象
+     * @param id 对象ID
+     */
+    public boolean deleteById(String id) {
+        CommonObject commonObject = findLatestObjectByKey(id);
+        if (commonObject == null) return false;
+        try {
+            Set<String> attrs = commonObject.getAttr().keySet();
+            Set<String> events = commonObject.getEvents().keySet();
+            String template = commonObject.getTemplate();
+            mongoObjectDAO.deleteById(id, CommonObject.class);
+            for (String attr : attrs) {
+                mongoHeaderDAO.deleteAttrs(id,attr, AttrsHeader.class);
+            }
+            mongoTemplateDAO.opObjects(template, id,"del");
+            for (String event : events) {
+                mongoEventDAO.opObjects(event, id, "del");
+            }
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     /**

@@ -9,7 +9,7 @@ import com.sjtu.objectdataengine.dao.template.RedisTemplateDAO;
 import com.sjtu.objectdataengine.utils.MongoAttr;
 import com.sjtu.objectdataengine.model.object.CommonObject;
 import com.sjtu.objectdataengine.model.template.ObjectTemplate;
-import com.sjtu.objectdataengine.rabbitMQ.sender.RedisSender;
+import com.sjtu.objectdataengine.rabbitMQ.inside.sender.RedisSender;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;

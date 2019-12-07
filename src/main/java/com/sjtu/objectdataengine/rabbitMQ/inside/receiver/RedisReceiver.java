@@ -1,4 +1,4 @@
-package com.sjtu.objectdataengine.rabbitMQ.receiver;
+package com.sjtu.objectdataengine.rabbitMQ.inside.receiver;
 
 import com.sjtu.objectdataengine.service.object.RedisObjectService;
 import com.sjtu.objectdataengine.utils.TypeConversion;

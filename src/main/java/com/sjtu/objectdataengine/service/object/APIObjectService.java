@@ -7,12 +7,12 @@ import com.sjtu.objectdataengine.model.object.CommonObject;
 import com.sjtu.objectdataengine.model.subscribe.SubscribeMessage;
 import com.sjtu.objectdataengine.model.template.ObjectTemplate;
 import com.sjtu.objectdataengine.model.tree.TreeNode;
-import com.sjtu.objectdataengine.rabbitMQ.sender.MongoSender;
-import com.sjtu.objectdataengine.rabbitMQ.sender.RedisSender;
-import com.sjtu.objectdataengine.rabbitMQ.sender.SubscribeSender;
+import com.sjtu.objectdataengine.rabbitMQ.inside.sender.MongoSender;
+import com.sjtu.objectdataengine.rabbitMQ.inside.sender.RedisSender;
 import com.sjtu.objectdataengine.service.event.RedisEventService;
 import com.sjtu.objectdataengine.service.subscribe.SubscribeService;
 import com.sjtu.objectdataengine.service.template.RedisTemplateService;
+import com.sjtu.objectdataengine.rabbitMQ.outside.sender.SubscribeSender;
 import com.sjtu.objectdataengine.service.tree.RedisTreeService;
 import com.sjtu.objectdataengine.utils.MongoAttr;
 import org.springframework.stereotype.Component;
@@ -100,21 +100,16 @@ public class APIObjectService {
         }
         // 获取日期
         Date date = new Date();
-        //组装message
-        HashMap<String, Object> message = new HashMap<>();
-        message.put("op", "OBJECT_CREATE");
-        message.put("id", id);
-        message.put("name", name);
-        message.put("intro", intro);
-        message.put("template", template);
-        message.put("events", events);
-        message.put("attrs", attrs);
-        message.put("date", date);
-        // 发送更新信息
-        mongoSender.send(message);
-        redisSender.send(message);
+        String msg = "创建失败";
+        if (mongoObjectService.create(id, name, intro, template, attrs, events, date) && redisObjectService.create(id, name, intro, template, events, attrs, date)) {
+            msg = "创建成功";
+        } else {
+            mongoObjectService.deleteById(id);
+            return msg;
+        }
         // 创建订阅表
         subscribeService.create(id, "entity");
+        /* 待修改通知信息格式
         // 通知模板订阅者
         final String msg1 = "基于模板(ID=" + template + ")创建了新的对象，对象ID为" + id;
         SubscribeMessage subscribeMessage = subscribeService.findByIdAndType(template, "template");
@@ -131,7 +126,8 @@ public class APIObjectService {
                 subscribeSender.send(msg2, user);
             }
         }
-        return "创建成功！";
+        */
+        return msg;
     }
 
     public String addAttr(String id, String name, String value) {
@@ -151,7 +147,7 @@ public class APIObjectService {
         redisSender.send(message);
 
         final CommonObject commonObject = redisObjectService.findObjectById(id);
-
+/*
         // 通知属性和对象订阅者
         final String msg1 = "对象(" + "ID=" + id + ")的属性(" + name + ") 增加了一条新属性，属性值为 " + value + "\n更新时间：" + date;
         SubscribeMessage subscribeMessage = subscribeService.findByIdAndType(id, "entity");
@@ -184,7 +180,18 @@ public class APIObjectService {
         for (String user : userList) {
             subscribeSender.send(msg3, user);
         }
-        return "创建成功！";
+
+ */
+        return "添加成功";
+    }
+
+    /**
+     * 根据id删除对象
+     * @param id ID
+     * @return 删除情况
+     */
+    public String delete(String id) {
+        return "ok";
     }
 
     /**

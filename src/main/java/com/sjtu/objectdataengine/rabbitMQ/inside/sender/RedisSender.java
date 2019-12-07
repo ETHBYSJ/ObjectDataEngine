@@ -1,4 +1,4 @@
-package com.sjtu.objectdataengine.rabbitMQ.sender;
+package com.sjtu.objectdataengine.rabbitMQ.inside.sender;
 
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
