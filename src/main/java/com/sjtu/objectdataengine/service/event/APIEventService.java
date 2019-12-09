@@ -88,16 +88,16 @@ public class APIEventService {
 
         mongoSender.send(message);
         if (redisEventService.create(id, name, intro, template, attrs, date)) {
-    /*
+            Map<String, String> map = new HashMap<>();
             // 通知模板订阅者
-            final String msg1 = "基于模板(ID=" + template + ")创建了新的事件，事件ID为" + id;
+            final String msg = "基于模板(ID=" + template + ")创建了新的事件，事件ID为" + id;
+            map.put("msg", msg);
             SubscribeMessage subscribeMessage = subscribeService.findByIdAndType(template, "template");
             List<String> userList = subscribeMessage.getObjectSubscriber();
             for (String user : userList) {
-                subscribeSender.send(msg1, user);
+                subscribeSender.send(map, user);
             }
 
-     */
             return "创建成功";
         }
 
@@ -191,25 +191,28 @@ public class APIEventService {
                 // 订阅者取消订阅该事件,可能触发队列的删除操作
                 userService.delObjectSubscribe(subscriber, "event", id, null);
             }
-/*
+            Map<String, String> map1 = new HashMap<>();
+            Map<String, String> map2 = new HashMap<>();
             // 通知事件订阅者
             final String msg1 = "事件(ID=" + id + ")结束" + id;
             //SubscribeMessage subscribeMessage = subscribeService.findByIdAndType(id, "event");
+            map1.put("msg", msg1);
             List<String> userList = subscribeMessage.getObjectSubscriber();
             for (String user : userList) {
-                subscribeSender.send(msg1, user);
+                subscribeSender.send(map1, user);
             }
 
             // 通知模板订阅者
             final String template = mongoEventService.findEventObjectById(id).getTemplate();
-            final String msg2 = "基于模板(ID=" + template + ")创建了新的事件，事件ID为" + id;
+            final String msg2 = "基于模板(ID=" + template + ")创建的事件结束，事件ID为" + id;
+            map2.put("msg", msg2);
             subscribeMessage = subscribeService.findByIdAndType(template, "template");
             userList = subscribeMessage.getObjectSubscriber();
             for (String user : userList) {
-                subscribeSender.send(msg2, user);
+                subscribeSender.send(map2, user);
             }
 
- */
+
             return "事件结束成功";
         }
         return "事件结束失败";

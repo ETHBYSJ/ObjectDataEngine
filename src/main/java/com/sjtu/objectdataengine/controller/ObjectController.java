@@ -29,7 +29,7 @@ public class ObjectController {
 
     @GetMapping("/get_object_by_id")
     public CommonObject getObjectById(@RequestParam String id) {
-        return objectService.findObjectByKey(id);
+        return objectService.findObjectById(id);
     }
 
     @GetMapping("/get_object_by_date")
