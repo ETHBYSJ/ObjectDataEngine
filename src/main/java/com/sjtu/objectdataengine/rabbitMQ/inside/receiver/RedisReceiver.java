@@ -63,7 +63,6 @@ public class RedisReceiver {
                 String id = message.get("id").toString();
                 String name = message.get("name").toString();
                 String key = id + '#' + name + '#' + "time";
-                //String key = message.get("key").toString();
                 String value = message.get("value").toString();
                 Date date = (Date) message.get("date");
                 redisObjectService.addAttr(key, value, date);
