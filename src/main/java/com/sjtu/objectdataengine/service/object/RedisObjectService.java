@@ -51,6 +51,7 @@ public class RedisObjectService {
         }
         //删除基本信息
         redisAttrDAO.del(id + "#META");
+        List<String> events = (List<String>) redisAttrDAO.lGet(id + "#events", 0, -1);
         //删除关联事件表
         redisAttrDAO.del(id + "#events");
         //获得属性表
@@ -64,6 +65,10 @@ public class RedisObjectService {
         }
         //解除模板关联
         redisTemplateDAO.lRemove(template + "#objects", 1, id);
+        //解除事件关联
+        for(String event : events) {
+            redisEventDAO.lRemove(event + "#objects", 1, id);
+        }
         //从索引表删除
         redisAttrDAO.lRemove("index", 1, id);
         return true;

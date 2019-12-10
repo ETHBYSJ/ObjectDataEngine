@@ -51,7 +51,7 @@ public class ObjectRequestReceiver {
                     result.put("status", "FAIL");
                 }
                 result.put("message", msg);
-                subscribeSender.send(result, clientId);
+                subscribeSender.send(JSON.toJSONString(result), clientId);
                 break;
             }
             case "ADD_ATTR": {
@@ -66,7 +66,7 @@ public class ObjectRequestReceiver {
                     result.put("status", "FAIL");
                 }
                 result.put("message", msg);
-                subscribeSender.send(result, clientId);
+                subscribeSender.send(JSON.toJSONString(result), clientId);
                 break;
             }
             case "DELETE": {
@@ -79,7 +79,7 @@ public class ObjectRequestReceiver {
                     result.put("status", "FAIL");
                 }
                 result.put("message", msg);
-                subscribeSender.send(result, clientId);
+                subscribeSender.send(JSON.toJSONString(result), clientId);
                 break;
             }
             case "FIND_ID": {
@@ -92,7 +92,7 @@ public class ObjectRequestReceiver {
                     result.put("status", "FAIL");
                 }
                 result.put("object", commonObject);
-                subscribeSender.send(result, clientId);
+                subscribeSender.send(JSON.toJSONString(result), clientId);
                 break;
             }
             case "FIND_TIME": {
@@ -106,7 +106,7 @@ public class ObjectRequestReceiver {
                     result.put("status", "FAIL");
                 }
                 result.put("object", commonObject);
-                subscribeSender.send(result, clientId);
+                subscribeSender.send(JSON.toJSONString(result), clientId);
                 break;
             }
             case "FIND_TIMES": {
@@ -121,7 +121,7 @@ public class ObjectRequestReceiver {
                     result.put("status", "FAIL");
                 }
                 result.put("object", commonObjects);
-                subscribeSender.send(result, clientId);
+                subscribeSender.send(JSON.toJSONString(result), clientId);
                 break;
             }
             case "FIND_EVENT": {
@@ -135,7 +135,7 @@ public class ObjectRequestReceiver {
                     result.put("status", "FAIL");
                 }
                 result.put("object", commonObjects);
-                subscribeSender.send(result, clientId);
+                subscribeSender.send(JSON.toJSONString(result), clientId);
                 break;
             }
         }

@@ -12,7 +12,7 @@ public class SubscribeSender {
     @Resource
     private RabbitTemplate rabbitTemplate;
 
-    public void send(Map message, String routingKey) {
+    public void send(String message, String routingKey) {
         rabbitTemplate.convertAndSend("SubscribeExchange", routingKey, message);
     }
 }
