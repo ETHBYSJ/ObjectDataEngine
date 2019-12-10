@@ -49,6 +49,8 @@ public class SubscribeService {
      * @return true or false
      */
     public boolean create(String objId, String type) {
+        //判重
+        if(subscribeDAO.findById(objId + type, SubscribeMessage.class) != null) return false;
         HashMap<String, List<String>> attrsMap = new HashMap<>();
         Date now = new Date();
         // 实体对象订阅
@@ -114,6 +116,10 @@ public class SubscribeService {
         if(!userDAO.hasUser(user)) {
             return "用户不存在";
         }
+        // 如果没有创建订阅表就新建一个
+        if(subscribeDAO.findById(objId +type, SubscribeMessage.class) == null) {
+            if(!this.create(objId, type)) return "订阅对象不存在";
+        }
         if (subscribeDAO.addAttrSubscriber(objId, type, name, user)) {
             if(type.equals("entity")) {
                 userDAO.addObjectSubscribe(user, objId, name);
@@ -177,6 +183,10 @@ public class SubscribeService {
         // 检测用户是否存在
         if(!userDAO.hasUser(user)) {
             return "用户不存在";
+        }
+        // 如果没有创建订阅表就新建一个
+        if(subscribeDAO.findById(objId +type, SubscribeMessage.class) == null) {
+            if(!this.create(objId, type)) return "订阅对象不存在";
         }
         if (subscribeDAO.addObjectSubscriber(objId, type, user)) {
             if(type.equals("entity")) {
