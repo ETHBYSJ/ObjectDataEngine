@@ -39,19 +39,21 @@ public class ObjectRequestReceiver {
         // FIND_ID FIND_TIME FIND_TIMES
         // FIND_EVENT
         String op = jsonObject.getString("op");
-        String clientId = jsonObject.getString("clientId");
+        String userId = jsonObject.getString("userId");
 
         switch (op) {
             case "CREATE": {
                 String msg = apiObjectService.create(message);
-                Map<String, Object> result = new HashMap<>();
-                if (msg.equals("创建成功")) {
-                    result.put("status", "SUCC");
-                } else {
-                    result.put("status", "FAIL");
+                if (jsonObject.getBoolean("response")) {
+                    Map<String, Object> result = new HashMap<>();
+                    if (msg.equals("创建成功")) {
+                        result.put("status", "SUCC");
+                    } else {
+                        result.put("status", "FAIL");
+                    }
+                    result.put("message", msg);
+                    subscribeSender.send(result, userId);
                 }
-                result.put("message", msg);
-                subscribeSender.send(result, clientId);
                 break;
             }
             case "ADD_ATTR": {
@@ -66,7 +68,7 @@ public class ObjectRequestReceiver {
                     result.put("status", "FAIL");
                 }
                 result.put("message", msg);
-                subscribeSender.send(result, clientId);
+                subscribeSender.send(result, userId);
                 break;
             }
             case "DELETE": {
@@ -79,7 +81,7 @@ public class ObjectRequestReceiver {
                     result.put("status", "FAIL");
                 }
                 result.put("message", msg);
-                subscribeSender.send(result, clientId);
+                subscribeSender.send(result, userId);
                 break;
             }
             case "FIND_ID": {
@@ -92,7 +94,7 @@ public class ObjectRequestReceiver {
                     result.put("status", "FAIL");
                 }
                 result.put("object", commonObject);
-                subscribeSender.send(result, clientId);
+                subscribeSender.send(result, userId);
                 break;
             }
             case "FIND_TIME": {
@@ -106,7 +108,7 @@ public class ObjectRequestReceiver {
                     result.put("status", "FAIL");
                 }
                 result.put("object", commonObject);
-                subscribeSender.send(result, clientId);
+                subscribeSender.send(result, userId);
                 break;
             }
             case "FIND_TIMES": {
@@ -121,7 +123,7 @@ public class ObjectRequestReceiver {
                     result.put("status", "FAIL");
                 }
                 result.put("object", commonObjects);
-                subscribeSender.send(result, clientId);
+                subscribeSender.send(result, userId);
                 break;
             }
             case "FIND_EVENT": {
@@ -135,7 +137,7 @@ public class ObjectRequestReceiver {
                     result.put("status", "FAIL");
                 }
                 result.put("object", commonObjects);
-                subscribeSender.send(result, clientId);
+                subscribeSender.send(result, userId);
                 break;
             }
         }
