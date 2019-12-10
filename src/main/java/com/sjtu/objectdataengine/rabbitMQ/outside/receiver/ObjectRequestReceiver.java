@@ -39,19 +39,26 @@ public class ObjectRequestReceiver {
         // FIND_ID FIND_TIME FIND_TIMES
         // FIND_EVENT
         String op = jsonObject.getString("op");
-        String clientId = jsonObject.getString("clientId");
+        String userId = jsonObject.getString("userId");
 
         switch (op) {
             case "CREATE": {
                 String msg = apiObjectService.create(message);
-                Map<String, Object> result = new HashMap<>();
-                if (msg.equals("创建成功")) {
-                    result.put("status", "SUCC");
-                } else {
-                    result.put("status", "FAIL");
+                if (jsonObject.getBoolean("response")) {
+                    Map<String, Object> result = new HashMap<>();
+                    if (msg.equals("创建成功")) {
+                        result.put("status", "SUCC");
+                    } else {
+                        result.put("status", "FAIL");
+                    }
+                    result.put("message", msg);
+                    subscribeSender.send(result, userId);
                 }
+<<<<<<< HEAD
                 result.put("message", msg);
                 subscribeSender.send(JSON.toJSONString(result), clientId);
+=======
+>>>>>>> ec91df4458a091334b9d1b98fb58cf98541ddc01
                 break;
             }
             case "ADD_ATTR": {
@@ -59,27 +66,41 @@ public class ObjectRequestReceiver {
                 String name = jsonObject.getString("name");
                 String value = jsonObject.getString("value");
                 String msg = apiObjectService.addAttr(id, name, value);
-                Map<String, Object> result = new HashMap<>();
-                if (msg.equals("添加成功")) {
-                    result.put("status", "SUCC");
-                } else {
-                    result.put("status", "FAIL");
+                if (jsonObject.getBoolean("response")) {
+                    Map<String, Object> result = new HashMap<>();
+                    if (msg.equals("添加成功")) {
+                        result.put("status", "SUCC");
+                    } else {
+                        result.put("status", "FAIL");
+                    }
+                    result.put("message", msg);
+                    subscribeSender.send(result, userId);
                 }
+<<<<<<< HEAD
                 result.put("message", msg);
                 subscribeSender.send(JSON.toJSONString(result), clientId);
+=======
+>>>>>>> ec91df4458a091334b9d1b98fb58cf98541ddc01
                 break;
             }
             case "DELETE": {
-                String id =jsonObject.getString("id");
+                String id = jsonObject.getString("id");
                 String msg = apiObjectService.deleteObjectById(id);
-                Map<String, Object> result = new HashMap<>();
-                if (msg.equals("删除成功")) {
-                    result.put("status", "SUCC");
-                } else {
-                    result.put("status", "FAIL");
+                if (jsonObject.getBoolean("response")) {
+                    Map<String, Object> result = new HashMap<>();
+                    if (msg.equals("删除成功")) {
+                        result.put("status", "SUCC");
+                    } else {
+                        result.put("status", "FAIL");
+                    }
+                    result.put("message", msg);
+                    subscribeSender.send(result, userId);
                 }
+<<<<<<< HEAD
                 result.put("message", msg);
                 subscribeSender.send(JSON.toJSONString(result), clientId);
+=======
+>>>>>>> ec91df4458a091334b9d1b98fb58cf98541ddc01
                 break;
             }
             case "FIND_ID": {
@@ -92,7 +113,11 @@ public class ObjectRequestReceiver {
                     result.put("status", "FAIL");
                 }
                 result.put("object", commonObject);
+<<<<<<< HEAD
                 subscribeSender.send(JSON.toJSONString(result), clientId);
+=======
+                subscribeSender.send(result, userId);
+>>>>>>> ec91df4458a091334b9d1b98fb58cf98541ddc01
                 break;
             }
             case "FIND_TIME": {
@@ -106,7 +131,11 @@ public class ObjectRequestReceiver {
                     result.put("status", "FAIL");
                 }
                 result.put("object", commonObject);
+<<<<<<< HEAD
                 subscribeSender.send(JSON.toJSONString(result), clientId);
+=======
+                subscribeSender.send(result, userId);
+>>>>>>> ec91df4458a091334b9d1b98fb58cf98541ddc01
                 break;
             }
             case "FIND_TIMES": {
@@ -121,7 +150,11 @@ public class ObjectRequestReceiver {
                     result.put("status", "FAIL");
                 }
                 result.put("object", commonObjects);
+<<<<<<< HEAD
                 subscribeSender.send(JSON.toJSONString(result), clientId);
+=======
+                subscribeSender.send(result, userId);
+>>>>>>> ec91df4458a091334b9d1b98fb58cf98541ddc01
                 break;
             }
             case "FIND_EVENT": {
@@ -135,7 +168,11 @@ public class ObjectRequestReceiver {
                     result.put("status", "FAIL");
                 }
                 result.put("object", commonObjects);
+<<<<<<< HEAD
                 subscribeSender.send(JSON.toJSONString(result), clientId);
+=======
+                subscribeSender.send(result, userId);
+>>>>>>> ec91df4458a091334b9d1b98fb58cf98541ddc01
                 break;
             }
         }
