@@ -30,6 +30,8 @@ public class MongoTemplateService {
      * @param id ID
      */
     public void createObjectTemplate(String id, String name, String intro, String nodeId, String type, HashMap<String, String> attrs, Date date) {
+        ObjectTemplate t = mongoTemplateDAO.findById(id, ObjectTemplate.class);
+        if(t != null) return;
         List<String> objects = new ArrayList<>();
         ObjectTemplate objectTemplate = new ObjectTemplate(id, name, intro, nodeId, type, attrs, objects);
         objectTemplate.setCreateTime(date);

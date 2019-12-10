@@ -3,7 +3,7 @@ package com.sjtu.objectdataengine.service.subscribe;
 import com.sjtu.objectdataengine.dao.subscribe.SubscribeDAO;
 import com.sjtu.objectdataengine.dao.subscribe.UserDAO;
 import com.sjtu.objectdataengine.model.subscribe.User;
-import com.sjtu.objectdataengine.rabbitMQ.sender.SubscribeSender;
+import com.sjtu.objectdataengine.rabbitMQ.outside.sender.SubscribeSender;
 import com.sjtu.objectdataengine.service.rabbit.RabbitMQService;
 import com.sjtu.objectdataengine.utils.MongoAutoIdUtil;
 import com.sjtu.objectdataengine.utils.MongoCondition;
@@ -12,7 +12,9 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class UserService {
@@ -44,7 +46,9 @@ public class UserService {
         System.out.println(id);
         this.create(id, name, intro);
         rabbitMQService.addQueue(name, id);
-        subscribeSender.send(id, id);
+        Map<String, String> map = new HashMap();
+        map.put("id", id);
+        subscribeSender.send(map, id);
         return id;
     }
 

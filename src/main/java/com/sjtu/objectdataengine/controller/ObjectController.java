@@ -15,7 +15,10 @@ public class ObjectController {
 
     @Resource
     private APIObjectService objectService;
-
+    @GetMapping("/bind")
+    public String bindEventAndObject(@RequestParam String objId, @RequestParam String eventId) {
+        return objectService.bindEventAndObject(objId, eventId);
+    }
     @PostMapping("/create")
     @ResponseBody
     public String create(@RequestBody String request) {
@@ -29,7 +32,7 @@ public class ObjectController {
 
     @GetMapping("/get_object_by_id")
     public CommonObject getObjectById(@RequestParam String id) {
-        return objectService.findObjectByKey(id);
+        return objectService.findObjectById(id);
     }
 
     @GetMapping("/get_object_by_date")

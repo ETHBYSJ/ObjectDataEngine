@@ -65,8 +65,8 @@ public class APITreeService {
         mongoSender.send(message);
         if(redisTreeService.createTreeNode(id, name, intro, parent, children, date))//redisTreeService.createTreeNode(id, name, template, parentsArray, children)) //改成上面参数的形式
            return "创建成功！";
-
-        this.delete(id);
+        //如果传入id重复则会执行到此处并报错
+        //this.delete(id);
         return "创建失败!";
     }
 

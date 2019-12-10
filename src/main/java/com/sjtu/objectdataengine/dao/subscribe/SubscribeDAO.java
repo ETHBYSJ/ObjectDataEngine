@@ -25,11 +25,6 @@ public class SubscribeDAO extends MongoBaseDAO<SubscribeMessage> {
      * @param user  用户id
      */
     public boolean addAttrSubscriber(String objId, String type, String name, String user) {
-        /*
-        if(findById(objId + type, SubscribeMessage.class) == null) {
-            this.addAttr(objId, type, name);
-        }
-        */
         Query query = new Query();
         query.addCriteria(Criteria.where("_id").is(objId + type));
         Update update = new Update();
@@ -63,11 +58,6 @@ public class SubscribeDAO extends MongoBaseDAO<SubscribeMessage> {
      * @param user  用户id
      */
     public boolean addObjectSubscriber(String objId, String type, String user) {
-        /*
-        if(findById(objId + type, SubscribeMessage.class) == null) {
-            this.addObj(objId, type);
-        }
-        */
         Query query = new Query();
         query.addCriteria(Criteria.where("_id").is(objId + type));
         Update update = new Update();

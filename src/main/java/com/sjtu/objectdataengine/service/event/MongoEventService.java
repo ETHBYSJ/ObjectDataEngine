@@ -24,6 +24,9 @@ public class MongoEventService {
     MongoTemplateDAO mongoTemplateDAO;
 
     public void create(String id, String name, String intro, String template, HashMap<String, String> attrsKv, Date date) {
+        //id判重
+        EventObject e = mongoEventDAO.findById(id, EventObject.class);
+        if(e != null) return;
         List<String> objects = new ArrayList<>();
         HashMap<String, String> attrsMap = mongoTemplateDAO.findById(template, ObjectTemplate.class).getAttrs();
         HashMap<String, MongoAttr> attrs = new HashMap<>();

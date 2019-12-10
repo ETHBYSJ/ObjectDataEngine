@@ -27,7 +27,7 @@ public class ObjectRequestReceiver {
 
     @RabbitListener(
             bindings = @QueueBinding(
-                    value = @Queue(value = "ObjectRequest"),
+                    value = @Queue(value = "ObjectRequestQueue"),
                     exchange = @Exchange(value = "RequestExchange"),
                     key = "OBJECT"
             ),

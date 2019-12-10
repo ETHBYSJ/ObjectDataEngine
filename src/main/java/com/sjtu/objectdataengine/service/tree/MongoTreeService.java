@@ -7,6 +7,7 @@ import com.sjtu.objectdataengine.model.template.ObjectTemplate;
 import com.sjtu.objectdataengine.model.tree.TreeNode;
 import com.sjtu.objectdataengine.utils.MongoCondition;
 import org.springframework.stereotype.Component;
+import sun.reflect.generics.tree.Tree;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -32,6 +33,8 @@ public class MongoTreeService {
      * @param children 子节点id
      */
     public void createTreeNode(String id, String name, String intro, String parent, List<String> children, Date date) {
+        TreeNode n = mongoTreeDAO.findById(id, TreeNode.class);
+        if(n != null) return;
         TreeNode treeNode = new TreeNode(id, name, intro, "", parent, children);
         if(mongoTreeDAO.create(treeNode)) {
             if(parent.equals("root")) {
