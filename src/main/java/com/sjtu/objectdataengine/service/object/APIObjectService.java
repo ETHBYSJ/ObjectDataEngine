@@ -104,7 +104,7 @@ public class APIObjectService {
         if (mongoObjectService.create(id, name, intro, template, attrs, events, date) && redisObjectService.create(id, name, intro, template, events, attrs, date)) {
             msg = "创建成功";
         } else {
-            mongoObjectService.deleteObjectById(id, template);
+            //mongoObjectService.deleteObjectById(id, template);
             return msg;
         }
         // 创建订阅表
@@ -340,6 +340,6 @@ public class APIObjectService {
         bindMessage.put("op", "EVENT_ADD_OBJECT");
         mongoSender.send(bindMessage);
 
-        return "增加失败";
+        return "增加成功";
     }
 }

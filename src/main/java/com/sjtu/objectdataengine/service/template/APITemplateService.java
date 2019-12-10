@@ -70,7 +70,7 @@ public class APITemplateService {
         if(redisTemplateService.createTemplate(id, name, intro, type, nodeId, attrs, date)) {
             return "创建成功";
         }
-        this.delete(id);
+        //this.delete(id);
         return "创建失败!";
     }
 

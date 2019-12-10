@@ -50,6 +50,7 @@ public class MongoObjectService {
             //id判重
             CommonObject o = mongoObjectDAO.findById(id, CommonObject.class);
             if(o != null) return false;
+            //System.out.println(mongoTemplateDAO.findById(template, ObjectTemplate.class));
             HashMap<String, String> attrsMap = mongoTemplateDAO.findById(template, ObjectTemplate.class).getAttrs();
             HashMap<String, MongoAttr> hashMap = new HashMap<>();
             for (String attr : attrsMap.keySet()) {
