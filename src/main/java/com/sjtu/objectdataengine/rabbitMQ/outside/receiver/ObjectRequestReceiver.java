@@ -61,27 +61,31 @@ public class ObjectRequestReceiver {
                 String name = jsonObject.getString("name");
                 String value = jsonObject.getString("value");
                 String msg = apiObjectService.addAttr(id, name, value);
-                Map<String, Object> result = new HashMap<>();
-                if (msg.equals("添加成功")) {
-                    result.put("status", "SUCC");
-                } else {
-                    result.put("status", "FAIL");
+                if (jsonObject.getBoolean("response")) {
+                    Map<String, Object> result = new HashMap<>();
+                    if (msg.equals("添加成功")) {
+                        result.put("status", "SUCC");
+                    } else {
+                        result.put("status", "FAIL");
+                    }
+                    result.put("message", msg);
+                    subscribeSender.send(result, userId);
                 }
-                result.put("message", msg);
-                subscribeSender.send(result, userId);
                 break;
             }
             case "DELETE": {
-                String id =jsonObject.getString("id");
+                String id = jsonObject.getString("id");
                 String msg = apiObjectService.deleteObjectById(id);
-                Map<String, Object> result = new HashMap<>();
-                if (msg.equals("删除成功")) {
-                    result.put("status", "SUCC");
-                } else {
-                    result.put("status", "FAIL");
+                if (jsonObject.getBoolean("response")) {
+                    Map<String, Object> result = new HashMap<>();
+                    if (msg.equals("删除成功")) {
+                        result.put("status", "SUCC");
+                    } else {
+                        result.put("status", "FAIL");
+                    }
+                    result.put("message", msg);
+                    subscribeSender.send(result, userId);
                 }
-                result.put("message", msg);
-                subscribeSender.send(result, userId);
                 break;
             }
             case "FIND_ID": {
