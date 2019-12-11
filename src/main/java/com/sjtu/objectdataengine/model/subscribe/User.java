@@ -12,7 +12,7 @@ public class User extends BaseModel {
     private String id;
     private String name;
     private String intro;
-    private List<String> eventSubscribe;
+    //private List<String> eventSubscribe;
     private List<String> objectSubscribe;
     private List<String> templateSubscribe;
 
@@ -20,7 +20,7 @@ public class User extends BaseModel {
         this.id = id;
         this.name = name;
         this.intro = intro;
-        this.eventSubscribe = new ArrayList<>();
+        //this.eventSubscribe = new ArrayList<>();
         this.objectSubscribe = new ArrayList<>();
         this.templateSubscribe = new ArrayList<>();
     }
@@ -47,15 +47,14 @@ public class User extends BaseModel {
     public void setIntro(String intro) {
         this.intro = intro;
     }
-
+    /*
     public List<String> getEventSubscribe() {
         return eventSubscribe;
     }
-
     public void setEventSubscribe(List<String> eventSubscribe) {
         this.eventSubscribe = eventSubscribe;
     }
-
+    */
     public List<String> getObjectSubscribe() {
         return objectSubscribe;
     }

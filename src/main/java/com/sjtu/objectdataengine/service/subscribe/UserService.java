@@ -65,12 +65,13 @@ public class UserService {
             subscribeSender.send(JSON.toJSONString(map), id);
             return false;
         }
-        List<String> eventSubscribe = user.getEventSubscribe();
+        //List<String> eventSubscribe = user.getEventSubscribe();
         List<String> objectSubscribe = user.getObjectSubscribe();
         List<String> templateSubscribe = user.getTemplateSubscribe();
         // 从用户表中删除
         userDAO.deleteById(id, User.class);
         // 从订阅表中删除该用户
+        /*
         for(String event : eventSubscribe) {
             String[] eventSplit = event.split(":");
             if(eventSplit.length == 1) {
@@ -81,6 +82,7 @@ public class UserService {
                 subscribeDAO.delAttrSubscriber(eventSplit[0], "event", eventSplit[1], id);
             }
         }
+        */
         for(String object : objectSubscribe) {
             String[] objectSplit = object.split(":");
             if(objectSplit.length == 1) {
@@ -114,13 +116,13 @@ public class UserService {
 
     public boolean isUserEmpty(String id) {
         User user = userDAO.findById(id, User.class);
-        return user.getEventSubscribe().size() == 0 && user.getObjectSubscribe().size() == 0 && user.getTemplateSubscribe().size() == 0;
+        return /*user.getEventSubscribe().size() == 0 && */user.getObjectSubscribe().size() == 0 && user.getTemplateSubscribe().size() == 0;
     }
     public String addObjectSubscribe(String userId, String type, String objId, String name) {
         if(userId == null || userId.equals("")) {
             return "用户id不能为空";
         }
-        if (!(type.equals("entity") || type.equals("template") || type.equals("event"))) return "类型错误";
+        if (!(type.equals("entity") || type.equals("template")/* || type.equals("event")*/)) return "类型错误";
         if (objId == null || objId.equals("")) return "对象ID不能为空";
 
         if(type.equals("entity")) {
@@ -129,50 +131,33 @@ public class UserService {
         else if(type.equals("template")) {
             userDAO.addTemplateSubscribe(userId, objId, name);
         }
+        /*
         else {
             // event
             userDAO.addEventSubscribe(userId, objId, name);
         }
+        */
         return "增加成功";
     }
     public String delObjectSubscribe(String userId, String type, String objId, String name) {
         if(userId == null || userId.equals("")) {
             return "用户id不能为空";
         }
-        if (!(type.equals("entity") || type.equals("template") || type.equals("event"))) return "类型错误";
+        if (!(type.equals("entity") || type.equals("template")/* || type.equals("event")*/)) return "类型错误";
         if (objId == null || objId.equals("")) return "对象ID不能为空";
 
         if(type.equals("entity")) {
             userDAO.delObjectSubscribe(userId, objId, name);
-            /*
-            if(isUserEmpty(userId)) {
-                userDAO.deleteById(userId, User.class);
-                // 删除队列(队列名是否是userId?)
-                rabbitMQService.delQueue(userId);
-            }
-            */
         }
         else if(type.equals("template")) {
             userDAO.delTemplateSubscribe(userId, objId, name);
-            /*
-            if(isUserEmpty(userId)) {
-                userDAO.deleteById(userId, User.class);
-                // 删除队列(队列名是否是userId?)
-                rabbitMQService.delQueue(userId);
-            }
-            */
         }
+        /*
         else {
             // event
             userDAO.delEventSubscribe(userId, objId, name);
-            /*
-            if(isUserEmpty(userId)) {
-                userDAO.deleteById(userId, User.class);
-                // 删除队列(队列名是否是userId?)
-                rabbitMQService.delQueue(userId);
-            }
-            */
         }
+        */
         return "删除成功";
     }
 }

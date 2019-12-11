@@ -34,9 +34,6 @@ public class APIEventService {
     MongoEventService mongoEventService;
 
     @Resource
-    UserService userService;
-
-    @Resource
     SubscribeService subscribeService;
 
     @Resource
@@ -123,12 +120,36 @@ public class APIEventService {
         message.put("op", "EVENT_DELETE");
         message.put("event", id);
         message.put("template", template);
-
+        // 通知关联的实体对象订阅者
         mongoSender.send(message);
-        if (redisEventService.deleteEventById(id, template)) {
-            return  "删除成功！";
+        if (!redisEventService.deleteEventById(id, template)) {
+            return  "删除失败！";
         }
-        return "删除失败！";
+        List<String> objects = eventObject.getObjects();
+        for(String o : objects) {
+            Map<String, Object> map1 = new HashMap<>();
+            SubscribeMessage entitySubscribeMessage = subscribeService.findByIdAndType(o, "entity");
+            String msg1 = "实体对象(ID=" + o + ")关联的事件被删除，事件ID为 " + id;
+            map1.put("msg", msg1);
+            map1.put("object", o);
+            map1.put("event", id);
+            List<String> entitySubscribeList = entitySubscribeMessage.getObjectSubscriber();
+            for(String user : entitySubscribeList) {
+                subscribeSender.send(JSON.toJSONString(map1), user);
+            }
+        }
+        // 通知模板订阅者
+        SubscribeMessage templateSubscribeMessage = subscribeService.findByIdAndType(id, "template");
+        Map<String, Object> map2 = new HashMap<>();
+        String msg2 = "基于模板(ID=" + template + ")创建的事件已经被删除，事件ID为" + id;
+        map2.put("msg", msg2);
+        map2.put("template", template);
+        map2.put("event", id);
+        List<String> templateSubscriberList = templateSubscribeMessage.getObjectSubscriber();
+        for(String user : templateSubscriberList) {
+            subscribeSender.send(JSON.toJSONString(map2), user);
+        }
+        return "删除成功！";
     }
 
     public String modifyBase(String request) {

@@ -33,6 +33,9 @@ public class SubscribeService {
     @Resource
     UserDAO userDAO;
 
+    @Resource
+    UserService userService;
+
     /**
      * 删除订阅表
      * @param id 表id
@@ -40,6 +43,22 @@ public class SubscribeService {
      */
     public boolean deleteByIdAndType(String id, String type) {
         SubscribeMessage subscribeMessage = this.findByIdAndType(id, type);
+        // 不存在
+        if(subscribeMessage == null) return false;
+        // 从用户中删除
+        List<String> objectSubscriber = subscribeMessage.getObjectSubscriber();
+        HashMap<String, List<String>> attrsSubscriber = subscribeMessage.getAttrsSubscriber();
+        for(String user : objectSubscriber) {
+            userService.delObjectSubscribe(user, type, id, null);
+        }
+        for(Map.Entry<String, List<String>> entry : attrsSubscriber.entrySet()) {
+            String name = entry.getKey();
+            List<String> attrSubscriber = entry.getValue();
+            for(String user : attrSubscriber) {
+                userService.delObjectSubscribe(user, type, id, name);
+            }
+        }
+        // 从订阅表中删除
         return subscribeDAO.deleteById(id + type, SubscribeMessage.class);
     }
     /**
@@ -66,6 +85,7 @@ public class SubscribeService {
                 break;
             }
             // 事件对象订阅
+                /*
             case "event": {
                 //Set<String> attrs = mongoEventDAO.findById(objId, EventObject.class).getAttrs().keySet();
                 EventObject event = mongoEventDAO.findById(objId, EventObject.class);
@@ -76,6 +96,7 @@ public class SubscribeService {
                 }
                 break;
             }
+                 */
             // 根据模板订阅
             case "template": {
                 //Set<String> attrs = mongoTemplateDAO.findById(objId, ObjectTemplate.class).getAttrs().keySet();
@@ -127,10 +148,12 @@ public class SubscribeService {
             else if(type.equals("template")) {
                 userDAO.addTemplateSubscribe(user, objId, name);
             }
+            /*
             else {
                 // event
                 userDAO.addEventSubscribe(user, objId, name);
             }
+            */
             return "增加成功";
         }
         return "增加失败";
@@ -159,10 +182,12 @@ public class SubscribeService {
             else if(type.equals("template")) {
                 userDAO.delTemplateSubscribe(user, objId, name);
             }
+            /*
             else {
                 // event
                 userDAO.delEventSubscribe(user, objId, name);
             }
+            */
             return "删除成功";
         }
         return "删除失败";
@@ -195,10 +220,12 @@ public class SubscribeService {
             else if(type.equals("template")) {
                 userDAO.addTemplateSubscribe(user, objId);
             }
+            /*
             else {
                 // event
                 userDAO.addEventSubscribe(user, objId);
             }
+            */
             return "增加成功";
         }
         return "增加失败";
@@ -227,10 +254,12 @@ public class SubscribeService {
             else if(type.equals("template")) {
                 userDAO.delTemplateSubscribe(user, objId);
             }
+            /*
             else {
                 // event
                 userDAO.delEventSubscribe(user, objId);
             }
+            */
             return "删除成功";
         }
         return "删除失败";

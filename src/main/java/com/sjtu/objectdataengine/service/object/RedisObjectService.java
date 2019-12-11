@@ -572,7 +572,7 @@ public class RedisObjectService {
             return null;
         }
         Date createTime = commonObject.getCreateTime();
-        if(createTime.before(date)) {
+        if(createTime.after(date)) {
             return null;
         }
         Date ut = new Date(0);
