@@ -78,7 +78,7 @@ public class SubscribeService {
                 //Set<String> attrs = mongoObjectDAO.findById(objId, CommonObject.class).getAttr().keySet();
                 CommonObject obj = mongoObjectDAO.findById(objId, CommonObject.class);
                 if(obj == null) return false;
-                Set<String> attrs = obj.getAttr().keySet();
+                Set<String> attrs = obj.getAttrs().keySet();
                 for (String attr : attrs) {
                     attrsMap.put(attr, new ArrayList<>());
                 }

@@ -142,7 +142,7 @@ public class MongoObjectService {
         CommonObject commonObject = findLatestObjectByKey(id);
         if (commonObject == null) return false;
         try {
-            Set<String> attrs = commonObject.getAttr().keySet();
+            Set<String> attrs = commonObject.getAttrs().keySet();
             Set<String> events = commonObject.getEvents().keySet();
             mongoObjectDAO.deleteById(id, CommonObject.class);
             for (String attr : attrs) {
@@ -448,13 +448,13 @@ public class MongoObjectService {
         // 如果早过创建时间，就返回空
         if (time.before(commonObject.getCreateTime())) return null;
         // 取出属性列表的key集合
-        Set<String> attrName = commonObject.getAttr().keySet();
+        Set<String> attrName = commonObject.getAttrs().keySet();
         // 对每个属性循环
         for(String name : attrName) {
             // 找到对应时间点的属性
             MongoAttr mongoAttr = findAttrByTime(id, name, time); // error: time=createTime为null
             // 放入模板object中
-            commonObject.putAttr(name, mongoAttr);
+            commonObject.putAttrs(name, mongoAttr);
             // 比较更新updateTime
             if(ut.before(mongoAttr.getUpdateTime())) {
                 ut = mongoAttr.getUpdateTime();
@@ -484,7 +484,7 @@ public class MongoObjectService {
             startTime = createTime;
         }
 
-        Set<String> attrName = commonObject.getAttr().keySet();
+        Set<String> attrName = commonObject.getAttrs().keySet();
         List<MongoAttr> mongoAttrList = new ArrayList<>();
         for (String name : attrName) {
             mongoAttrList.addAll(findAttrByStartAndEnd(id, name, createTime, et));
