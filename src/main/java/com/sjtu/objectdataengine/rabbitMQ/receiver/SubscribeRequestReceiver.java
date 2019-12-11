@@ -1,5 +1,8 @@
 package com.sjtu.objectdataengine.rabbitMQ.receiver;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.sjtu.objectdataengine.rabbitMQ.outside.sender.SubscribeSender;
 import com.sjtu.objectdataengine.service.subscribe.SubscribeService;
 import com.sjtu.objectdataengine.service.subscribe.UserService;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
@@ -7,6 +10,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
 import java.util.Map;
 
 @Component
@@ -20,18 +24,30 @@ public class SubscribeRequestReceiver {
     @Resource
     private UserService userService;
 
+    @Resource
+    private SubscribeSender subscribeSender;
+
     @RabbitHandler
-    public void process(Map message) {
-        String op = message.get("op").toString();
+    public void process(String message) {
+        JSONObject jsonObject = JSON.parseObject(message);
+        String op = jsonObject.getString("op");
         switch(op) {
             /*
              * 注册用户
              */
             case "REGISTER" : {
-                System.out.println(message);
-                String name = message.get("name").toString();
-                String intro = message.get("intro").toString();
-                userService.register(name, intro);
+                String name = jsonObject.getString("name");
+                String intro = jsonObject.getString("intro");
+                String res = userService.register(name, intro);
+                Map<String, Object> map = new HashMap<>();
+                if(res.equals("用户名重复")) {
+                    map.put("status", "FAIL");
+                }
+                else {
+                    map.put("status", "SUCC");
+                    map.put("id", res);
+                }
+                subscribeSender.send(JSON.toJSONString(map), res);
                 // 客户端怎么知道监听哪条队列？
                 break;
             }
@@ -39,27 +55,46 @@ public class SubscribeRequestReceiver {
              * 注销用户
              */
             case "UNREGISTER" : {
-                String id = message.get("id").toString();
-                userService.unregister(id);
+                String id = jsonObject.getString("id");
+                boolean res = userService.unregister(id);
+                Map<String, Object> map = new HashMap<>();
+                if(res) {
+                    map.put("status", "SUCC");
+                }
+                else {
+                    map.put("status", "FAIL");
+                }
+                subscribeSender.send(JSON.toJSONString(map), id);
                 break;
             }
             /*
              * 订阅请求
              */
             case "SUB" : {
-                String userId = message.get("id").toString();
-                String objId = message.get("obj").toString();
-                String type = message.get("type").toString();
-                Object name = message.get("name");
+                String userId = jsonObject.getString("id");
+                String objId = jsonObject.getString("obj");
+                String type = jsonObject.getString("type");
+                Object name = jsonObject.getString("name");
+                /*
                 if(subscribeService.findByIdAndType(objId, type) == null) {
                     subscribeService.create(objId, type);
                 }
+                */
+                String res;
                 if(name == null) {
-                    subscribeService.addObjectSubscriber(objId, type, userId);
+                    res = subscribeService.addObjectSubscriber(objId, type, userId);
                 }
                 else {
-                    subscribeService.addAttrSubscriber(objId, type, name.toString(), userId);
+                    res = subscribeService.addAttrSubscriber(objId, type, name.toString(), userId);
                 }
+                Map<String, Object> map = new HashMap<>();
+                if(res.equals("增加成功")) {
+                    map.put("status", "SUCC");
+                }
+                else {
+                    map.put("status", "FAIL");
+                }
+                subscribeSender.send(JSON.toJSONString(map), userId);
                 break;
             }
         }

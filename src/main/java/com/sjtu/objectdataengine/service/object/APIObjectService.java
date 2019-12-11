@@ -106,18 +106,20 @@ public class APIObjectService {
         }
         // 创建订阅表
         subscribeService.create(id, "entity");
-        Map<String, String> map1 = new HashMap<>();
-        Map<String, String> map2 = new HashMap<>();
+        Map<String, Object> map1 = new HashMap<>();
+        Map<String, Object> map2 = new HashMap<>();
         // 通知模板订阅者
         final String msg1 = "基于模板(ID=" + template + ")创建了新的对象，对象ID为" + id;
         map1.put("msg", msg1);
+        map1.put("template", template);
+        map1.put("object", id);
         SubscribeMessage subscribeMessage = subscribeService.findByIdAndType(template, "template");
         if(subscribeMessage != null) {
             List<String> userList = subscribeMessage.getObjectSubscriber();
             for (String user : userList) {
-                subscribeSender.send(map1, user);
+                subscribeSender.send(JSON.toJSONString(map1), user);
             }
-
+            /*
             // 通知事件订阅者
             for (String event : events) {
                 final String msg2 = "创建了与事件(ID=" + event + ")相关的新的对象，对象ID为" + id;
@@ -127,8 +129,8 @@ public class APIObjectService {
                 for (String user : userList) {
                     subscribeSender.send(map2, user);
                 }
-
             }
+            */
         }
 
         return msg;
@@ -151,12 +153,16 @@ public class APIObjectService {
         //redisSender.send(message);
         redisObjectService.addAttr(id, name, value, date);
         final CommonObject commonObject = redisObjectService.findObjectById(id);
-        Map<String, String> map1 = new HashMap<>();
-        Map<String, String> map2 = new HashMap<>();
-        Map<String, String> map3 = new HashMap<>();
+        Map<String, Object> map1 = new HashMap<>();
+        Map<String, Object> map2 = new HashMap<>();
+        Map<String, Object> map3 = new HashMap<>();
         // 通知属性和对象订阅者
         final String msg1 = "对象(" + "ID=" + id + ")的属性(" + name + ") 增加了一条新属性，属性值为 " + value + "\n更新时间：" + date;
         map1.put("msg", msg1);
+        map1.put("name", name);
+        map1.put("object", id);
+        map1.put("value", value);
+        map1.put("date", date);
         SubscribeMessage subscribeMessage = subscribeService.findByIdAndType(id, "entity");
 
         List<String> userList = subscribeMessage.getAttrsSubscriber().get(name);
@@ -164,9 +170,9 @@ public class APIObjectService {
         userList.addAll(subscribeMessage.getObjectSubscriber());
         HashSet<String> userSet = new HashSet<>(userList);
         for (String user : userSet) {
-            subscribeSender.send(map1, user);
+            subscribeSender.send(JSON.toJSONString(map1), user);
         }
-
+        /*
         // 通知事件订阅者
         Set<String> events = commonObject.getEvents().keySet();
         for (String event : events) {
@@ -180,16 +186,20 @@ public class APIObjectService {
                 }
             }
         }
-
+        */
         // 通知模板订阅者
         String template = commonObject.getTemplate();
         final String msg3 = "与模板(ID=" + template + ")关联的对象(" + "ID=" + id + ")的属性(" + name + ") 增加了一条新属性，属性值为 " + value + "\n更新时间：" + date;
         map3.put("msg", msg3);
+        map3.put("name", name);
+        map3.put("object", id);
+        map3.put("value", value);
+        map3.put("date", date);
         subscribeMessage = subscribeService.findByIdAndType(template, "template");
         if(subscribeMessage != null) {
             userList = subscribeMessage.getObjectSubscriber();
             for (String user : userList) {
-                subscribeSender.send(map3, user);
+                subscribeSender.send(JSON.toJSONString(map3), user);
             }
         }
         return "添加成功";

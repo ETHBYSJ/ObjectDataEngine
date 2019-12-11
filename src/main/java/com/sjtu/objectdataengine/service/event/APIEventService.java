@@ -87,16 +87,18 @@ public class APIEventService {
         message.put("date", date);
         mongoSender.send(message);
         if (redisEventService.create(id, name, intro, template, attrs, date)) {
-            Map<String, String> map = new HashMap<>();
+            Map<String, Object> map = new HashMap<>();
             // 通知模板订阅者
             final String msg = "基于模板(ID=" + template + ")创建了新的事件，事件ID为" + id;
             map.put("msg", msg);
+            map.put("event", id);
+            map.put("template", template);
             SubscribeMessage subscribeMessage = subscribeService.findByIdAndType(template, "template");
             if(subscribeMessage != null) {
                 System.out.println(subscribeMessage);
                 List<String> userList = subscribeMessage.getObjectSubscriber();
                 for (String user : userList) {
-                    subscribeSender.send(map, user);
+                    subscribeSender.send(JSON.toJSONString(map), user);
                 }
             }
             return "创建成功";
@@ -119,7 +121,7 @@ public class APIEventService {
 
         HashMap<String, Object> message = new HashMap<>();
         message.put("op", "EVENT_DELETE");
-        message.put("id", id);
+        message.put("event", id);
         message.put("template", template);
 
         mongoSender.send(message);
@@ -182,6 +184,7 @@ public class APIEventService {
 
         // 删除redis中的已结束事件
         if (redisEventService.deleteEventById(id, eventObject.getTemplate())) {
+            /*
             // 查找事件的订阅者
             SubscribeMessage subscribeMessage = subscribeService.findByIdAndType(id, "event");
             if(subscribeMessage != null) {
@@ -192,25 +195,45 @@ public class APIEventService {
                     // 订阅者取消订阅该事件,可能触发队列的删除操作
                     userService.delObjectSubscribe(subscriber, "event", id, null);
                 }
-                Map<String, String> map1 = new HashMap<>();
-                Map<String, String> map2 = new HashMap<>();
-                // 通知事件订阅者
-                final String msg1 = "事件(ID=" + id + ")结束" + id;
-                //SubscribeMessage subscribeMessage = subscribeService.findByIdAndType(id, "event");
-                map1.put("msg", msg1);
-                List<String> userList = subscribeMessage.getObjectSubscriber();
+            }
+            Map<String, String> map1 = new HashMap<>();
+            // 通知事件订阅者
+            final String msg1 = "事件(ID=" + id + ")结束" + id;
+            map1.put("msg", msg1);
+            List<String> userList;
+            if(subscribeMessage != null) {
+                userList = subscribeMessage.getObjectSubscriber();
                 for (String user : userList) {
                     subscribeSender.send(map1, user);
                 }
-
-                // 通知模板订阅者
-                final String template = mongoEventService.findEventObjectById(id).getTemplate();
-                final String msg2 = "基于模板(ID=" + template + ")创建的事件结束，事件ID为" + id;
-                map2.put("msg", msg2);
-                subscribeMessage = subscribeService.findByIdAndType(template, "template");
+            }
+            */
+            Map<String, Object> map = new HashMap<>();
+            // 通知模板订阅者
+            List<String> objects = eventObject.getObjects();
+            String template = eventObject.getTemplate();
+            String msg = "基于模板(ID=" + template + ")创建的事件结束，事件ID为" + id;
+            map.put("msg", msg);
+            map.put("event", id);
+            map.put("template", template);
+            List<String> userList;
+            SubscribeMessage subscribeMessage = subscribeService.findByIdAndType(template, "template");
+            if(subscribeMessage != null) {
                 userList = subscribeMessage.getObjectSubscriber();
                 for (String user : userList) {
-                    subscribeSender.send(map2, user);
+                    subscribeSender.send(JSON.toJSONString(map), user);
+                }
+            }
+            for(String object : objects) {
+                subscribeMessage = subscribeService.findByIdAndType(object, "entity");
+                msg = "实体对象(ID=" + object + ")关联的事件结束，事件ID为 " + id;
+                userList = subscribeMessage.getObjectSubscriber();
+                for (String user : userList) {
+                    map = new HashMap<>();
+                    map.put("msg", msg);
+                    map.put("event", id);
+                    map.put("object", object);
+                    subscribeSender.send(JSON.toJSONString(map), user);
                 }
             }
             return "事件结束成功";

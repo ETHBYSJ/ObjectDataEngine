@@ -1,5 +1,6 @@
 package com.sjtu.objectdataengine.service.subscribe;
 
+import com.alibaba.fastjson.JSON;
 import com.sjtu.objectdataengine.dao.subscribe.SubscribeDAO;
 import com.sjtu.objectdataengine.dao.subscribe.UserDAO;
 import com.sjtu.objectdataengine.model.subscribe.User;
@@ -43,12 +44,11 @@ public class UserService {
             return "用户名重复";
         }
         String id = mongoAutoIdUtil.getNextId("seq_user").toString();
-        System.out.println(id);
         this.create(id, name, intro);
         rabbitMQService.addQueue(name, id);
-        Map<String, String> map = new HashMap();
-        map.put("id", id);
-        subscribeSender.send(map, id);
+        //Map<String, String> map = new HashMap();
+        //map.put("id", id);
+        //subscribeSender.send(JSON.toJSONString(map), id);
         return id;
     }
 
@@ -59,7 +59,10 @@ public class UserService {
      */
     public boolean unregister(String id) {
         User user = userDAO.findById(id, User.class);
+        Map<String, String> map = new HashMap<>();
         if(user == null) {
+            //map.put("status", "FAIL");
+            subscribeSender.send(JSON.toJSONString(map), id);
             return false;
         }
         List<String> eventSubscribe = user.getEventSubscribe();
@@ -100,6 +103,8 @@ public class UserService {
         }
         // 删除队列
         rabbitMQService.delQueue(id);
+        //map.put("status", "SUCC");
+        //subscribeSender.send(JSON.toJSONString(map), id);
         return true;
     }
     private boolean create(String id, String name, String intro) {
