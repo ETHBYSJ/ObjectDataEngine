@@ -214,22 +214,46 @@ public class APIObjectService {
      * @return 删除情况
      */
     public String deleteObjectById(String id) {
-        String msg = "删除成功";
+        //String msg = "删除成功";
         if (id == null || id.equals("")) return "ID不能为空";
         CommonObject mongoObject = mongoObjectService.findLatestObjectByKey(id);
         CommonObject redisObject = redisObjectService.findObjectById(id);
+        String template = "";
         if (mongoObject == null && redisObject == null) return "ID不存在";
         if (mongoObject != null) {
+            template = mongoObject.getTemplate();
             if(!mongoObjectService.deleteObjectById(id, mongoObject.getTemplate())) {
-                msg = "删除失败";
+                return "删除失败";
             }
         }
         if (redisObject != null) {
+            template = redisObject.getTemplate();
             if(!redisObjectService.deleteObjectById(id, redisObject.getTemplate())) {
-                msg = "删除失败";
+                return "删除失败";
             }
         }
-        return msg;
+        SubscribeMessage entitySubscribeMessage = subscribeService.findByIdAndType(id, "entity");
+        SubscribeMessage templateSubscribeMessage = subscribeService.findByIdAndType(id, "template");
+        Map<String, Object> map1 = new HashMap<>();
+        String msg1 = "对象(ID=" + id + ")已经被删除";
+        map1.put("msg", msg1);
+        map1.put("object", id);
+        List<String> entitySubscriberList = entitySubscribeMessage.getObjectSubscriber();
+        //给对象订阅者发消息，这里暂时没有发给属性订阅者
+        for(String user : entitySubscriberList) {
+            subscribeSender.send(JSON.toJSONString(map1), user);
+        }
+        Map<String, Object> map2 = new HashMap<>();
+        String msg2 = "基于模板(ID=" + template + ")创建的对象已经被删除，对象ID为" + id;
+        map2.put("msg", msg2);
+        map2.put("template", template);
+        map2.put("object", id);
+        List<String> templateSubscriberList = templateSubscribeMessage.getObjectSubscriber();
+        for(String user : templateSubscriberList) {
+            subscribeSender.send(JSON.toJSONString(map2), user);
+        }
+        subscribeService.deleteByIdAndType(id, "entity");
+        return "删除成功";
     }
 
     /**

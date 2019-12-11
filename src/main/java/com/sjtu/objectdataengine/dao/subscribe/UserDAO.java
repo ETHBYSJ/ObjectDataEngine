@@ -82,6 +82,7 @@ public class UserDAO extends MongoBaseDAO<User> {
      * @param eventId 事件id
      * @param name 属性
      */
+    /*
     public void addEventSubscribe(String userId, String eventId, String name) {
         String key = name==null ? eventId : eventId + ":" + name;
         Query query = new Query();
@@ -90,12 +91,14 @@ public class UserDAO extends MongoBaseDAO<User> {
         update.addToSet("eventSubscribe", key);
         mongoTemplate.updateMulti(query, update, User.class);
     }
+    */
     /**
      * 删除一个针对事件的订阅
      * @param userId 用户id
      * @param eventId 事件id
      * @param name 属性
      */
+    /*
     public void delEventSubscribe(String userId, String eventId, String name) {
         String key = name==null ? eventId : eventId + ":" + name;
         Query query = new Query();
@@ -104,6 +107,7 @@ public class UserDAO extends MongoBaseDAO<User> {
         update.pull("eventSubscribe", key);
         mongoTemplate.updateMulti(query, update, User.class);
     }
+    */
     /**
      * 增加一个针对模板的订阅
      * @param userId 用户id
@@ -148,12 +152,14 @@ public class UserDAO extends MongoBaseDAO<User> {
      * @param userId 用户id
      * @param objId 对象id
      */
+    /*
     public void addEventSubscribe(String userId, String objId) {
         this.addEventSubscribe(userId, objId, null);
     }
     public void delEventSubscribe(String userId, String objId) {
         this.delEventSubscribe(userId, objId, null);
     }
+    */
     /**
      * 重载，实现添加整个模板订阅
      * @param userId 用户id
