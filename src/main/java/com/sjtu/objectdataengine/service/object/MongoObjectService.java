@@ -445,6 +445,8 @@ public class MongoObjectService {
         Date ut = new Date(0);
         // 取下最新的属性，作为模板，更换对应时间的属性
         CommonObject commonObject = mongoObjectDAO.findById(id, CommonObject.class);
+        // 如果id不存在，返回空
+        if (commonObject == null) return null;
         // 如果早过创建时间，就返回空
         if (time.before(commonObject.getCreateTime())) return null;
         // 取出属性列表的key集合

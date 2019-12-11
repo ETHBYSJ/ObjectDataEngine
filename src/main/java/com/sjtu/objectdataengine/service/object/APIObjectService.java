@@ -97,7 +97,7 @@ public class APIObjectService {
         }
         // 获取日期
         Date date = new Date();
-        String msg = "创建失败";
+        String msg = "创建失败，请检查ID是否重复或网络出错";
         if (mongoObjectService.create(id, name, intro, template, attrs, events, date) && redisObjectService.create(id, name, intro, template, events, attrs, date)) {
             msg = "创建成功";
         } else {
@@ -279,7 +279,6 @@ public class APIObjectService {
     public CommonObject findObjectByTime(String id, Date time) {
         CommonObject redisResult = redisObjectService.findObjectById(id, time);
         if (redisResult == null) {
-            System.out.println("from mongo");
             return mongoObjectService.findObjectByTime(id, time);
         }
         System.out.println("from redis");

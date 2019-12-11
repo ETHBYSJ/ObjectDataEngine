@@ -138,8 +138,8 @@ public class CommonObject extends BaseModel {
                 ",\"template\":" + template +
                 ",\"events\":" + eventsStr +
                 ",\"attrs\":" + attrsStr +
-                ",\"createTime\":" + getCreateTime() +
-                ",\"updateTime\":" + getUpdateTime() +
+                ",\"createTime\":" + getCreateTime().toString() +
+                ",\"updateTime\":" + getUpdateTime().toString() +
                 "}"
         );
     }

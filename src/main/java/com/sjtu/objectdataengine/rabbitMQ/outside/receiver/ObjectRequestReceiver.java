@@ -45,7 +45,7 @@ public class ObjectRequestReceiver {
         switch (op) {
             case "CREATE": {
                 String msg = apiObjectService.create(message);
-                if (jsonObject.getBoolean("response")) {
+                if (jsonObject.getBoolean("response") != null && jsonObject.getBoolean("response")) {
                     Map<String, Object> result = new HashMap<>();
                     if (msg.equals("创建成功")) {
                         result.put("status", "SUCC");
@@ -77,7 +77,7 @@ public class ObjectRequestReceiver {
             case "DELETE": {
                 String id = jsonObject.getString("id");
                 String msg = apiObjectService.deleteObjectById(id);
-                if (jsonObject.getBoolean("response")) {
+                if (jsonObject.getBoolean("response") != null && jsonObject.getBoolean("response")) {
                     Map<String, Object> result = new HashMap<>();
                     if (msg.equals("删除成功")) {
                         result.put("status", "SUCC");
