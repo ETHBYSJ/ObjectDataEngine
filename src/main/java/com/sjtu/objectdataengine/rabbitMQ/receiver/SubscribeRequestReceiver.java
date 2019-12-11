@@ -2,6 +2,7 @@ package com.sjtu.objectdataengine.rabbitMQ.receiver;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.sjtu.objectdataengine.rabbitMQ.outside.sender.SubscribeSender;
 import com.sjtu.objectdataengine.service.subscribe.SubscribeService;
 import com.sjtu.objectdataengine.service.subscribe.UserService;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
@@ -9,6 +10,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
 import java.util.Map;
 
 @Component
@@ -22,6 +24,9 @@ public class SubscribeRequestReceiver {
     @Resource
     private UserService userService;
 
+    @Resource
+    private SubscribeSender subscribeSender;
+
     @RabbitHandler
     public void process(String message) {
         JSONObject jsonObject = JSON.parseObject(message);
@@ -33,7 +38,16 @@ public class SubscribeRequestReceiver {
             case "REGISTER" : {
                 String name = jsonObject.getString("name");
                 String intro = jsonObject.getString("intro");
-                userService.register(name, intro);
+                String res = userService.register(name, intro);
+                Map<String, Object> map = new HashMap<>();
+                if(res.equals("用户名重复")) {
+                    map.put("status", "FAIL");
+                }
+                else {
+                    map.put("status", "SUCC");
+                    map.put("id", res);
+                }
+                subscribeSender.send(JSON.toJSONString(map), res);
                 // 客户端怎么知道监听哪条队列？
                 break;
             }
@@ -42,7 +56,15 @@ public class SubscribeRequestReceiver {
              */
             case "UNREGISTER" : {
                 String id = jsonObject.getString("id");
-                userService.unregister(id);
+                boolean res = userService.unregister(id);
+                Map<String, Object> map = new HashMap<>();
+                if(res) {
+                    map.put("status", "SUCC");
+                }
+                else {
+                    map.put("status", "FAIL");
+                }
+                subscribeSender.send(JSON.toJSONString(map), id);
                 break;
             }
             /*
@@ -58,12 +80,21 @@ public class SubscribeRequestReceiver {
                     subscribeService.create(objId, type);
                 }
                 */
+                String res;
                 if(name == null) {
-                    subscribeService.addObjectSubscriber(objId, type, userId);
+                    res = subscribeService.addObjectSubscriber(objId, type, userId);
                 }
                 else {
-                    subscribeService.addAttrSubscriber(objId, type, name.toString(), userId);
+                    res = subscribeService.addAttrSubscriber(objId, type, name.toString(), userId);
                 }
+                Map<String, Object> map = new HashMap<>();
+                if(res.equals("增加成功")) {
+                    map.put("status", "SUCC");
+                }
+                else {
+                    map.put("status", "FAIL");
+                }
+                subscribeSender.send(JSON.toJSONString(map), userId);
                 break;
             }
         }

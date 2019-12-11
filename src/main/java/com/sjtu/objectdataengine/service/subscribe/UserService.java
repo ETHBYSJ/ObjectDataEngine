@@ -44,12 +44,11 @@ public class UserService {
             return "用户名重复";
         }
         String id = mongoAutoIdUtil.getNextId("seq_user").toString();
-        System.out.println(id);
         this.create(id, name, intro);
         rabbitMQService.addQueue(name, id);
-        Map<String, String> map = new HashMap();
-        map.put("id", id);
-        subscribeSender.send(JSON.toJSONString(map), id);
+        //Map<String, String> map = new HashMap();
+        //map.put("id", id);
+        //subscribeSender.send(JSON.toJSONString(map), id);
         return id;
     }
 
@@ -62,7 +61,7 @@ public class UserService {
         User user = userDAO.findById(id, User.class);
         Map<String, String> map = new HashMap<>();
         if(user == null) {
-            map.put("status", "FAIL");
+            //map.put("status", "FAIL");
             subscribeSender.send(JSON.toJSONString(map), id);
             return false;
         }
@@ -104,8 +103,8 @@ public class UserService {
         }
         // 删除队列
         rabbitMQService.delQueue(id);
-        map.put("status", "SUCC");
-        subscribeSender.send(JSON.toJSONString(map), id);
+        //map.put("status", "SUCC");
+        //subscribeSender.send(JSON.toJSONString(map), id);
         return true;
     }
     private boolean create(String id, String name, String intro) {
