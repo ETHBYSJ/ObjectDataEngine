@@ -488,13 +488,13 @@ public class RedisObjectService {
         for(Object everyAttr : attrList) {
             MongoAttr mongoAttr = findAttrByKey(id, everyAttr.toString());
             if(mongoAttr != null) {
-                commonObject.putAttr(everyAttr.toString(), mongoAttr);
+                commonObject.putAttrs(everyAttr.toString(), mongoAttr);
                 if(ut.before(mongoAttr.getUpdateTime())) {
                     ut = mongoAttr.getUpdateTime();
                 }
             }
         }
-        System.out.println("ut = " + ut);
+        // System.out.println("ut = " + ut);
         //关联对象
         HashMap<String, Date> objectMap = (HashMap<String, Date>) redisAttrDAO.hmget(id + "#events");
         commonObject.setEvents(objectMap);
@@ -574,7 +574,7 @@ public class RedisObjectService {
         for(Object everyAttr : attrList) {
             MongoAttr mongoAttr = findAttrByTime(id, everyAttr.toString(), date);
             if(mongoAttr != null) {
-                commonObject.putAttr(everyAttr.toString(), mongoAttr);
+                commonObject.putAttrs(everyAttr.toString(), mongoAttr);
                 if(ut.before(mongoAttr.getUpdateTime())) {
                     ut = mongoAttr.getUpdateTime();
                 }
@@ -747,7 +747,7 @@ public class RedisObjectService {
                     }
                     HashMap<String, Date> cutMap = cutObjects(commonObject.getUpdateTime(), id);
                     commonObject.setEvents(cutMap);
-                    commonObject.putAttr(attrName, mongoAttr);
+                    commonObject.putAttrs(attrName, mongoAttr);
                 }
                 retList.add(commonObject);
             }

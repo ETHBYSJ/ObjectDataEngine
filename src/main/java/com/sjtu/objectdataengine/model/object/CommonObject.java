@@ -1,5 +1,7 @@
 package com.sjtu.objectdataengine.model.object;
 
+import com.alibaba.fastjson.JSONObject;
+import com.mongodb.Mongo;
 import com.sjtu.objectdataengine.model.BaseModel;
 import com.sjtu.objectdataengine.utils.MongoAttr;
 import org.springframework.data.annotation.Id;
@@ -7,6 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 @Document(collection = "mongoObjects")
@@ -20,15 +23,15 @@ public class CommonObject extends BaseModel {
 
     private HashMap<String, Date> events; // 关联的events
 
-    private HashMap<String, MongoAttr> attr;  // 最新属性集合
+    private HashMap<String, MongoAttr> attrs;  // 最新属性集合
 
-    public CommonObject(String id, String name, String intro, String type, String template, HashMap<String, MongoAttr> attr, HashMap<String, Date> events) {
+    public CommonObject(String id, String name, String intro, String type, String template, HashMap<String, MongoAttr> attrs, HashMap<String, Date> events) {
         this.id = id;
         this.name = name;
         this.intro = intro;
         this.type = type;
         this.template = template;
-        this.attr = attr;
+        this.attrs = attrs;
         this.events = events;
     }
 
@@ -38,6 +41,14 @@ public class CommonObject extends BaseModel {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getIntro() {
@@ -72,16 +83,16 @@ public class CommonObject extends BaseModel {
         this.events = events;
     }
 
-    public HashMap<String, MongoAttr> getAttr() {
-        return attr;
+    public HashMap<String, MongoAttr> getAttrs() {
+        return attrs;
     }
 
-    public void setAttr(HashMap<String, MongoAttr> attr) {
-        this.attr = attr;
+    public void setAttrs(HashMap<String, MongoAttr> attr) {
+        this.attrs = attr;
     }
 
-    public void putAttr(String name, MongoAttr mongoAttr) {
-        this.attr.put(name, mongoAttr);
+    public void putAttrs(String name, MongoAttr mongoAttr) {
+        this.attrs.put(name, mongoAttr);
     }
 
     /**
@@ -98,5 +109,38 @@ public class CommonObject extends BaseModel {
                 }
             }
         }
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder eventsStr = new StringBuilder("{");
+        StringBuilder attrsStr = new StringBuilder("{");
+
+        for (Map.Entry event : events.entrySet()) {
+            eventsStr.append("\"").append(event.getKey()).append("\":").append(event.getValue()).append(",");
+        }
+        if (eventsStr.length() > 1) eventsStr.setCharAt(eventsStr.length()-1, '}');
+        else eventsStr.append('}');
+
+        for (Map.Entry attr : attrs.entrySet()) {
+            MongoAttr mongoAttr = (MongoAttr) attr.getValue();
+            attrsStr.append("\"").append(attr.getKey()).append("\":").append("{\"value\":").append(mongoAttr.getValue()).append(",\"updateTime\":")
+                    .append(mongoAttr.getUpdateTime().toString()).append("},");
+        }
+        if (attrsStr.length() > 1) attrsStr.setCharAt(attrsStr.length()-1, '}');
+        else attrsStr.append('}');
+
+        return ("{\"id\":" + id +
+                ",\"name\":" + name +
+                ",\"intro\":" + intro +
+                ",\"type\":" + type +
+                ",\"template\":" + template +
+                ",\"events\":" + eventsStr +
+                ",\"attrs\":" + attrsStr +
+                ",\"createTime\":" + getCreateTime() +
+                ",\"updateTime\":" + getUpdateTime() +
+                "}"
+        );
     }
 }

@@ -1,5 +1,6 @@
 package com.sjtu.objectdataengine.rabbitMQ.outside.receiver;
 
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.sjtu.objectdataengine.model.object.CommonObject;
@@ -33,12 +34,12 @@ public class ObjectRequestReceiver {
             ),
             concurrency = "10"
     )
-    public void process(String message) {
+    public void process(byte[] byteMsg) {
+        String message = new String(byteMsg);
+        // System.out.println("get message!!!");
+        System.out.println(message);
         JSONObject jsonObject = JSON.parseObject(message);
-        // CREATE ADD_ATTR DELETE
-        // FIND_ID FIND_TIME FIND_TIMES
-        // FIND_EVENT
-        String op = jsonObject.getString("op");
+        String op = jsonObject.getString("op"); // CREATE ADD_ATTR DELETE FIND_ID FIND_TIME FIND_TIMES FIND_EVENT
         String userId = jsonObject.getString("userId");
 
         switch (op) {
@@ -52,7 +53,7 @@ public class ObjectRequestReceiver {
                         result.put("status", "FAIL");
                     }
                     result.put("message", msg);
-                    subscribeSender.send(result, userId);
+                    // subscribeSender.send(result, userId);
                 }
                 break;
             }
@@ -69,7 +70,7 @@ public class ObjectRequestReceiver {
                         result.put("status", "FAIL");
                     }
                     result.put("message", msg);
-                    subscribeSender.send(result, userId);
+                    // subscribeSender.send(result, userId);
                 }
                 break;
             }
@@ -84,21 +85,25 @@ public class ObjectRequestReceiver {
                         result.put("status", "FAIL");
                     }
                     result.put("message", msg);
-                    subscribeSender.send(result, userId);
+                    // subscribeSender.send(result, userId);
                 }
                 break;
             }
             case "FIND_ID": {
                 String id = jsonObject.getString("id");
                 CommonObject commonObject = apiObjectService.findObjectById(id);
+                // System.out.println(commonObject);
                 Map<String, Object> result = new HashMap<>();
                 if (commonObject != null) {
                     result.put("status", "SUCC");
+                    result.put("object", commonObject.toString());
+                    System.out.println(commonObject.toString());
                 } else {
                     result.put("status", "FAIL");
+                    result.put("object", null);
                 }
-                result.put("object", commonObject);
-                subscribeSender.send(result, userId);
+
+                // subscribeSender.send(result, userId);
                 break;
             }
             case "FIND_TIME": {
@@ -108,11 +113,12 @@ public class ObjectRequestReceiver {
                 Map<String, Object> result = new HashMap<>();
                 if (commonObject != null) {
                     result.put("status", "SUCC");
+                    result.put("object", commonObject.toString());
                 } else {
                     result.put("status", "FAIL");
+                    result.put("object", null);
                 }
-                result.put("object", commonObject);
-                subscribeSender.send(result, userId);
+                // subscribeSender.send(result, userId);
                 break;
             }
             case "FIND_TIMES": {
@@ -127,7 +133,7 @@ public class ObjectRequestReceiver {
                     result.put("status", "FAIL");
                 }
                 result.put("object", commonObjects);
-                subscribeSender.send(result, userId);
+                // subscribeSender.send(result, userId);
                 break;
             }
             case "FIND_EVENT": {
@@ -141,7 +147,7 @@ public class ObjectRequestReceiver {
                     result.put("status", "FAIL");
                 }
                 result.put("object", commonObjects);
-                subscribeSender.send(result, userId);
+                // subscribeSender.send(result, userId);
                 break;
             }
         }

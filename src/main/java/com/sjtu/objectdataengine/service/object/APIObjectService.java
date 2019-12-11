@@ -27,9 +27,6 @@ public class APIObjectService {
     MongoSender mongoSender;
 
     @Resource
-    RedisSender redisSender;
-
-    @Resource
     SubscribeSender subscribeSender;
 
     @Resource
