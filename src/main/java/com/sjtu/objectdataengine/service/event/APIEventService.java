@@ -34,9 +34,6 @@ public class APIEventService {
     MongoEventService mongoEventService;
 
     @Resource
-    UserService userService;
-
-    @Resource
     SubscribeService subscribeService;
 
     @Resource
