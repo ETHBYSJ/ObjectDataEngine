@@ -152,7 +152,6 @@ public class APIEventService {
         for(String user : templateSubscriberList) {
             subscribeSender.send(JSON.toJSONString(map2), user);
         }
-        subscribeService.deleteByIdAndType(id, "event");
         return "删除成功！";
     }
 
