@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.sjtu.objectdataengine.model.tree.TreeNode;
 import com.sjtu.objectdataengine.model.template.ObjectTemplate;
 import com.sjtu.objectdataengine.rabbitMQ.inside.sender.MongoSender;
+import com.sjtu.objectdataengine.service.subscribe.SubscribeService;
 import com.sjtu.objectdataengine.service.tree.RedisTreeService;
 import com.sjtu.objectdataengine.utils.TypeConversion;
 import org.springframework.stereotype.Component;
@@ -27,6 +28,9 @@ public class APITemplateService {
 
     @Resource
     RedisTreeService redisTreeService;
+
+    @Resource
+    SubscribeService subscribeService;
 
     public String create(String request) {
         //解析
@@ -71,6 +75,8 @@ public class APITemplateService {
             return "创建成功";
         }
         //this.delete(id);
+        // 创建订阅表
+        subscribeService.create(id, "template");
         return "创建失败!";
     }
 
