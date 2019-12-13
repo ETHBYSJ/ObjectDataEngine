@@ -1,5 +1,6 @@
 package com.sjtu.objectdataengine.model.object;
 
+import com.sjtu.objectdataengine.config.Constants;
 import com.sjtu.objectdataengine.model.BaseModel;
 import com.sjtu.objectdataengine.utils.MongoAttr;
 import org.springframework.data.annotation.Id;
@@ -17,7 +18,6 @@ public class AttrsModel extends BaseModel {
     private String id;
 
     private List<MongoAttr> attrs;
-    public static int length=3; //规定长度
 
     private int index; //位置
     private int size; //已有长度
@@ -54,11 +54,11 @@ public class AttrsModel extends BaseModel {
     }
 
     public boolean isFull() {
-        return this.size >= length;
+        return this.size >= Constants.BLOCK_LENGTH;
     }
 
     public boolean isNearlyFull() {
-        return this.size >= length - 1;
+        return this.size >= Constants.BLOCK_LENGTH - 1;
     }
 
     public String getId() {
