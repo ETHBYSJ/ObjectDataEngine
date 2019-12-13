@@ -146,7 +146,7 @@ public class MongoObjectService {
             Set<String> events = commonObject.getEvents().keySet();
             mongoObjectDAO.deleteById(id, CommonObject.class);
             for (String attr : attrs) {
-                mongoHeaderDAO.deleteAttrs(id,attr, AttrsHeader.class);
+                mongoHeaderDAO.deleteAttrs(id, attr, AttrsHeader.class);
             }
             mongoTemplateDAO.opObjects(template, id,"del");
             for (String event : events) {
