@@ -17,24 +17,6 @@ import static org.springframework.data.mongodb.core.query.Query.query;
 
 @Component
 public class UserDAO extends MongoBaseDAO<User> {
-    /*
-    public Long getNextId(String collectionName) {
-        MongoSequence seq = mongoTemplate.findAndModify(
-                query(where("_id").is(collectionName)),
-                new Update().inc("seq", 1),
-                options().upsert(true).returnNew(true),
-                MongoSequence.class);
-        return seq.getSeq();
-    }
-    */
-    /**
-     * 是否含有该user Id
-     * @param id userId
-     * @return true or false
-     */
-    public boolean hasUser(String id) {
-        return findById(id, User.class) != null;
-    }
 
     /**
      * 是否含有该user Name
@@ -77,43 +59,19 @@ public class UserDAO extends MongoBaseDAO<User> {
         mongoTemplate.updateMulti(query, update, User.class);
     }
     /**
-     * 增加一个针对事件的订阅
-     * @param userId 用户id
-     * @param eventId 事件id
-     * @param name 属性
-     */
-    /*
-    public void addEventSubscribe(String userId, String eventId, String name) {
-        String key = name==null ? eventId : eventId + ":" + name;
-        Query query = new Query();
-        query.addCriteria(where("_id").is(userId));
-        Update update = new Update();
-        update.addToSet("eventSubscribe", key);
-        mongoTemplate.updateMulti(query, update, User.class);
-    }
-    */
-    /**
-     * 删除一个针对事件的订阅
-     * @param userId 用户id
-     * @param eventId 事件id
-     * @param name 属性
-     */
-    /*
-    public void delEventSubscribe(String userId, String eventId, String name) {
-        String key = name==null ? eventId : eventId + ":" + name;
-        Query query = new Query();
-        query.addCriteria(where("_id").is(userId));
-        Update update = new Update();
-        update.pull("eventSubscribe", key);
-        mongoTemplate.updateMulti(query, update, User.class);
-    }
-    */
-    /**
      * 增加一个针对模板的订阅
      * @param userId 用户id
      * @param template 模板id
-     * @param name 属性
+     * @param list 关联对象/事件表
      */
+    public void addTemplateSubscribe(String userId, String template, List<String> list) {
+        Query query = new Query();
+        query.addCriteria(where("_id").is(userId));
+        Update update = new Update();
+        update.addToSet("templateSubscribe." + template).each(list.toArray());
+        mongoTemplate.updateMulti(query, update, User.class);
+    }
+    /*
     public void addTemplateSubscribe(String userId, String template, String name) {
         String key = name==null ? template : template + ":" + name;
         Query query = new Query();
@@ -122,12 +80,20 @@ public class UserDAO extends MongoBaseDAO<User> {
         update.addToSet("templateSubscribe", key);
         mongoTemplate.updateMulti(query, update, User.class);
     }
+    */
     /**
      * 删除一个针对模板的订阅
      * @param userId 用户id
      * @param template 模板id
-     * @param name 属性
      */
+    public void delTemplateSubscribe(String userId, String template) {
+        Query query = new Query();
+        query.addCriteria(where("_id").is(userId));
+        Update update = new Update();
+        update.unset("templateSubscribe." + template);
+        mongoTemplate.updateMulti(query, update, User.class);
+    }
+    /*
     public void delTemplateSubscribe(String userId, String template, String name) {
         String key = name==null ? template : template + ":" + name;
         Query query = new Query();
@@ -136,39 +102,32 @@ public class UserDAO extends MongoBaseDAO<User> {
         update.pull("templateSubscribe", key);
         mongoTemplate.updateMulti(query, update, User.class);
     }
+    */
     /**
      * 重载，实现添加整个对象订阅
      * @param userId 用户id
      * @param objId 对象id
      */
+    /*
     public void addObjectSubscribe(String userId, String objId) {
         this.addObjectSubscribe(userId, objId, null);
     }
     public void delObjectSubscribe(String userId, String objId) {
         this.delObjectSubscribe(userId, objId, null);
     }
-    /**
-     * 重载，实现添加整个事件订阅
-     * @param userId 用户id
-     * @param objId 对象id
-     */
-    /*
-    public void addEventSubscribe(String userId, String objId) {
-        this.addEventSubscribe(userId, objId, null);
-    }
-    public void delEventSubscribe(String userId, String objId) {
-        this.delEventSubscribe(userId, objId, null);
-    }
     */
+
     /**
      * 重载，实现添加整个模板订阅
      * @param userId 用户id
      * @param objId 对象id
      */
+    /*
     public void addTemplateSubscribe(String userId, String objId) {
         this.addTemplateSubscribe(userId, objId, null);
     }
     public void delTemplateSubscribe(String userId, String objId) {
         this.delTemplateSubscribe(userId, objId, null);
     }
+    */
 }

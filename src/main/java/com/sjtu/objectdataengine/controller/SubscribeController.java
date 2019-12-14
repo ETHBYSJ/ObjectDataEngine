@@ -25,23 +25,28 @@ public class SubscribeController {
     public boolean create(@RequestParam String objId, @RequestParam String type) {
         return subscribeService.create(objId, type);
     }
+    /*
     @GetMapping("/add_attr")
     public String addAttrSubscriber(@RequestParam String objId, @RequestParam String type, @RequestParam String name, @RequestParam String userId) {
         return  subscribeService.addAttrSubscriber(objId, type, name, userId);
     }
-
+    */
+    /*
     @GetMapping("/del_attr")
     public String delAttrSubscriber(@RequestParam String objId, @RequestParam String type, @RequestParam String name, @RequestParam String userId) {
         return subscribeService.delAttrSubscriber(objId, type, name, userId);
     }
-
+    */
+    /*
     @GetMapping("/add")
     public String addObjectSubscriber(@RequestParam String objId, @RequestParam String type, @RequestParam String userId) {
         return  subscribeService.addObjectSubscriber(objId, type, userId);
     }
-
+    */
+    /*
     @GetMapping("/del")
     public String delObjectSubscriber(@RequestParam String objId, @RequestParam String type, @RequestParam String userId) {
         return  subscribeService.delObjectSubscriber(objId, type, userId);
     }
+    */
 }
