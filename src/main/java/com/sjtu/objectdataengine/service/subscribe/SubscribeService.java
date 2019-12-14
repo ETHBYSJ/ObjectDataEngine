@@ -76,14 +76,14 @@ public class SubscribeService {
             // 从用户表中删除
             List<String> objectSubscriber = entitySubscribeMessage.getObjectSubscriber();
             for(String user : objectSubscriber) {
-                userService.delObjectSubscribe(user, id, null);
+                userService.delObjectSubscribe(user, id);
             }
             HashMap<String, List<String>> attrsSubscriber = entitySubscribeMessage.getAttrsSubscriber();
             for(Map.Entry<String, List<String>> entry : attrsSubscriber.entrySet()) {
                 String name = entry.getKey();
                 List<String> attrSubscriber = entry.getValue();
                 for(String user : attrSubscriber) {
-                    userService.delObjectSubscribe(user, id, name);
+                    userService.delAttrSubscribe(user, id, name);
                 }
             }
             // 从订阅表中删除
@@ -136,7 +136,7 @@ public class SubscribeService {
      * @return 结果说明
      */
 
-    public String addEntitySubscriber(String id, String user, String name) {
+    public String addEntitySubscriber(String id, String user, List<String> attrs) {
         // 检测空
         if(id == null || id.equals("")) return "对象id不能为空";
         if (user == null || user.equals("")) return "用户id不能为空";
@@ -154,16 +154,16 @@ public class SubscribeService {
             entitySubscribeService.create(id, date);
         }
         // 双向操作
-        if(name == null) {
+        if(attrs == null || attrs.size() == 0) {
             if(entitySubscribeService.addEntitySubscriber(id, user)) {
-                userService.addObjectSubscribe(user, id, null);
+                userService.addObjectSubscribe(user, id);
                 return "增加成功";
             }
             return "增加失败";
         }
         else {
-            if(entitySubscribeService.addEntityAttrSubscriber(id, name, user)) {
-                userService.addObjectSubscribe(user, id, name);
+            if(entitySubscribeService.addEntityAttrSubscriber(id, attrs, user)) {
+                userService.addAttrSubscribe(user, id, attrs);
                 return "增加成功";
             }
             return "增加失败";
@@ -175,7 +175,7 @@ public class SubscribeService {
      * @param user 订阅者id
      * @return 结果说明
      */
-    public String delEntitySubscriber(String id, String user, String name) {
+    public String delEntitySubscriber(String id, String user, List<String> attrs) {
         // 检测空
         if(id == null || id.equals("")) return "对象id不能为空";
         if (user == null || user.equals("")) return "用户id不能为空";
@@ -184,16 +184,16 @@ public class SubscribeService {
             return "用户不存在";
         }
         // 双向操作
-        if(name == null) {
+        if(attrs == null || attrs.size() == 0) {
             if(entitySubscribeService.delEntitySubscriber(id, user)) {
-                userService.delObjectSubscribe(user, id, null);
+                userService.delObjectSubscribe(user, id);
                 return "删除成功";
             }
             return "删除失败";
         }
         else {
-            if(entitySubscribeService.delEntityAttrSubscriber(id, name, user)) {
-                userService.delObjectSubscribe(user, id, name);
+            if(entitySubscribeService.delEntityAttrSubscriber(id, attrs, user)) {
+                userService.delAttrSubscribe(user, id, attrs);
                 return "删除成功";
             }
             return "删除失败";
@@ -218,7 +218,7 @@ public class SubscribeService {
         }
         // 1.检查对象是否存在
         if(templateService.get(id) == null) {
-            return "实体对象不存在";
+            return "模板不存在";
         }
         // 2.订阅表如果不存在，创建订阅表
         if(templateSubscribeService.findById(id) == null) {

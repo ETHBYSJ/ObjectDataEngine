@@ -30,6 +30,12 @@ public class UserService {
     private MongoAutoIdUtil mongoAutoIdUtil;
     @Resource
     private SubscribeSender subscribeSender;
+    @Resource
+    private UserService userService;
+    @Resource
+    private EntitySubscribeService entitySubscribeService;
+    @Resource
+    private TemplateSubscribeService templateSubscribeService;
 
     /**
      * 用户注册，注册时分配唯一id
@@ -54,45 +60,42 @@ public class UserService {
      * @param id 分配给用户的唯一id
      * @return true代表注销成功，false代表注销失败
      */
-    /*
     public boolean unregister(String id) {
         User user = userDAO.findById(id, User.class);
         Map<String, String> map = new HashMap<>();
         if(user == null) {
-            //map.put("status", "FAIL");
-            subscribeSender.send(JSON.toJSONString(map), id);
             return false;
         }
         List<String> objectSubscribe = user.getObjectSubscribe();
-        List<String> templateSubscribe = user.getTemplateSubscribe();
+        HashMap<String, List<String>> templateSubscribe = user.getTemplateSubscribe();
         // 从用户表中删除
         userDAO.deleteById(id, User.class);
         // 从订阅表中删除该用户
         for(String object : objectSubscribe) {
             String[] objectSplit = object.split(":");
             if(objectSplit.length == 1) {
-                subscribeDAO.delObjectSubscriber(objectSplit[0], "entity", id);
+                entitySubscribeService.delEntitySubscriber(objectSplit[0], id);
             }
             else {
                 // objectSplit.length == 2
-                subscribeDAO.delAttrSubscriber(objectSplit[0], "entity", objectSplit[1], id);
+                entitySubscribeService.delEntityAttrSubscriber(objectSplit[0], objectSplit[1], id);
             }
         }
-        for(String template : templateSubscribe) {
-            String[] templateSplit = template.split(":");
-            if(templateSplit.length == 1) {
-                subscribeDAO.delObjectSubscriber(templateSplit[0], "template", id);
-            }
-            else {
-                // templateSplit.length == 2
-                subscribeDAO.delAttrSubscriber(templateSplit[0], "template", templateSplit[1], id);
-            }
+        for(Map.Entry<String, List<String>> entry : templateSubscribe.entrySet()) {
+            String template = entry.getKey();
+            templateSubscribeService.delTemplateSubscriber(template, id);
         }
         // 删除队列
         rabbitMQService.delQueue(id);
-        return true;
+        return false;
     }
 
+    /**
+     *
+     * @param id id 用户id
+     * @param name 用户名
+     * @param intro 简介
+     * @return true or false
      */
     public boolean create(String id, String name, String intro) {
         User user = new User(id, name, intro);
@@ -102,22 +105,75 @@ public class UserService {
     public boolean hasUser(String user) {
         return userDAO.findById(user, User.class) != null;
     }
-
-    /**
-     * 增加实体对象订阅
-     * @param userId 用户id
-     * @param id 实体对象id
-     * @param name 属性名，为null表示订阅整个对象
-     * @return 说明信息
-     */
-    public String addObjectSubscribe(String userId, String id, String name) {
+    public String addAttrSubscribe(String userId, String id, String attr) {
         if(userId == null || userId.equals("")) {
             return "用户id不能为空";
         }
         if(id == null || id.equals("")) {
             return "实体对象id不能为空";
         }
-        userDAO.addObjectSubscribe(userId, id, name);
+        userDAO.addAttrSubscribe(userId, id, attr);
+        return "增加成功";
+    }
+    public String delAttrSubscribe(String userId, String id, String attr) {
+        if(userId == null || userId.equals("")) {
+            return "用户id不能为空";
+        }
+        if(id == null || id.equals("")) {
+            return "实体对象id不能为空";
+        }
+        userDAO.delAttrSubscribe(userId, id, attr);
+        return "删除成功";
+    }
+    /**
+     * 增加属性订阅
+     * @param userId 用户id
+     * @param id 对象id
+     * @param attrs 属性列表
+     * @return 说明信息
+     */
+    public String addAttrSubscribe(String userId, String id, List<String> attrs) {
+        if(userId == null || userId.equals("")) {
+            return "用户id不能为空";
+        }
+        if(id == null || id.equals("")) {
+            return "实体对象id不能为空";
+        }
+        // attrs必不为空
+        userDAO.addAttrSubscribe(userId, id, attrs);
+        return "增加成功";
+    }
+    /**
+     * 删除属性订阅
+     * @param userId 用户id
+     * @param id 对象id
+     * @param attrs 属性列表
+     * @return 说明信息
+     */
+    public String delAttrSubscribe(String userId, String id, List<String> attrs) {
+        if(userId == null || userId.equals("")) {
+            return "用户id不能为空";
+        }
+        if(id == null || id.equals("")) {
+            return "实体对象id不能为空";
+        }
+        userDAO.delAttrSubscribe(userId, id, attrs);
+        return "删除成功";
+    }
+    /**
+     * 增加实体对象订阅
+     * @param userId 用户id
+     * @param id 实体对象id
+     * @return 说明信息
+     */
+    public String addObjectSubscribe(String userId, String id) {
+        if(userId == null || userId.equals("")) {
+            return "用户id不能为空";
+        }
+        if(id == null || id.equals("")) {
+            return "实体对象id不能为空";
+        }
+        userDAO.addObjectSubscribe(userId, id);
         return "增加成功";
     }
 
@@ -125,17 +181,16 @@ public class UserService {
      * 删除实体对象订阅
      * @param userId 用户id
      * @param id 实体对象id
-     * @param name 属性名，可为null
      * @return 说明信息
      */
-    public String delObjectSubscribe(String userId, String id, String name) {
+    public String delObjectSubscribe(String userId, String id) {
         if(userId == null || userId.equals("")) {
             return "用户id不能为空";
         }
         if(id == null || id.equals("")) {
             return "实体对象id不能为空";
         }
-        userDAO.delObjectSubscribe(userId, id, name);
+        userDAO.delObjectSubscribe(userId, id);
         return "删除成功";
     }
 

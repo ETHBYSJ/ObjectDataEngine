@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.springframework.data.mongodb.core.FindAndModifyOptions.options;
@@ -28,15 +29,74 @@ public class UserDAO extends MongoBaseDAO<User> {
         query.addCriteria(where("name").is(userName));
         return mongoTemplate.findOne(query, User.class) != null;
     }
+    /**
+     * 针对单条属性的订阅
+     * @param userId 用户id
+     * @param objId 对象id
+     * @param attr 属性名
+     */
+    public void addAttrSubscribe(String userId, String objId, String attr) {
+        Query query = new Query();
+        query.addCriteria(where("_id").is(userId));
+        Update update = new Update();
+        update.addToSet("objectSubscribe", objId + ':' + attr);
+    }
+    /**
+     * 删除属性的订阅
+     * @param userId 用户id
+     * @param objId 对象id
+     * @param attr 属性名
+     */
+    public void delAttrSubscribe(String userId, String objId, String attr) {
+        Query query = new Query();
+        query.addCriteria(where("_id").is(userId));
+        Update update = new Update();
+        update.pull("objectSubscribe", objId + ':' + attr);
+    }
+    /**
+     * 针对属性的订阅
+     * @param userId 用户id
+     * @param objId 对象id
+     * @param attrs 属性列表
+     */
+    public void addAttrSubscribe(String userId, String objId, List<String> attrs) {
+        Query query = new Query();
+        query.addCriteria(where("_id").is(userId));
+        Update update = new Update();
+        List<String> keys = new ArrayList<>();
 
+        for(String attr : attrs) {
+            String key = objId + ':' + attr;
+            keys.add(key);
+        }
+        update.addToSet("objectSubscribe").each(keys.toArray());
+    }
+
+    /**
+     * 删除属性的订阅
+     * @param userId 用户id
+     * @param objId 对象id
+     * @param attrs 属性列表
+     */
+    public void delAttrSubscribe(String userId, String objId, List<String> attrs) {
+        Query query = new Query();
+        query.addCriteria(where("_id").is(userId));
+        Update update = new Update();
+        List<String> keys = new ArrayList<>();
+
+        for(String attr : attrs) {
+            String key = objId + ':' + attr;
+            keys.add(key);
+        }
+        update.pullAll("objectSubscribe", keys.toArray());
+    }
     /**
      * 增加一个针对对象的订阅
      * @param userId 用户id
      * @param objId 对象id
-     * @param name 属性
      */
-    public void addObjectSubscribe(String userId, String objId, String name) {
-        String key = name==null ? objId : objId + ":" + name;
+    public void addObjectSubscribe(String userId, String objId) {
+        String key = objId;
         Query query = new Query();
         query.addCriteria(where("_id").is(userId));
         Update update = new Update();
@@ -48,10 +108,9 @@ public class UserDAO extends MongoBaseDAO<User> {
      * 删除一个针对对象的订阅
      * @param userId 用户id
      * @param objId 对象id
-     * @param name 属性
      */
-    public void delObjectSubscribe(String userId, String objId, String name) {
-        String key = name==null ? objId : objId + ":" + name;
+    public void delObjectSubscribe(String userId, String objId) {
+        String key = objId;
         Query query = new Query();
         query.addCriteria(where("_id").is(userId));
         Update update = new Update();
@@ -71,16 +130,6 @@ public class UserDAO extends MongoBaseDAO<User> {
         update.addToSet("templateSubscribe." + template).each(list.toArray());
         mongoTemplate.updateMulti(query, update, User.class);
     }
-    /*
-    public void addTemplateSubscribe(String userId, String template, String name) {
-        String key = name==null ? template : template + ":" + name;
-        Query query = new Query();
-        query.addCriteria(where("_id").is(userId));
-        Update update = new Update();
-        update.addToSet("templateSubscribe", key);
-        mongoTemplate.updateMulti(query, update, User.class);
-    }
-    */
     /**
      * 删除一个针对模板的订阅
      * @param userId 用户id
@@ -93,41 +142,5 @@ public class UserDAO extends MongoBaseDAO<User> {
         update.unset("templateSubscribe." + template);
         mongoTemplate.updateMulti(query, update, User.class);
     }
-    /*
-    public void delTemplateSubscribe(String userId, String template, String name) {
-        String key = name==null ? template : template + ":" + name;
-        Query query = new Query();
-        query.addCriteria(where("_id").is(userId));
-        Update update = new Update();
-        update.pull("templateSubscribe", key);
-        mongoTemplate.updateMulti(query, update, User.class);
-    }
-    */
-    /**
-     * 重载，实现添加整个对象订阅
-     * @param userId 用户id
-     * @param objId 对象id
-     */
-    /*
-    public void addObjectSubscribe(String userId, String objId) {
-        this.addObjectSubscribe(userId, objId, null);
-    }
-    public void delObjectSubscribe(String userId, String objId) {
-        this.delObjectSubscribe(userId, objId, null);
-    }
-    */
 
-    /**
-     * 重载，实现添加整个模板订阅
-     * @param userId 用户id
-     * @param objId 对象id
-     */
-    /*
-    public void addTemplateSubscribe(String userId, String objId) {
-        this.addTemplateSubscribe(userId, objId, null);
-    }
-    public void delTemplateSubscribe(String userId, String objId) {
-        this.delTemplateSubscribe(userId, objId, null);
-    }
-    */
 }

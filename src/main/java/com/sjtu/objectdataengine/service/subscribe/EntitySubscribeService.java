@@ -38,12 +38,6 @@ public class EntitySubscribeService {
      * @param id 模板id
      * @return true or false
      */
-    /*
-    public boolean create(String id, Date date) {
-        EntitySubscribeMessage entitySubscribeMessage = new EntitySubscribeMessage(id, "entity");
-        return entitySubscribeDAO.create(entitySubscribeMessage);
-    }
-    */
     public boolean create(String id, Date date) {
         if(this.findById(id) != null) return false;
         EntitySubscribeMessage entitySubscribeMessage = new EntitySubscribeMessage(id, "entity");
@@ -108,5 +102,25 @@ public class EntitySubscribeService {
      */
     public boolean addEntityAttrSubscriber(String id, String name, String userId) {
         return entitySubscribeDAO.addAttrSubscriber(id, "entity", name, userId);
+    }
+    /**
+     * 增加实体对象某属性的订阅者
+     * @param id 实体对象id
+     * @param attrs 属性名
+     * @param userId 用户id
+     * @return true or false
+     */
+    public boolean addEntityAttrSubscriber(String id, List<String> attrs, String userId) {
+        return entitySubscribeDAO.addAttrSubscriber(id, "entity", attrs, userId);
+    }
+    /**
+     * 删除实体对象某属性的订阅者
+     * @param id 实体对象id
+     * @param attrs 属性名
+     * @param userId 用户id
+     * @return true or false
+     */
+    public boolean delEntityAttrSubscriber(String id, List<String> attrs, String userId) {
+        return entitySubscribeDAO.delAttrSubscriber(id, "entity", attrs, userId);
     }
 }
