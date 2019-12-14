@@ -476,6 +476,9 @@ public class MongoObjectService {
     public List<CommonObject> findObjectByStartAndEnd(String id, Date st, Date et) {
         Set<Date> dateSet = new HashSet<>();
         CommonObject commonObject = mongoObjectDAO.findById(id, CommonObject.class);
+        if (commonObject == null) {
+            return null;
+        }
         // 如果et
         Date createTime = commonObject.getCreateTime();
         if (et.before(createTime)) return null;

@@ -42,11 +42,29 @@ public class ObjectRequestReceiver {
 
         switch (op) {
             case "CREATE": {
-                String msg = apiObjectService.create(message);
+                String msg = apiObjectService.create(jsonObject);
                 if (jsonObject.getBoolean("response") != null && jsonObject.getBoolean("response")) {
                     Map<String, Object> result = new HashMap<>();
                     result.put("op", "CREATE");
+                    result.put("id", jsonObject.getString("id"));
                     if (msg.equals("创建成功")) {
+                        result.put("status", "SUCC");
+                    } else {
+                        result.put("status", "FAIL");
+                    }
+                    result.put("message", msg);
+                    subscribeSender.send(JSON.toJSONString(result), userId);
+                }
+                break;
+            }
+            case "DELETE": {
+                String id = jsonObject.getString("id");
+                String msg = apiObjectService.deleteObjectById(id);
+                if (jsonObject.getBoolean("response") != null && jsonObject.getBoolean("response")) {
+                    Map<String, Object> result = new HashMap<>();
+                    result.put("op", "DELETE");
+                    result.put("id", id);
+                    if (msg.equals("删除成功")) {
                         result.put("status", "SUCC");
                     } else {
                         result.put("status", "FAIL");
@@ -64,23 +82,9 @@ public class ObjectRequestReceiver {
                 if (jsonObject.getBoolean("response")) {
                     Map<String, Object> result = new HashMap<>();
                     result.put("op", "UPDATE");
+                    result.put("id", id);
+                    result.put("name", name);
                     if (msg.equals("添加成功")) {
-                        result.put("status", "SUCC");
-                    } else {
-                        result.put("status", "FAIL");
-                    }
-                    result.put("message", msg);
-                    subscribeSender.send(JSON.toJSONString(result), userId);
-                }
-                break;
-            }
-            case "DELETE": {
-                String id = jsonObject.getString("id");
-                String msg = apiObjectService.deleteObjectById(id);
-                if (jsonObject.getBoolean("response") != null && jsonObject.getBoolean("response")) {
-                    Map<String, Object> result = new HashMap<>();
-                    result.put("op", "DELETE");
-                    if (msg.equals("删除成功")) {
                         result.put("status", "SUCC");
                     } else {
                         result.put("status", "FAIL");
@@ -96,6 +100,7 @@ public class ObjectRequestReceiver {
                 // System.out.println(commonObject);
                 Map<String, Object> result = new HashMap<>();
                 result.put("op", "FIND_ID");
+                result.put("id", id);
                 if (commonObject != null) {
                     result.put("status", "SUCC");
                     result.put("object", commonObject.toString());
@@ -114,6 +119,8 @@ public class ObjectRequestReceiver {
                 CommonObject commonObject = apiObjectService.findObjectByTime(id, date);
                 Map<String, Object> result = new HashMap<>();
                 result.put("op", "FIND_TIME");
+                result.put("id", id);
+                result.put("date", date);
                 if (commonObject != null) {
                     result.put("status", "SUCC");
                     result.put("object", commonObject.toString());
@@ -134,6 +141,9 @@ public class ObjectRequestReceiver {
                 List<String> objectsJson = new ArrayList<>();
                 // JSONArray objectsJson = new JSONArray();
                 result.put("op", "FIND_TIMES");
+                result.put("id", id);
+                result.put("start", start);
+                result.put("end", end);
                 if (commonObjects != null) {
                     result.put("status", "SUCC");
                     commonObjects.forEach((item)->{
@@ -142,7 +152,7 @@ public class ObjectRequestReceiver {
                 } else {
                     result.put("status", "FAIL");
                 }
-                result.put("object", objectsJson);
+                result.put("objects", objectsJson);
                 subscribeSender.send(JSON.toJSONString(result), userId);
                 break;
             }
@@ -153,6 +163,8 @@ public class ObjectRequestReceiver {
                 Map<String, Object> result = new HashMap<>();
                 List<String> objectsJson = new ArrayList<>();
                 result.put("op", "FIND_EVENT");
+                result.put("nodeId", nodeId);
+                result.put("eventId", eventId);
                 if (commonObjects != null) {
                     result.put("status", "SUCC");
                     commonObjects.forEach((item)->{
@@ -161,7 +173,7 @@ public class ObjectRequestReceiver {
                 } else {
                     result.put("status", "FAIL");
                 }
-                result.put("object", objectsJson);
+                result.put("objects", objectsJson);
                 subscribeSender.send(JSON.toJSONString(result), userId);
                 break;
             }
