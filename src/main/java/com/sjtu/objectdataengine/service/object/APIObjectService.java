@@ -8,7 +8,6 @@ import com.sjtu.objectdataengine.model.subscribe.SubscribeMessage;
 import com.sjtu.objectdataengine.model.template.ObjectTemplate;
 import com.sjtu.objectdataengine.model.tree.TreeNode;
 import com.sjtu.objectdataengine.rabbitMQ.inside.sender.MongoSender;
-import com.sjtu.objectdataengine.rabbitMQ.inside.sender.RedisSender;
 import com.sjtu.objectdataengine.service.event.RedisEventService;
 import com.sjtu.objectdataengine.service.subscribe.SubscribeService;
 import com.sjtu.objectdataengine.service.template.RedisTemplateService;
@@ -47,15 +46,13 @@ public class APIObjectService {
     @Resource
     RedisEventService redisEventService;
 
-
     /**
      * 创建对象
-     * @param request json请求
+     * @param jsonObject json请求
      * @return String
      */
-    public String create(String request) {
+    public String create(JSONObject jsonObject) {
         //解析JSON
-        JSONObject jsonObject = JSON.parseObject(request);
         String id = jsonObject.getString("id");
         if (id == null || id.equals("")) return "ID不能为空！";
 
@@ -134,6 +131,16 @@ public class APIObjectService {
         }
 
         return msg;
+    }
+
+    /**
+     * 重载创建函数
+     * @param request 请求
+     * @return 说明信息
+     */
+    public String create(String request) {
+        JSONObject jsonObject = JSON.parseObject(request);
+        return create(jsonObject);
     }
 
     public String addAttr(String id, String name, String value) {
