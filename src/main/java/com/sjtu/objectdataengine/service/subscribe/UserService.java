@@ -1,6 +1,5 @@
 package com.sjtu.objectdataengine.service.subscribe;
 
-import com.alibaba.fastjson.JSON;
 import com.sjtu.objectdataengine.dao.subscribe.SubscribeDAO;
 import com.sjtu.objectdataengine.dao.subscribe.UserDAO;
 import com.sjtu.objectdataengine.model.subscribe.User;
@@ -13,9 +12,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Component
 public class UserService {

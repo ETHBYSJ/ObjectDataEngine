@@ -2,7 +2,6 @@ package com.sjtu.objectdataengine.service.subscribe;
 
 import com.sjtu.objectdataengine.dao.subscribe.TemplateSubscribeDAO;
 import com.sjtu.objectdataengine.dao.template.MongoTemplateDAO;
-import com.sjtu.objectdataengine.model.subscribe.SubscribeMessage;
 import com.sjtu.objectdataengine.model.subscribe.TemplateSubscribeMessage;
 import com.sjtu.objectdataengine.model.template.ObjectTemplate;
 import org.springframework.stereotype.Component;
