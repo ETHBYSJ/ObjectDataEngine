@@ -5,6 +5,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @Document(collection = "user")
@@ -12,17 +13,15 @@ public class User extends BaseModel {
     private String id;
     private String name;
     private String intro;
-    //private List<String> eventSubscribe;
+    private HashMap<String, List<String>> templateSubscribe; //templateId: [events] or templateId: [objects]
     private List<String> objectSubscribe;
-    private List<String> templateSubscribe;
 
     public User(String id, String name, String intro) {
         this.id = id;
         this.name = name;
         this.intro = intro;
-        //this.eventSubscribe = new ArrayList<>();
         this.objectSubscribe = new ArrayList<>();
-        this.templateSubscribe = new ArrayList<>();
+        this.templateSubscribe = new HashMap<String, List<String>>();
     }
     public String getId() {
         return id;
@@ -47,14 +46,7 @@ public class User extends BaseModel {
     public void setIntro(String intro) {
         this.intro = intro;
     }
-    /*
-    public List<String> getEventSubscribe() {
-        return eventSubscribe;
-    }
-    public void setEventSubscribe(List<String> eventSubscribe) {
-        this.eventSubscribe = eventSubscribe;
-    }
-    */
+
     public List<String> getObjectSubscribe() {
         return objectSubscribe;
     }
@@ -63,11 +55,11 @@ public class User extends BaseModel {
         this.objectSubscribe = objectSubscribe;
     }
 
-    public List<String> getTemplateSubscribe() {
+    public HashMap<String, List<String>> getTemplateSubscribe() {
         return templateSubscribe;
     }
 
-    public void setTemplateSubscribe(List<String> templateSubscribe) {
+    public void setTemplateSubscribe(HashMap<String, List<String>> templateSubscribe) {
         this.templateSubscribe = templateSubscribe;
     }
 }
