@@ -121,13 +121,17 @@ public class UserDAO extends MongoBaseDAO<User> {
      * 增加一个针对模板的订阅
      * @param userId 用户id
      * @param template 模板id
-     * @param list 关联对象/事件表
+     * @param events 关联对象/事件表
      */
-    public void addTemplateSubscribe(String userId, String template, List<String> list) {
+    public void addTemplateSubscribe(String userId, String template, List<String> events) {
         Query query = new Query();
         query.addCriteria(where("_id").is(userId));
         Update update = new Update();
-        update.addToSet("templateSubscribe." + template).each(list.toArray());
+        update.addToSet("templateSubscribe." + template).each(events.toArray());
+        // 更新事件倒排索引表
+        for(String event : events) {
+            update.addToSet("inverseEvents." + event, template);
+        }
         mongoTemplate.updateMulti(query, update, User.class);
     }
     /**
@@ -136,10 +140,16 @@ public class UserDAO extends MongoBaseDAO<User> {
      * @param template 模板id
      */
     public void delTemplateSubscribe(String userId, String template) {
+        User user = this.findById(userId, User.class);
         Query query = new Query();
         query.addCriteria(where("_id").is(userId));
         Update update = new Update();
         update.unset("templateSubscribe." + template);
+        // 更新事件倒排索引表
+        List<String> events = user.getTemplateSubscribe().get(template);
+        for(String event : events) {
+            update.pull("inverseEvents." + event, template);
+        }
         mongoTemplate.updateMulti(query, update, User.class);
     }
 

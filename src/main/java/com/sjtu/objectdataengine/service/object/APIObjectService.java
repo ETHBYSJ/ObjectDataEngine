@@ -4,12 +4,18 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.sjtu.objectdataengine.model.object.CommonObject;
+import com.sjtu.objectdataengine.model.subscribe.EntitySubscribeMessage;
 import com.sjtu.objectdataengine.model.subscribe.SubscribeMessage;
+import com.sjtu.objectdataengine.model.subscribe.TemplateSubscribeMessage;
+import com.sjtu.objectdataengine.model.subscribe.User;
 import com.sjtu.objectdataengine.model.template.ObjectTemplate;
 import com.sjtu.objectdataengine.model.tree.TreeNode;
 import com.sjtu.objectdataengine.rabbitMQ.inside.sender.MongoSender;
 import com.sjtu.objectdataengine.service.event.RedisEventService;
+import com.sjtu.objectdataengine.service.subscribe.EntitySubscribeService;
 import com.sjtu.objectdataengine.service.subscribe.SubscribeService;
+import com.sjtu.objectdataengine.service.subscribe.TemplateSubscribeService;
+import com.sjtu.objectdataengine.service.subscribe.UserService;
 import com.sjtu.objectdataengine.service.template.RedisTemplateService;
 import com.sjtu.objectdataengine.rabbitMQ.outside.sender.SubscribeSender;
 import com.sjtu.objectdataengine.service.tree.RedisTreeService;
@@ -45,6 +51,15 @@ public class APIObjectService {
 
     @Resource
     RedisEventService redisEventService;
+
+    @Resource
+    TemplateSubscribeService templateSubscribeService;
+
+    @Resource
+    EntitySubscribeService entitySubscribeService;
+
+    @Resource
+    UserService userService;
 
     /**
      * 创建对象
@@ -103,22 +118,20 @@ public class APIObjectService {
         }
         // 创建订阅表
         subscribeService.create(id, "entity");
-        Map<String, Object> map1 = new HashMap<>();
+        Map<String, Object> map = new HashMap<>();
         // 通知模板订阅者
-        /*
-        final String msg1 = "基于模板(ID=" + template + ")创建了新的对象，对象ID为" + id;
-        map1.put("msg", msg1);
-        map1.put("template", template);
-        map1.put("id", id);
-        map1.put("op", "SUB_RES_OBJECT_CREATE");
-        SubscribeMessage subscribeMessage = subscribeService.findByIdAndType(template, "template");
-        if(subscribeMessage != null) {
-            List<String> userList = subscribeMessage.getObjectSubscriber();
-            for (String user : userList) {
-                subscribeSender.send(JSON.toJSONString(map1), user);
+        String MSG = "基于模板(ID=" + template + ")创建了新的实体对象，对象ID为" + id;
+        map.put("op", "OBJECT_CREATE_NOTICE");
+        map.put("message", MSG);
+        map.put("type", "entity");
+        map.put("object", redisObjectService.findObjectById(id));
+        TemplateSubscribeMessage templateSubscribeMessage = templateSubscribeService.findById(template);
+        if(templateSubscribeMessage != null) {
+            List<String> userList = templateSubscribeMessage.getObjectSubscriber();
+            for(String user : userList) {
+                subscribeSender.send(JSON.toJSONString(map), user);
             }
         }
-        */
         return msg;
     }
 
@@ -136,7 +149,9 @@ public class APIObjectService {
         if (id == null || id.equals("")) return "ID不能为空！";
         if (name == null || name.equals("")) return "name不能为空";
         if (value == null) return "value不能为空";
-
+        CommonObject mongoObject = mongoObjectService.findLatestObjectByKey(id);
+        if (mongoObject == null) return "ID不存在";
+        String template = mongoObject.getTemplate();
         Date date = new Date();
         HashMap<String, Object> message = new HashMap<>();
         message.put("op", "OBJECT_ADD_ATTR");
@@ -148,46 +163,72 @@ public class APIObjectService {
         mongoSender.send(message);
         //redisSender.send(message);
         redisObjectService.addAttr(id, name, value, date);
-        final CommonObject commonObject = redisObjectService.findObjectById(id);
-        Map<String, Object> map1 = new HashMap<>();
-        Map<String, Object> map2 = new HashMap<>();
-        // 通知属性和对象订阅者
-        /*
-        final String msg1 = "对象(" + "ID=" + id + ")的属性(" + name + ") 增加了一条新属性，属性值为 " + value + "\n更新时间：" + date;
-        map1.put("msg", msg1);
-        map1.put("name", name);
-        map1.put("id", id);
-        map1.put("value", value);
-        map1.put("date", date);
-        map1.put("op", "SUB_RES_ADD_ATTR");
-        SubscribeMessage subscribeMessage = subscribeService.findByIdAndType(id, "entity");
+        // 关联事件
+        List<String> events = new ArrayList<>(mongoObject.getEvents().keySet());
 
-        List<String> userList = subscribeMessage.getAttrsSubscriber().get(name);
-        // 去重复
-        userList.addAll(subscribeMessage.getObjectSubscriber());
-        HashSet<String> userSet = new HashSet<>(userList);
-        for (String user : userSet) {
-            subscribeSender.send(JSON.toJSONString(map1), user);
-        }
-        */
-        // 通知模板订阅者
-        /*
-        String template = commonObject.getTemplate();
-        final String msg2 = "与模板(ID=" + template + ")关联的对象(" + "ID=" + id + ")的属性(" + name + ") 增加了一条新属性，属性值为 " + value + "\n更新时间：" + date;
-        map2.put("msg", msg2);
-        map2.put("name", name);
-        map2.put("object", id);
-        map2.put("value", value);
-        map2.put("date", date);
-        map2.put("op", "SUB_RES_ADD_ATTR");
-        subscribeMessage = subscribeService.findByIdAndType(template, "template");
-        if(subscribeMessage != null) {
-            userList = subscribeMessage.getObjectSubscriber();
-            for (String user : userList) {
-                subscribeSender.send(JSON.toJSONString(map2), user);
+        EntitySubscribeMessage entitySubscribeMessage = entitySubscribeService.findById(id);
+        Map<String, Object> map = new HashMap<>();
+        String MSG = "对象(ID=" + id + ")已经被删除";
+        map.put("op", "OBJECT_UPDATE_NOTICE");
+        map.put("message", MSG);
+        map.put("id", id);
+        map.put("updateTime", date);
+        map.put("value", value);
+        map.put("name", name);
+        // 暂时未去重
+        if(entitySubscribeMessage != null) {
+            List<String> entitySubscriberList = entitySubscribeMessage.getObjectSubscriber();
+            HashMap<String, List<String>> attrSubscriberMap = entitySubscribeMessage.getAttrsSubscriber();
+            // 给实体对象订阅者发消息
+            for(String subscriber : entitySubscriberList) {
+                subscribeSender.send(JSON.toJSONString(map), subscriber);
+            }
+            // 给属性订阅者发消息
+            for(Map.Entry<String, List<String>> entry : attrSubscriberMap.entrySet()) {
+                List<String> attrSubscriberList = entry.getValue();
+                for(String attrSubscriber : attrSubscriberList) {
+                    subscribeSender.send(JSON.toJSONString(map), attrSubscriber);
+                }
             }
         }
-        */
+        // 实体对象模板订阅者
+        TemplateSubscribeMessage templateSubscribeMessage = templateSubscribeService.findById(template);
+        if(templateSubscribeMessage != null) {
+            Map<String, Object> map1 = new HashMap<>();
+            String MSG1 = "基于模板(ID=" + template + ")创建的对象(ID=" + id + ")更新了一条属性，属性名为(" + name + ")属性值为(" + value + ")";
+            map1.put("op", "OBJECT_UPDATE_NOTICE");
+            map1.put("message", MSG1);
+            map1.put("id", id);
+            map1.put("updateTime", date);
+            map1.put("value", value);
+            map1.put("name", name);
+            List<String> templateSubscriberList = templateSubscribeMessage.getObjectSubscriber();
+            for(String templateSubscriber : templateSubscriberList) {
+                subscribeSender.send(JSON.toJSONString(map1), templateSubscriber);
+            }
+        }
+        // 关联的事件关联的模板订阅者
+        List<User> userList= userService.findAll();
+        if(userList != null) {
+            for(User user : userList) {
+                HashMap<String, List<String>> inverseEvents = user.getInverseEvents();
+                for(String event : events) {
+                    List<String> templateList = inverseEvents.get(event);
+                    if(templateList != null) {
+                        for(String t : templateList) {
+                            Map<String, Object> map2 = new HashMap<>();
+                            String MSG2 = "模板(ID=" + t + ")关联的事件(ID=" + event + ")相关的对象(ID=" + id + ")更新了一条属性，属性名为(" + name + ")属性值为(" + value + ")";
+                            map2.put("op", "OBJECT_DELETE_NOTICE");
+                            map2.put("message", MSG2);
+                            map2.put("id", id);
+                            map2.put("updateTime", date);
+                            map2.put("value", value);
+                            map2.put("name", name);
+                        }
+                    }
+                }
+            }
+        }
         return "添加成功";
     }
 
@@ -200,51 +241,78 @@ public class APIObjectService {
         if (id == null || id.equals("")) return "ID不能为空";
         CommonObject mongoObject = mongoObjectService.findLatestObjectByKey(id);
         CommonObject redisObject = redisObjectService.findObjectById(id);
+        List<String> events = new ArrayList<>();
         String template = "";
         if (mongoObject == null && redisObject == null) return "ID不存在";
         if (mongoObject != null) {
+            events = new ArrayList<String>(mongoObject.getEvents().keySet());
             template = mongoObject.getTemplate();
             if(!mongoObjectService.deleteObjectById(id, mongoObject.getTemplate())) {
                 return "删除失败";
             }
         }
         if (redisObject != null) {
+            events = new ArrayList<String>(redisObject.getEvents().keySet());
             template = redisObject.getTemplate();
             if(!redisObjectService.deleteObjectById(id, redisObject.getTemplate())) {
                 return "删除失败";
             }
         }
-        /*
-        SubscribeMessage entitySubscribeMessage = subscribeService.findByIdAndType(id, "entity");
-        SubscribeMessage templateSubscribeMessage = subscribeService.findByIdAndType(id, "template");
+        EntitySubscribeMessage entitySubscribeMessage = entitySubscribeService.findById(id);
+        // 暂时未去重
         if(entitySubscribeMessage != null) {
-            Map<String, Object> map1 = new HashMap<>();
-            String msg1 = "对象(ID=" + id + ")已经被删除";
-            map1.put("msg", msg1);
-            map1.put("id", id);
-            map1.put("op", "SUB_RES_OBJECT_DELETE");
+            Map<String, Object> map = new HashMap<>();
+            String MSG = "对象(ID=" + id + ")已经被删除";
+            map.put("op", "OBJECT_DELETE_NOTICE");
+            map.put("message", MSG);
+            map.put("id", id);
             List<String> entitySubscriberList = entitySubscribeMessage.getObjectSubscriber();
-            //给对象订阅者发消息，这里暂时没有发给属性订阅者
-            for(String user : entitySubscriberList) {
-                subscribeSender.send(JSON.toJSONString(map1), user);
+            HashMap<String, List<String>> attrSubscriberMap = entitySubscribeMessage.getAttrsSubscriber();
+            // 给实体对象订阅者发消息
+            for(String subscriber : entitySubscriberList) {
+                subscribeSender.send(JSON.toJSONString(map), subscriber);
+            }
+            // 给属性订阅者发消息
+            for(Map.Entry<String, List<String>> entry : attrSubscriberMap.entrySet()) {
+                List<String> attrSubscriberList = entry.getValue();
+                for(String attrSubscriber : attrSubscriberList) {
+                    subscribeSender.send(JSON.toJSONString(map), attrSubscriber);
+                }
             }
         }
-
-         */
-        /*
+        // 实体对象模板订阅者
+        TemplateSubscribeMessage templateSubscribeMessage = templateSubscribeService.findById(template);
         if(templateSubscribeMessage != null) {
-            Map<String, Object> map2 = new HashMap<>();
-            String msg2 = "基于模板(ID=" + template + ")创建的对象已经被删除，对象ID为" + id;
-            map2.put("msg", msg2);
-            map2.put("template", template);
-            map2.put("id", id);
+            Map<String, Object> map1 = new HashMap<>();
+            String MSG1 = "基于模板(ID=" + template + ")创建的对象(ID=" + id + ")已经被删除";
+            map1.put("op", "OBJECT_DELETE_NOTICE");
+            map1.put("message", MSG1);
+            map1.put("id", id);
             List<String> templateSubscriberList = templateSubscribeMessage.getObjectSubscriber();
-            for(String user : templateSubscriberList) {
-                subscribeSender.send(JSON.toJSONString(map2), user);
+            for(String templateSubscriber : templateSubscriberList) {
+                subscribeSender.send(JSON.toJSONString(map1), templateSubscriber);
             }
         }
-         */
-        //subscribeService.deleteByIdAndType(id, "entity");
+        // 关联的事件关联的模板订阅者
+        List<User> userList= userService.findAll();
+        if(userList != null) {
+            for(User user : userList) {
+                HashMap<String, List<String>> inverseEvents = user.getInverseEvents();
+                for(String event : events) {
+                    List<String> templateList = inverseEvents.get(event);
+                    if(templateList != null) {
+                        for(String t : templateList) {
+                            Map<String, Object> map2 = new HashMap<>();
+                            String MSG2 = "模板(ID=" + t + ")关联的事件(ID=" + event + ")相关的对象(ID=" + id + ")已经被删除";
+                            map2.put("op", "OBJECT_DELETE_NOTICE");
+                            map2.put("message", MSG2);
+                            map2.put("id", id);
+                        }
+                    }
+                }
+            }
+        }
+        subscribeService.deleteByIdAndType(id, "entity");
         return "删除成功";
     }
 

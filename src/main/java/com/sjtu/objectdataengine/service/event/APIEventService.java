@@ -4,9 +4,11 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.sjtu.objectdataengine.model.event.EventObject;
 import com.sjtu.objectdataengine.model.subscribe.SubscribeMessage;
+import com.sjtu.objectdataengine.model.subscribe.TemplateSubscribeMessage;
 import com.sjtu.objectdataengine.model.template.ObjectTemplate;
 import com.sjtu.objectdataengine.rabbitMQ.inside.sender.MongoSender;
 import com.sjtu.objectdataengine.service.subscribe.SubscribeService;
+import com.sjtu.objectdataengine.service.subscribe.TemplateSubscribeService;
 import com.sjtu.objectdataengine.service.subscribe.UserService;
 import com.sjtu.objectdataengine.rabbitMQ.outside.sender.SubscribeSender;
 import com.sjtu.objectdataengine.service.template.RedisTemplateService;
@@ -38,6 +40,9 @@ public class APIEventService {
 
     @Resource
     SubscribeSender subscribeSender;
+
+    @Resource
+    TemplateSubscribeService templateSubscribeService;
 
 
     /**
@@ -84,22 +89,20 @@ public class APIEventService {
         message.put("date", date);
         mongoSender.send(message);
         if (redisEventService.create(id, name, intro, template, attrs, date)) {
-            Map<String, Object> map = new HashMap<>();
             // 通知模板订阅者
-            /*
-            final String msg = "基于模板(ID=" + template + ")创建了新的事件，事件ID为" + id;
-            map.put("msg", msg);
-            map.put("event", id);
-            map.put("template", template);
-            SubscribeMessage subscribeMessage = subscribeService.findByIdAndType(template, "template");
-            if(subscribeMessage != null) {
-                System.out.println(subscribeMessage);
-                List<String> userList = subscribeMessage.getObjectSubscriber();
-                for (String user : userList) {
+            Map<String, Object> map = new HashMap<>();
+            String MSG = "基于模板(ID=" + template + ")创建了新的实体对象，对象ID为" + id;
+            map.put("op", "OBJECT_CREATE_NOTICE");
+            map.put("message", MSG);
+            map.put("type", "entity");
+            map.put("object", redisEventService.findEventObjectById(id));
+            TemplateSubscribeMessage templateSubscribeMessage = templateSubscribeService.findById(template);
+            if(templateSubscribeMessage != null) {
+                List<String> userList = templateSubscribeMessage.getObjectSubscriber();
+                for(String user : userList) {
                     subscribeSender.send(JSON.toJSONString(map), user);
                 }
             }
-            */
             return "创建成功";
         }
         return "创建失败";

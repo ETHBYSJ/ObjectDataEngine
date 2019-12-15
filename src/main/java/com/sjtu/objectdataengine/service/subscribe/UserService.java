@@ -12,7 +12,9 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class UserService {
@@ -34,6 +36,13 @@ public class UserService {
     @Resource
     private TemplateSubscribeService templateSubscribeService;
 
+    /**
+     * 查找全部用户
+     * @return 用户列表
+     */
+    public List<User> findAll() {
+        return userDAO.findAll(User.class);
+    }
     /**
      * 用户注册，注册时分配唯一id
      * @param name 用户名
@@ -101,6 +110,9 @@ public class UserService {
 
     public boolean hasUser(String user) {
         return userDAO.findById(user, User.class) != null;
+    }
+    public User findUserById(String user) {
+        return userDAO.findById(user, User.class);
     }
     public String addAttrSubscribe(String userId, String id, String attr) {
         if(userId == null || userId.equals("")) {

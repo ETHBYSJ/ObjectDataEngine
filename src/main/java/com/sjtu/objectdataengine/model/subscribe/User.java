@@ -13,8 +13,16 @@ public class User extends BaseModel {
     private String id;
     private String name;
     private String intro;
-    private HashMap<String, List<String>> templateSubscribe; //templateId: [events] or templateId: [objects]
+    private HashMap<String, List<String>> templateSubscribe; //templateId: [events]
     private List<String> objectSubscribe;
+    // event -> template[]，用于直接索引到模板
+    private HashMap<String, List<String>> inverseEvents;
+    public HashMap<String, List<String>> getInverseEvents() {
+        return this.inverseEvents;
+    }
+    public void setInverseEvents(HashMap<String, List<String>> inverseEvents) {
+        this.inverseEvents = inverseEvents;
+    }
 
     public User(String id, String name, String intro) {
         this.id = id;
