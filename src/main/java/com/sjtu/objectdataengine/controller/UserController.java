@@ -12,16 +12,12 @@ public class UserController {
     @Resource
     UserService userService;
 
-    @GetMapping("/create")
-    public boolean create(@RequestParam String id, @RequestParam String name, @RequestParam String intro) {
-        return userService.create(id, name, intro);
+    @GetMapping("/register")
+    public String register(String name, String intro) {
+        return userService.register(name, intro);
     }
-    @GetMapping("/add_template_sub")
-    public String addTemplateSub(@RequestParam String userId, @RequestParam String id, @RequestBody List<String> list) {
-        return userService.addTemplateSubscribe(userId, id, list);
-    }
-    @GetMapping("/del_template_sub")
-    public String delTemplateSub(@RequestParam String userId, @RequestParam String id) {
-        return userService.delTemplateSubscribe(userId, id);
+    @GetMapping("/unregister")
+    public boolean unregister(String id) {
+        return userService.unregister(id);
     }
 }
