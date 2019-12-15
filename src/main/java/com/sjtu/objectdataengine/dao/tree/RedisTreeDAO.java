@@ -111,11 +111,11 @@ public class RedisTreeDAO extends RedisDAO {
                 children.add(childNode);
             }
         }
-        //父节点列表
-        List<String> parents = (List<String>) lGet(parentsKey, 0, -1);
+        //父节点
+        String parent = hget(baseKey, "parent").toString();
         //关联对象列表
         HashMap<String, String> objects = (HashMap<String, String>) hmget(objectsKey);
-        TreeNodeReturn treeNodeReturn = new TreeNodeReturn(id, name, intro, template, parents, children, objects);
+        TreeNodeReturn treeNodeReturn = new TreeNodeReturn(id, name, intro, template, parent, children, objects);
         //设置时间属性
         treeNodeReturn.setCreateTime(createTime);
         treeNodeReturn.setUpdateTime(updateTime);
