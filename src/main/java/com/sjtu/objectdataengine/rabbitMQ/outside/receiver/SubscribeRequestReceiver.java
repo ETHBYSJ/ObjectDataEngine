@@ -1,4 +1,4 @@
-package com.sjtu.objectdataengine.rabbitMQ.receiver;
+package com.sjtu.objectdataengine.rabbitMQ.outside.receiver;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -40,8 +40,10 @@ public class SubscribeRequestReceiver {
     private APIObjectService objectService;
 
     @RabbitHandler
-    public void process(String message) {
+    public void process(byte[] byteMsg) {
+        String message = new String(byteMsg);
         JSONObject jsonObject = JSON.parseObject(message);
+        System.out.println(message);
         String op = jsonObject.getString("op");
         switch(op) {
             /*
@@ -79,11 +81,11 @@ public class SubscribeRequestReceiver {
                 Map<String, Object> map = new HashMap<>();
                 if(res) {
                     map.put("status", "SUCC");
-                    map.put("op", "REGISTER");
+                    map.put("op", "UNREGISTER");
                 }
                 else {
                     map.put("status", "FAIL");
-                    map.put("op", "REGISTER");
+                    map.put("op", "UNREGISTER");
                 }
                 subscribeSender.send(JSON.toJSONString(map), userId);
                 break;

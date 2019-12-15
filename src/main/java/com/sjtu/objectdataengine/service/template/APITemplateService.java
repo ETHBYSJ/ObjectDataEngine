@@ -72,11 +72,11 @@ public class APITemplateService {
         mongoSender.send(createMessage);
 
         if(redisTemplateService.createTemplate(id, name, intro, type, nodeId, attrs, date)) {
+            // 创建订阅表
+            subscribeService.create(id, "template");
             return "创建成功";
         }
         //this.delete(id);
-        // 创建订阅表
-        subscribeService.create(id, "template");
         return "创建失败!";
     }
 
