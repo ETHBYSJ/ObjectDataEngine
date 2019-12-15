@@ -121,7 +121,7 @@ public class APITemplateService {
             modifyMessage.put("name", name);
         }
         // intro如果是null就不需要改
-        String intro = jsonObject.getString("name");
+        String intro = jsonObject.getString("intro");
         if (intro != null) {
             modifyMessage.put("intro", intro);
         }

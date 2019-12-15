@@ -27,40 +27,7 @@ public class RedisTreeService {
     private RedisObjectService redisObjectService;
     @Autowired
     private RedisAttrDAO redisAttrDAO;
-    /**
-     *
-     * @param eventId 事件id
-     * @param nodeId 树节点id
-     * @return
-     */
-    public List<CommonObject> findRelatedObjects(String eventId, String nodeId) {
-        //根据事件id查询关联对象
-        List<CommonObject> retList = new ArrayList<CommonObject>();
-        //此对象必须存在且类型为事件
-        HashSet<String> eObjectSet;
-        HashSet<String> nObjectSet;
-        if(redisAttrDAO.hasKey(eventId) && redisAttrDAO.hget(eventId + "#META", "type").equals("event")) {
-            eObjectSet = (HashSet<String>) redisAttrDAO.hKeys(eventId + "#object");
-        }
-        else {
-            //否则返回空列表
-            return retList;
-        }
-        //根据树节点id查询关联对象
-        if(redisTreeDAO.hasKey(nodeId + "#objects")) {
-            nObjectSet = (HashSet<String>) redisTreeDAO.hKeys(nodeId + "#objects");
-        }
-        else {
-            return retList;
-        }
-        eObjectSet.retainAll(nObjectSet);
-        for(String objId : eObjectSet) {
-            CommonObject commonObject = redisObjectService.findObjectById(objId);
-            retList.add(commonObject);
-        }
 
-        return retList;
-    }
 
     /**
      * 创建一个树节点
