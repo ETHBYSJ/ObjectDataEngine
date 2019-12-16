@@ -45,7 +45,7 @@ public class ObjectRequestReceiver {
                 String msg = apiObjectService.create(jsonObject);
                 if (jsonObject.getBoolean("response") != null && jsonObject.getBoolean("response")) {
                     Map<String, Object> result = new HashMap<>();
-                    result.put("op", "CREATE");
+                    result.put("op", op);
                     result.put("id", jsonObject.getString("id"));
                     if (msg.equals("创建成功")) {
                         result.put("status", "SUCC");
@@ -62,7 +62,7 @@ public class ObjectRequestReceiver {
                 String msg = apiObjectService.deleteObjectById(id);
                 if (jsonObject.getBoolean("response") != null && jsonObject.getBoolean("response")) {
                     Map<String, Object> result = new HashMap<>();
-                    result.put("op", "DELETE");
+                    result.put("op", op);
                     result.put("id", id);
                     if (msg.equals("删除成功")) {
                         result.put("status", "SUCC");
@@ -81,7 +81,7 @@ public class ObjectRequestReceiver {
                 String msg = apiObjectService.addAttr(id, name, value);
                 if (jsonObject.getBoolean("response")) {
                     Map<String, Object> result = new HashMap<>();
-                    result.put("op", "UPDATE");
+                    result.put("op", op);
                     result.put("id", id);
                     result.put("name", name);
                     if (msg.equals("添加成功")) {
@@ -99,17 +99,18 @@ public class ObjectRequestReceiver {
                 CommonObject commonObject = apiObjectService.findObjectById(id);
                 // System.out.println(commonObject);
                 Map<String, Object> result = new HashMap<>();
-                result.put("op", "FIND_ID");
+                result.put("op", op);
                 result.put("id", id);
                 if (commonObject != null) {
                     result.put("status", "SUCC");
-                    result.put("object", commonObject.toString());
+                    result.put("message", "查询成功");
+                    result.put("object", commonObject);
                     // System.out.println(commonObject.toString());
                 } else {
                     result.put("status", "FAIL");
+                    result.put("message", "对象不存在");
                     result.put("object", null);
                 }
-                result.put("object", commonObject);
                 subscribeSender.send(JSON.toJSONString(result), userId);
                 break;
             }
@@ -123,12 +124,13 @@ public class ObjectRequestReceiver {
                 result.put("date", date);
                 if (commonObject != null) {
                     result.put("status", "SUCC");
-                    result.put("object", commonObject.toString());
+                    result.put("message", "查询成功");
+                    result.put("object", commonObject);
                 } else {
                     result.put("status", "FAIL");
+                    result.put("message", "对象不存在");
                     result.put("object", null);
                 }
-                result.put("object", commonObject);
                 subscribeSender.send(JSON.toJSONString(result), userId);
                 break;
             }
@@ -140,40 +142,38 @@ public class ObjectRequestReceiver {
                 Map<String, Object> result = new HashMap<>();
                 List<String> objectsJson = new ArrayList<>();
                 // JSONArray objectsJson = new JSONArray();
-                result.put("op", "FIND_TIMES");
+                result.put("op", op);
                 result.put("id", id);
                 result.put("start", start);
                 result.put("end", end);
                 if (commonObjects != null) {
                     result.put("status", "SUCC");
-                    commonObjects.forEach((item)->{
-                        objectsJson.add(item.toString());
-                    });
+                    result.put("message", "查询成功");
                 } else {
                     result.put("status", "FAIL");
+                    result.put("message", "对象不存在");
                 }
-                result.put("objects", objectsJson);
+                result.put("objects", commonObjects);
                 subscribeSender.send(JSON.toJSONString(result), userId);
                 break;
             }
-            case "FIND_EVENT": {
+            case "FIND_NODE_EVENT": {
                 String nodeId = jsonObject.getString("nodeId");
                 String eventId = jsonObject.getString("eventId");
                 List<CommonObject> commonObjects = apiObjectService.findObjectsByNodeAndEvent(nodeId, eventId);
                 Map<String, Object> result = new HashMap<>();
-                List<String> objectsJson = new ArrayList<>();
-                result.put("op", "FIND_EVENT");
+                result.put("op", op);
                 result.put("nodeId", nodeId);
                 result.put("eventId", eventId);
                 if (commonObjects != null) {
                     result.put("status", "SUCC");
-                    commonObjects.forEach((item)->{
-                        objectsJson.add(item.toString());
-                    });
+                    result.put("message", "查询成功");
                 } else {
                     result.put("status", "FAIL");
+                    result.put("message", "查询失败");
                 }
-                result.put("objects", objectsJson);
+                result.put("objects", commonObjects);
+                // System.out.println(result);
                 subscribeSender.send(JSON.toJSONString(result), userId);
                 break;
             }

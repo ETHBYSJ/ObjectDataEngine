@@ -396,8 +396,10 @@ public class APIObjectService {
         TreeNode treeNode = redisTreeService.findNodeByKey(nodeId);
         if (treeNode == null) return result;
         if (eventId == null || eventId.equals("")) return result;
+        // 寻找树节点对应模板
         ObjectTemplate objectTemplate = redisTemplateService.findTemplateById(treeNode.getTemplate());
         List<String> objList = objectTemplate.getObjects();
+        // System.out.println(objList);
         for (String obj : objList) {
             CommonObject commonObject = this.findObjectById(obj);
             if(commonObject.getEvents().get(eventId)!=null) {
