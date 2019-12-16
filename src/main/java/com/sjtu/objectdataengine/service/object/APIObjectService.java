@@ -90,6 +90,7 @@ public class APIObjectService {
         } else {
             return "events必须指定（可为空列表)";
         }
+
         // 检查events的合法性
         for (String event : events) {
             if (event == null || event.equals("")) return "events列表不合法";
