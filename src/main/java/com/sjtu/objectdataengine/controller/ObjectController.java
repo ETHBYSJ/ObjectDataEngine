@@ -25,6 +25,11 @@ public class ObjectController {
         return objectService.create(request);
     }
 
+    @GetMapping("/delete")
+    public String delete(@RequestParam String id) {
+        return objectService.deleteObjectById(id);
+    }
+
     @GetMapping("/add_attr")
     public String addAttr(@RequestParam String id, @RequestParam String name, @RequestParam String value) {
         return objectService.addAttr(id, name, value);

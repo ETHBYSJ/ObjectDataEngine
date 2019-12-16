@@ -1,20 +1,12 @@
 package com.sjtu.objectdataengine.dao.subscribe;
 
 import com.sjtu.objectdataengine.dao.MongoBaseDAO;
-import com.sjtu.objectdataengine.model.subscribe.SubscribeMessage;
-import com.sjtu.objectdataengine.utils.MongoCondition;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
+import com.sjtu.objectdataengine.model.subscribe.BaseSubscribeMessage;
 import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 @Component
 
-public class SubscribeDAO extends MongoBaseDAO<SubscribeMessage> {
+public class SubscribeDAO extends MongoBaseDAO<BaseSubscribeMessage> {
 
     /**
      * 增加一个属性订阅者
@@ -31,7 +23,7 @@ public class SubscribeDAO extends MongoBaseDAO<SubscribeMessage> {
         Update update = new Update();
         update.addToSet("attrsSubscriber." + name, user);
         update.set("updateTime", new Date());
-        return mongoTemplate.updateMulti(query, update, SubscribeMessage.class).getModifiedCount() > 0;
+        return mongoTemplate.updateMulti(query, update, BaseSubscribeMessage.class).getModifiedCount() > 0;
     }
     */
     /**
@@ -49,7 +41,7 @@ public class SubscribeDAO extends MongoBaseDAO<SubscribeMessage> {
         Update update = new Update();
         update.pull("attrsSubscriber." + name, user);
         update.set("updateTime", new Date());
-        return mongoTemplate.updateMulti(query, update, SubscribeMessage.class).getModifiedCount() > 0;
+        return mongoTemplate.updateMulti(query, update, BaseSubscribeMessage.class).getModifiedCount() > 0;
     }
     */
     /**
@@ -66,7 +58,7 @@ public class SubscribeDAO extends MongoBaseDAO<SubscribeMessage> {
         Update update = new Update();
         update.addToSet("objectSubscriber", user);
         update.set("updateTime", new Date());
-        return mongoTemplate.updateMulti(query, update, SubscribeMessage.class).getModifiedCount() > 0;
+        return mongoTemplate.updateMulti(query, update, BaseSubscribeMessage.class).getModifiedCount() > 0;
     }
     */
     /**
@@ -83,7 +75,7 @@ public class SubscribeDAO extends MongoBaseDAO<SubscribeMessage> {
         Update update = new Update();
         update.pull("objectSubscriber", user);
         update.set("updateTime", new Date());
-        return mongoTemplate.updateMulti(query, update, SubscribeMessage.class).getModifiedCount() > 0;
+        return mongoTemplate.updateMulti(query, update, BaseSubscribeMessage.class).getModifiedCount() > 0;
     }
     */
     /**
@@ -100,7 +92,7 @@ public class SubscribeDAO extends MongoBaseDAO<SubscribeMessage> {
         Update update = new Update();
         update.set("attrsSubscriber." + attr, new ArrayList<>());
         update.set("updateTime", new Date());
-        return mongoTemplate.updateMulti(query, update, SubscribeMessage.class).getModifiedCount() > 0;
+        return mongoTemplate.updateMulti(query, update, BaseSubscribeMessage.class).getModifiedCount() > 0;
     }
     */
     /**
@@ -117,7 +109,7 @@ public class SubscribeDAO extends MongoBaseDAO<SubscribeMessage> {
         Update update = new Update();
         update.unset("attrsSubscriber." + attr);
         update.set("updateTime", new Date());
-        return mongoTemplate.updateMulti(query, update, SubscribeMessage.class).getModifiedCount() > 0;
+        return mongoTemplate.updateMulti(query, update, BaseSubscribeMessage.class).getModifiedCount() > 0;
     }
 
     private boolean addObj(String id, String type) {
@@ -126,7 +118,7 @@ public class SubscribeDAO extends MongoBaseDAO<SubscribeMessage> {
         Update update = new Update();
         update.set("objectSubscriber", new ArrayList<String>());
         update.set("updateTime", new Date());
-        return mongoTemplate.updateMulti(query, update, SubscribeMessage.class).getModifiedCount() > 0;
+        return mongoTemplate.updateMulti(query, update, BaseSubscribeMessage.class).getModifiedCount() > 0;
     }
     */
 }

@@ -2,7 +2,7 @@ package com.sjtu.objectdataengine.dao.event;
 
 import com.sjtu.objectdataengine.dao.MongoBaseDAO;
 import com.sjtu.objectdataengine.model.event.EventObject;
-import com.sjtu.objectdataengine.utils.MongoAttr;
+import com.sjtu.objectdataengine.model.object.MongoAttr;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;

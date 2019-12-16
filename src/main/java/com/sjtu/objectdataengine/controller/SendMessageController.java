@@ -19,7 +19,7 @@ public class SendMessageController {
 
     @GetMapping("/sendDirectMessage")
     public String sendDirectMessage() {
-        System.out.println("p"+Thread.currentThread().getId());
+        // System.out.println("p"+Thread.currentThread().getId());
         String messageId = String.valueOf(UUID.randomUUID());
         String messageData = "test message, hello!";
         String createTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));

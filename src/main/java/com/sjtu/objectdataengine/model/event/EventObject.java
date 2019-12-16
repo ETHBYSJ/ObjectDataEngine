@@ -1,7 +1,7 @@
 package com.sjtu.objectdataengine.model.event;
 
 import com.sjtu.objectdataengine.model.BaseModel;
-import com.sjtu.objectdataengine.utils.MongoAttr;
+import com.sjtu.objectdataengine.model.object.MongoAttr;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 

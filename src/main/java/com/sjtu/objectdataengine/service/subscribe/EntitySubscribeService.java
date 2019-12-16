@@ -4,8 +4,7 @@ import com.sjtu.objectdataengine.dao.object.MongoObjectDAO;
 import com.sjtu.objectdataengine.dao.subscribe.EntitySubscribeDAO;
 import com.sjtu.objectdataengine.dao.template.MongoTemplateDAO;
 import com.sjtu.objectdataengine.model.object.CommonObject;
-import com.sjtu.objectdataengine.model.subscribe.EntitySubscribeMessage;
-import com.sjtu.objectdataengine.model.subscribe.TemplateSubscribeMessage;
+import com.sjtu.objectdataengine.model.subscribe.EntityBaseSubscribeMessage;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -30,7 +29,7 @@ public class EntitySubscribeService {
      */
     public boolean deleteById(String id) {
         // 检查统一放在上层
-        return entitySubscribeDAO.deleteById(id + "entity", EntitySubscribeMessage.class);
+        return entitySubscribeDAO.deleteById(id + "entity", EntityBaseSubscribeMessage.class);
     }
 
     /**
@@ -40,7 +39,7 @@ public class EntitySubscribeService {
      */
     public boolean create(String id, Date date) {
         if(this.findById(id) != null) return false;
-        EntitySubscribeMessage entitySubscribeMessage = new EntitySubscribeMessage(id, "entity");
+        EntityBaseSubscribeMessage entitySubscribeMessage = new EntityBaseSubscribeMessage(id, "entity");
         HashMap<String, List<String>> attrsMap = new HashMap<>();
         CommonObject obj = mongoObjectDAO.findById(id, CommonObject.class);
         if(obj == null) return false;
@@ -78,8 +77,8 @@ public class EntitySubscribeService {
      * @param id 实体对象id
      * @return 订阅消息
      */
-    public EntitySubscribeMessage findById(String id) {
-        return entitySubscribeDAO.findById(id + "entity", EntitySubscribeMessage.class);
+    public EntityBaseSubscribeMessage findById(String id) {
+        return entitySubscribeDAO.findById(id + "entity", EntityBaseSubscribeMessage.class);
     }
 
     /**

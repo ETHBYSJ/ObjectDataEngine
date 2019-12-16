@@ -4,7 +4,7 @@ import com.sjtu.objectdataengine.dao.event.MongoEventDAO;
 import com.sjtu.objectdataengine.dao.template.MongoTemplateDAO;
 import com.sjtu.objectdataengine.model.event.EventObject;
 import com.sjtu.objectdataengine.model.template.ObjectTemplate;
-import com.sjtu.objectdataengine.utils.MongoAttr;
+import com.sjtu.objectdataengine.model.object.MongoAttr;
 import com.sjtu.objectdataengine.utils.MongoCondition;
 import org.springframework.stereotype.Component;
 
@@ -23,30 +23,42 @@ public class MongoEventService {
     @Resource
     MongoTemplateDAO mongoTemplateDAO;
 
-    public void create(String id, String name, String intro, String template, HashMap<String, String> attrsKv, Date date) {
-        //id判重
-        EventObject e = mongoEventDAO.findById(id, EventObject.class);
-        if(e != null) return;
-        List<String> objects = new ArrayList<>();
-        HashMap<String, String> attrsMap = mongoTemplateDAO.findById(template, ObjectTemplate.class).getAttrs();
-        HashMap<String, MongoAttr> attrs = new HashMap<>();
-        for (String attr : attrsMap.keySet()) {
-            String value = attrsKv.get(attr)==null ? "" : attrsKv.get(attr);
-            MongoAttr mongoAttr = new MongoAttr(value);
-            mongoAttr.setUpdateTime(date);
-            attrs.put(attr, mongoAttr);
+    public boolean create(String id, String name, String intro, String template, HashMap<String, String> attrsKv, Date date) {
+        try {
+            //id判重
+            EventObject e = mongoEventDAO.findById(id, EventObject.class);
+            if (e != null) return false;
+            List<String> objects = new ArrayList<>();
+            HashMap<String, String> attrsMap = mongoTemplateDAO.findById(template, ObjectTemplate.class).getAttrs();
+            HashMap<String, MongoAttr> attrs = new HashMap<>();
+            for (String attr : attrsMap.keySet()) {
+                String value = attrsKv.get(attr) == null ? "" : attrsKv.get(attr);
+                MongoAttr mongoAttr = new MongoAttr(value);
+                mongoAttr.setUpdateTime(date);
+                attrs.put(attr, mongoAttr);
+            }
+            EventObject eventObject = new EventObject(id, name, intro, template, objects, attrs);
+            eventObject.setCreateTime(date);
+            eventObject.setUpdateTime(date);
+            // 设置创建时间为开始时间
+            eventObject.setStartTime(date);
+            mongoEventDAO.create(eventObject);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
-        EventObject eventObject = new EventObject(id, name, intro, template, objects, attrs);
-        eventObject.setCreateTime(date);
-        eventObject.setUpdateTime(date);
-        // 设置创建时间为开始时间
-        eventObject.setStartTime(date);
-        mongoEventDAO.create(eventObject);
     }
 
-    public void delete(String id, String template) {
-        if (mongoTemplateDAO.opObjects(template, id, "del")) {
-            mongoEventDAO.deleteById(id, EventObject.class);
+    public boolean deleteEventById(String id, String template) {
+        try {
+            if (mongoTemplateDAO.opObjects(template, id, "del")) {
+                mongoEventDAO.deleteById(id, EventObject.class);
+                return true;
+            }
+            return false;
+        } catch (Exception e) {
+            return false;
         }
     }
 

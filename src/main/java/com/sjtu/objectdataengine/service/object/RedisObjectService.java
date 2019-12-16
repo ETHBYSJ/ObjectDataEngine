@@ -6,7 +6,7 @@ import com.sjtu.objectdataengine.dao.event.RedisEventDAO;
 import com.sjtu.objectdataengine.dao.object.RedisAttrDAO;
 import com.sjtu.objectdataengine.dao.object.RedisObjectDAO;
 import com.sjtu.objectdataengine.dao.template.RedisTemplateDAO;
-import com.sjtu.objectdataengine.utils.MongoAttr;
+import com.sjtu.objectdataengine.model.object.MongoAttr;
 import com.sjtu.objectdataengine.model.object.CommonObject;
 import com.sjtu.objectdataengine.model.template.ObjectTemplate;
 import com.sjtu.objectdataengine.rabbitMQ.inside.sender.RedisSender;
@@ -51,7 +51,7 @@ public class RedisObjectService {
         }
         //删除基本信息
         redisAttrDAO.del(id + "#META");
-        List<String> events = (List<String>) redisAttrDAO.lGet(id + "#events", 0, -1);
+        HashMap<String, Date> eventsMap = (HashMap<String, Date>) redisAttrDAO.hmget(id + "#events");
         //删除关联事件表
         redisAttrDAO.del(id + "#events");
         //获得属性表
@@ -66,8 +66,11 @@ public class RedisObjectService {
         //解除模板关联
         redisTemplateDAO.lRemove(template + "#objects", 1, id);
         //解除事件关联
-        for(String event : events) {
-            redisEventDAO.lRemove(event + "#objects", 1, id);
+        if (eventsMap != null) {
+            Set<String> events = eventsMap.keySet();
+            for (String event : events) {
+                redisEventDAO.lRemove(event + "#objects", 1, id);
+            }
         }
         //从索引表删除
         redisAttrDAO.lRemove("index", 1, id);
@@ -160,7 +163,7 @@ public class RedisObjectService {
 
         //存储关联对象
         if(events != null && events.size() > 0) {
-            System.out.println(events);
+            // System.out.println(events);
             for(String event : events) {
                 redisAttrDAO.hset(id + "#events", event, date);
                 redisEventDAO.opObject(event, id, "add");

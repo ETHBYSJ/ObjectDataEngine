@@ -1,9 +1,6 @@
 package com.sjtu.objectdataengine.model.object;
 
-import com.alibaba.fastjson.JSONObject;
-import com.mongodb.Mongo;
 import com.sjtu.objectdataengine.model.BaseModel;
-import com.sjtu.objectdataengine.utils.MongoAttr;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 

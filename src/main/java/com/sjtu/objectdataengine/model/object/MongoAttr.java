@@ -1,4 +1,4 @@
-package com.sjtu.objectdataengine.utils;
+package com.sjtu.objectdataengine.model.object;
 
 import java.util.Date;
 
@@ -18,8 +18,6 @@ public class MongoAttr {
     public void setValue(String value) {
         this.value = value;
     }
-
-
 
     @Override
     public String toString() {

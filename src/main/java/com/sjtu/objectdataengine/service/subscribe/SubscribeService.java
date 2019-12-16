@@ -4,8 +4,8 @@ import com.sjtu.objectdataengine.dao.object.MongoObjectDAO;
 import com.sjtu.objectdataengine.dao.subscribe.SubscribeDAO;
 import com.sjtu.objectdataengine.dao.subscribe.UserDAO;
 import com.sjtu.objectdataengine.dao.template.MongoTemplateDAO;
-import com.sjtu.objectdataengine.model.subscribe.EntitySubscribeMessage;
-import com.sjtu.objectdataengine.model.subscribe.TemplateSubscribeMessage;
+import com.sjtu.objectdataengine.model.subscribe.EntityBaseSubscribeMessage;
+import com.sjtu.objectdataengine.model.subscribe.TemplateBaseSubscribeMessage;
 import com.sjtu.objectdataengine.service.object.APIObjectService;
 import com.sjtu.objectdataengine.service.template.APITemplateService;
 import org.springframework.stereotype.Component;
@@ -51,10 +51,10 @@ public class SubscribeService {
 
     public String deleteByIdAndType(String id, String type) {
         if(type.equals("template")) {
-            TemplateSubscribeMessage templateSubscribeMessage = templateSubscribeService.findById(id);
+            TemplateBaseSubscribeMessage templateSubscribeMessage = templateSubscribeService.findById(id);
             if(templateSubscribeMessage == null) return "模板订阅表不存在";
             // 从用户表中删除
-            List<String> templateSubscriber = templateSubscribeMessage.getObjectSubscriber();
+            Set<String> templateSubscriber = templateSubscribeMessage.getTemplateSubscriber().keySet();
             for(String user : templateSubscriber) {
                 userService.delTemplateSubscribe(user, id);
             }
@@ -65,7 +65,7 @@ public class SubscribeService {
             return "删除失败";
         }
         else if(type.equals("entity")) {
-            EntitySubscribeMessage entitySubscribeMessage = entitySubscribeService.findById(id);
+            EntityBaseSubscribeMessage entitySubscribeMessage = entitySubscribeService.findById(id);
             if(entitySubscribeMessage == null) return "实体对象订阅表不存在";
             // 从用户表中删除
             List<String> objectSubscriber = entitySubscribeMessage.getObjectSubscriber();
@@ -219,7 +219,7 @@ public class SubscribeService {
             templateSubscribeService.create(id, date);
         }
         // 双向操作
-        if(templateSubscribeService.addTemplateSubscriber(id, user)) {
+        if(templateSubscribeService.addTemplateSubscriber(id, user, list)) {
             userService.addTemplateSubscribe(user, id, list);
             return "增加成功";
         }
@@ -248,4 +248,5 @@ public class SubscribeService {
         }
         return "删除失败";
     }
+
 }

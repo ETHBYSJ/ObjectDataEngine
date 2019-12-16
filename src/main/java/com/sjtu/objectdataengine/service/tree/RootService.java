@@ -19,23 +19,16 @@ public class RootService {
 
     private void create() {
         RootMessage rootMessage = new RootMessage("root", new HashMap<String, String>());
-        mongoRootDAO.create(rootMessage);
-    }
-    private void createRedisRoot() {
-        RootMessage rootMessage = new RootMessage("root", new HashMap<String, String>());
         Date now = new Date();
         rootMessage.setCreateTime(now);
         rootMessage.setUpdateTime(now);
-
+        mongoRootDAO.create(rootMessage);
         redisRootDAO.create(rootMessage);
     }
 
     public RootMessage find() {
         if (mongoRootDAO.findAll(RootMessage.class).size()==0) {
             this.create();
-        }
-        if(!redisRootDAO.hasRootMessage()) {
-            this.createRedisRoot();
         }
         return mongoRootDAO.findAll(RootMessage.class).get(0);
     }

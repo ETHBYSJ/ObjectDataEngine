@@ -1,16 +1,14 @@
 package com.sjtu.objectdataengine.dao.object;
 
 import com.sjtu.objectdataengine.dao.MongoBaseDAO;
-import com.sjtu.objectdataengine.utils.MongoAttr;
+import com.sjtu.objectdataengine.model.object.MongoAttr;
 import com.sjtu.objectdataengine.model.object.CommonObject;
-import com.sjtu.objectdataengine.utils.MongoCondition;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
-import java.util.List;
 
 @Component
 public class MongoObjectDAO extends MongoBaseDAO<CommonObject> {

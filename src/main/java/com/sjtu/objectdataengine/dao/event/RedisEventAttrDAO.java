@@ -1,7 +1,7 @@
 package com.sjtu.objectdataengine.dao.event;
 
 import com.sjtu.objectdataengine.dao.RedisDAO;
-import com.sjtu.objectdataengine.utils.MongoAttr;
+import com.sjtu.objectdataengine.model.object.MongoAttr;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;

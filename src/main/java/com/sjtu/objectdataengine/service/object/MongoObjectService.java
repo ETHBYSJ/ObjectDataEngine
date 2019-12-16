@@ -9,7 +9,7 @@ import com.sjtu.objectdataengine.model.object.AttrsHeader;
 import com.sjtu.objectdataengine.model.object.AttrsModel;
 import com.sjtu.objectdataengine.model.object.CommonObject;
 import com.sjtu.objectdataengine.model.template.ObjectTemplate;
-import com.sjtu.objectdataengine.utils.MongoAttr;
+import com.sjtu.objectdataengine.model.object.MongoAttr;
 import com.sjtu.objectdataengine.utils.MongoCondition;
 import org.springframework.stereotype.Component;
 

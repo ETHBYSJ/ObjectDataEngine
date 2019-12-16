@@ -4,7 +4,6 @@ import com.sjtu.objectdataengine.service.event.MongoEventService;
 import com.sjtu.objectdataengine.service.object.MongoObjectService;
 import com.sjtu.objectdataengine.service.template.MongoTemplateService;
 import com.sjtu.objectdataengine.service.tree.MongoTreeService;
-import com.sjtu.objectdataengine.utils.MongoAttr;
 import com.sjtu.objectdataengine.utils.TypeConversion;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -214,14 +213,13 @@ public class MongoReceiver {
             case "EVENT_DELETE" : {
                 String id = message.get("id").toString();
                 String template = message.get("template").toString();
-                mongoEventService.delete(id, template);
+                mongoEventService.deleteEventById(id, template);
                 break;
             }
 
             /*
              * 修改事件基础信息
              */
-
             case "EVENT_MODIFY_BASE": {
                 String id = message.get("id").toString();
                 String name, intro, stage;

@@ -5,7 +5,7 @@ import com.sjtu.objectdataengine.dao.event.RedisEventDAO;
 import com.sjtu.objectdataengine.dao.template.RedisTemplateDAO;
 import com.sjtu.objectdataengine.model.event.EventObject;
 import com.sjtu.objectdataengine.model.template.ObjectTemplate;
-import com.sjtu.objectdataengine.utils.MongoAttr;
+import com.sjtu.objectdataengine.model.object.MongoAttr;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
