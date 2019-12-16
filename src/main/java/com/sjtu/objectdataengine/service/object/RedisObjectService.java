@@ -772,34 +772,5 @@ public class RedisObjectService {
         }
         */
     }
-    /**
-     * 根据对象id删除对象
-     * @param id 对象id
-     * @return true代表删除成功,false代表删除失败
-     */
-    /*未完成
-    public boolean delObjectById(String id) {
-        redisDAO.switchToAttrRedisTemplate();
-        //id必须非空
-        if(id == null) {
-            return false;
-        }
-        Set<Object> attrSet = redisDAO.sGet(id);
-        //对象不存在，删除失败
-        if(attrSet.size() == 0) {
-            return false;
-        }
-        redisDAO.switchToObjectRedisTemplate();
-        //按照属性分别删除
-        for(Object everyAttr : attrSet) {
-            String key = id + '#' + everyAttr + '#' + "time";
-            redisDAO.ZremoveRange(key, 0, -1);
-        }
-        //最后删除属性表
-
-        return true;
-
-    }
-    */
 
 }
