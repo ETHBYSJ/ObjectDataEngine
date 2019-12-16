@@ -141,35 +141,6 @@ public class APIObjectService {
         return create(jsonObject);
     }
 
-    public String addAttr(String id, String name, String value) {
-        if (id == null || id.equals("")) return "ID不能为空！";
-        if (name == null || name.equals("")) return "name不能为空";
-        if (value == null) return "value不能为空";
-        CommonObject mongoObject = mongoObjectService.findLatestObjectByKey(id);
-        if (mongoObject == null) return "ID不存在";
-        String template = mongoObject.getTemplate();
-        Date date = new Date();
-        mongoObjectService.addAttr(id, name, value, date);
-        //redisSender.send(message);
-        redisObjectService.addAttr(id, name, value, date);
-        // 关联事件
-        Set<String> events = mongoObject.getEvents().keySet();
-        // 发送订阅信息
-        Map<String, Object> map = new HashMap<>();
-        map.put("op", "OBJECT_UPDATE_NOTICE");
-        map.put("message", "对象(ID=" + id + ")更新了一条属性，属性名为(" + name + ")属性值为(" + value + ")");
-        map.put("id", id);
-        map.put("updateTime", date);
-        map.put("value", value);
-        map.put("name", name);
-        Set<String> subscriberSet = getSubscriberSet(id, template, events);
-        System.out.println(subscriberSet);
-        for (String subscriber : subscriberSet) {
-            subscribeSender.send(JSON.toJSONString(map), subscriber);
-        }
-        return "添加成功";
-    }
-
     /**
      * 根据id删除对象
      * @param id ID
@@ -207,6 +178,41 @@ public class APIObjectService {
         }
         subscribeService.deleteByIdAndType(id, "entity");
         return "删除成功";
+    }
+
+    /**
+     * 更新一个属性
+     * @param id 对象id
+     * @param name 属性名称
+     * @param value 属性值
+     * @return 更新情况
+     */
+    public String addAttr(String id, String name, String value) {
+        if (id == null || id.equals("")) return "ID不能为空！";
+        if (name == null || name.equals("")) return "name不能为空";
+        if (value == null) return "value不能为空";
+        CommonObject mongoObject = mongoObjectService.findLatestObjectByKey(id);
+        if (mongoObject == null) return "ID不存在";
+        String template = mongoObject.getTemplate();
+        Date date = new Date();
+        mongoObjectService.addAttr(id, name, value, date);
+        redisObjectService.addAttr(id, name, value, date);
+        // 关联事件
+        Set<String> events = mongoObject.getEvents().keySet();
+        // 发送订阅信息
+        Map<String, Object> map = new HashMap<>();
+        map.put("op", "OBJECT_UPDATE_NOTICE");
+        map.put("message", "对象(ID=" + id + ")更新了一条属性，属性名为(" + name + ")属性值为(" + value + ")");
+        map.put("id", id);
+        map.put("updateTime", date);
+        map.put("value", value);
+        map.put("name", name);
+        Set<String> subscriberSet = getSubscriberSet(id, name, template, events);
+        System.out.println(subscriberSet);
+        for (String subscriber : subscriberSet) {
+            subscribeSender.send(JSON.toJSONString(map), subscriber);
+        }
+        return "添加成功";
     }
 
     /**
@@ -334,22 +340,29 @@ public class APIObjectService {
     /**
      * 获得订阅者集合
      * @param id 对象id
+     * @param name 属性名称，若为空表示无限制，有则表示只告诉这个属性订阅者
      * @param template 模板id
      * @param events 对象关联事件
      * @return 订阅者集合
      */
-    private Set<String> getSubscriberSet(String id, String template, Set<String> events) {
+    private Set<String> getSubscriberSet(String id, String name, String template, Set<String> events) {
         // 发送列表
         Set<String> subscriberSet = new HashSet<>();
         // 对象订阅者
         EntityBaseSubscribeMessage entitySubscribeMessage = entitySubscribeService.findById(id);
         if(entitySubscribeMessage != null) {
             subscriberSet.addAll(entitySubscribeMessage.getObjectSubscriber());
+            // 属性订阅者
             HashMap<String, List<String>> attrSubscriberMap = entitySubscribeMessage.getAttrsSubscriber();
-            for (String attrName : attrSubscriberMap.keySet()) {
-                subscriberSet.addAll(attrSubscriberMap.get(attrName));
+            if (name != null) {
+                subscriberSet.addAll(attrSubscriberMap.get(name));
+            } else {
+                for (String attrName : attrSubscriberMap.keySet()) {
+                    subscriberSet.addAll(attrSubscriberMap.get(attrName));
+                }
             }
         }
+
         // 模板订阅者
         TemplateBaseSubscribeMessage templateSubscribeMessage = templateSubscribeService.findById(template);
         System.out.println(templateSubscribeMessage);
@@ -362,5 +375,9 @@ public class APIObjectService {
             }
         }
         return subscriberSet;
+    }
+    // 重载
+    private Set<String> getSubscriberSet(String id, String template, Set<String> events) {
+        return getSubscriberSet(id, null, template, events);
     }
 }
