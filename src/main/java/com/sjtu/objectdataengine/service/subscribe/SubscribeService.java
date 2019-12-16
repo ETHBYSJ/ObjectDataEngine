@@ -1,7 +1,6 @@
 package com.sjtu.objectdataengine.service.subscribe;
 
 import com.sjtu.objectdataengine.dao.object.MongoObjectDAO;
-import com.sjtu.objectdataengine.dao.subscribe.SubscribeDAO;
 import com.sjtu.objectdataengine.dao.subscribe.UserDAO;
 import com.sjtu.objectdataengine.dao.template.MongoTemplateDAO;
 import com.sjtu.objectdataengine.model.subscribe.EntityBaseSubscribeMessage;
@@ -16,18 +15,6 @@ import java.util.*;
 @Component
 public class SubscribeService {
     // 订阅总服务，联系各订阅分服务和用户服务
-    @Resource
-    SubscribeDAO subscribeDAO;
-
-    @Resource
-    MongoTemplateDAO mongoTemplateDAO;
-
-    @Resource
-    MongoObjectDAO mongoObjectDAO;
-
-    @Resource
-    UserDAO userDAO;
-
     @Resource
     UserService userService;
 

@@ -1,20 +1,16 @@
 package com.sjtu.objectdataengine.dao.subscribe;
 
 import com.sjtu.objectdataengine.dao.MongoBaseDAO;
-import com.sjtu.objectdataengine.model.subscribe.MongoSequence;
 import com.sjtu.objectdataengine.model.subscribe.User;
-import com.sjtu.objectdataengine.utils.MongoCondition;
-import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Component;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.springframework.data.mongodb.core.FindAndModifyOptions.options;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
-import static org.springframework.data.mongodb.core.query.Query.query;
 
 @Component
 public class UserDAO extends MongoBaseDAO<User> {
@@ -63,13 +59,9 @@ public class UserDAO extends MongoBaseDAO<User> {
         Query query = new Query();
         query.addCriteria(where("_id").is(userId));
         Update update = new Update();
-        List<String> keys = new ArrayList<>();
+        update.addToSet("attrsSubscribe." + objId).each(attrs.toArray());
 
-        for(String attr : attrs) {
-            String key = objId + ':' + attr;
-            keys.add(key);
-        }
-        update.addToSet("objectSubscribe").each(keys.toArray());
+        mongoTemplate.updateMulti(query, update, User.class);
     }
 
     /**
@@ -82,13 +74,11 @@ public class UserDAO extends MongoBaseDAO<User> {
         Query query = new Query();
         query.addCriteria(where("_id").is(userId));
         Update update = new Update();
-        List<String> keys = new ArrayList<>();
 
         for(String attr : attrs) {
-            String key = objId + ':' + attr;
-            keys.add(key);
+            update.pull("attrsSubscribe." + objId, attr);
         }
-        update.pullAll("objectSubscribe", keys.toArray());
+        mongoTemplate.updateMulti(query, update, User.class);
     }
     /**
      * 增加一个针对对象的订阅
@@ -128,10 +118,6 @@ public class UserDAO extends MongoBaseDAO<User> {
         query.addCriteria(where("_id").is(userId));
         Update update = new Update();
         update.addToSet("templateSubscribe." + template).each(events.toArray());
-        // 更新事件倒排索引表
-        for(String event : events) {
-            update.addToSet("inverseEvents." + event, template);
-        }
         mongoTemplate.updateMulti(query, update, User.class);
     }
     /**
@@ -145,11 +131,6 @@ public class UserDAO extends MongoBaseDAO<User> {
         query.addCriteria(where("_id").is(userId));
         Update update = new Update();
         update.unset("templateSubscribe." + template);
-        // 更新事件倒排索引表
-        List<String> events = user.getTemplateSubscribe().get(template);
-        for(String event : events) {
-            update.pull("inverseEvents." + event, template);
-        }
         mongoTemplate.updateMulti(query, update, User.class);
     }
 

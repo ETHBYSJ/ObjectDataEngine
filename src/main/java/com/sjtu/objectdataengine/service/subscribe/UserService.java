@@ -1,6 +1,5 @@
 package com.sjtu.objectdataengine.service.subscribe;
 
-import com.sjtu.objectdataengine.dao.subscribe.SubscribeDAO;
 import com.sjtu.objectdataengine.dao.subscribe.UserDAO;
 import com.sjtu.objectdataengine.model.subscribe.User;
 import com.sjtu.objectdataengine.rabbitMQ.outside.sender.SubscribeSender;
@@ -22,15 +21,9 @@ public class UserService {
     @Resource
     private UserDAO userDAO;
     @Resource
-    private SubscribeDAO subscribeDAO;
-    @Resource
     private RabbitMQService rabbitMQService;
     @Resource
     private MongoAutoIdUtil mongoAutoIdUtil;
-    @Resource
-    private SubscribeSender subscribeSender;
-    @Resource
-    private UserService userService;
     @Resource
     private EntitySubscribeService entitySubscribeService;
     @Resource

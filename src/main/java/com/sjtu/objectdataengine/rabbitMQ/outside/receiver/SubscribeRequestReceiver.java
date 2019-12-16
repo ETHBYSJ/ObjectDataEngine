@@ -79,7 +79,7 @@ public class SubscribeRequestReceiver {
             case "SUB_ATTR" : {
                 String userId = jsonObject.getString("userId");
                 String id = jsonObject.getString("id");
-                JSONArray jsonArray = jsonObject.getJSONArray("name");
+                JSONArray jsonArray = jsonObject.getJSONArray("names");
                 List<String> attrs = jsonArray == null ? new ArrayList<>() : JSONObject.parseArray(jsonArray.toJSONString(), String.class);
                 boolean latest = jsonObject.getBoolean("latest");
                 Map<String, Object> map = new HashMap<String, Object>();
@@ -88,7 +88,7 @@ public class SubscribeRequestReceiver {
                     map.put("status", "SUCC");
                     map.put("message", res);
                     map.put("id", id);
-                    map.put("name", attrs);
+                    map.put("names", attrs);
                     if(latest) {
                         Date date = new Date();
                         Map<String, String> retMap = new HashMap<>();

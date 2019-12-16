@@ -352,7 +352,7 @@ public class APIObjectService {
         }
         // 模板订阅者
         TemplateBaseSubscribeMessage templateSubscribeMessage = templateSubscribeService.findById(template);
-        // System.out.println(templateSubscribeMessage);
+        System.out.println(templateSubscribeMessage);
         if(templateSubscribeMessage != null) {
             HashMap<String, List<String>> templateSubscriberList = templateSubscribeMessage.getTemplateSubscriber();
             for(String templateSubscriber : templateSubscriberList.keySet()) {
