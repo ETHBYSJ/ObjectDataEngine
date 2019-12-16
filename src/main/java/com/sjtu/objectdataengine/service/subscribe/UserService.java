@@ -66,18 +66,19 @@ public class UserService {
             return false;
         }
         List<String> objectSubscribe = user.getObjectSubscribe();
+        HashMap<String, List<String>> attrsSubscribeMap = user.getAttrsSubscribe();
         HashMap<String, List<String>> templateSubscribe = user.getTemplateSubscribe();
         // 从用户表中删除
         userDAO.deleteById(id, User.class);
         // 从订阅表中删除该用户
         for(String object : objectSubscribe) {
-            String[] objectSplit = object.split(":");
-            if(objectSplit.length == 1) {
-                entitySubscribeService.delEntitySubscriber(objectSplit[0], id);
-            }
-            else {
-                // objectSplit.length == 2
-                entitySubscribeService.delEntityAttrSubscriber(objectSplit[0], objectSplit[1], id);
+            entitySubscribeService.delEntitySubscriber(object, id);
+        }
+        for(Map.Entry<String, List<String>> entry : attrsSubscribeMap.entrySet()) {
+            List<String> attrList = entry.getValue();
+            String object = entry.getKey();
+            for(String attr : attrList) {
+                entitySubscribeService.delEntityAttrSubscriber(object, attr, id);
             }
         }
         for(Map.Entry<String, List<String>> entry : templateSubscribe.entrySet()) {

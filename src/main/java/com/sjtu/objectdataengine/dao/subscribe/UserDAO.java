@@ -35,7 +35,8 @@ public class UserDAO extends MongoBaseDAO<User> {
         Query query = new Query();
         query.addCriteria(where("_id").is(userId));
         Update update = new Update();
-        update.addToSet("objectSubscribe", objId + ':' + attr);
+        update.addToSet("attrSubscribe." + objId, attr);
+        mongoTemplate.updateMulti(query, update, User.class);
     }
     /**
      * 删除属性的订阅
@@ -47,7 +48,8 @@ public class UserDAO extends MongoBaseDAO<User> {
         Query query = new Query();
         query.addCriteria(where("_id").is(userId));
         Update update = new Update();
-        update.pull("objectSubscribe", objId + ':' + attr);
+        update.pull("attrSubscribe." + objId, attr);
+        mongoTemplate.updateMulti(query, update, User.class);
     }
     /**
      * 针对属性的订阅
@@ -60,7 +62,6 @@ public class UserDAO extends MongoBaseDAO<User> {
         query.addCriteria(where("_id").is(userId));
         Update update = new Update();
         update.addToSet("attrsSubscribe." + objId).each(attrs.toArray());
-
         mongoTemplate.updateMulti(query, update, User.class);
     }
 
