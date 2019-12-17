@@ -189,7 +189,9 @@ public class APITemplateService {
 
         return Result.build(ResultCodeEnum.TEMPLATE_DEL_ATTR_FAIL);
     }
-
+    public ObjectTemplate getTemplateById(String id) {
+        return  mongoTemplateService.findTemplateById(id);
+    }
     public ResultInterface get(String id) {
         if (id == null || id.equals("")) return null;
         ObjectTemplate objectTemplate = mongoTemplateService.findTemplateById(id);

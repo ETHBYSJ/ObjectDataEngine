@@ -60,7 +60,14 @@ public enum ResultCodeEnum {
     TEMPLATE_DEL_ATTR_FAIL("3404", "删除失败"),
     // TEMPLATE GET
     TEMPLATE_GET_SUCCESS("3500", "查询成功"),
-    TEMPLATE_GET_FAIL("3501", "查询失败");
+    TEMPLATE_GET_FAIL("3501", "查询失败"),
+    //-----------USER--------------
+    // USER REGISTER
+    USER_REGISTER_SUCCESS("3600", "注册成功"),
+    USER_REGISTER_DUPLICATE_USERNAME("3601", "用户名重复"),
+    // USER UNREGISTER
+    USER_UNREGISTER_SUCCESS("3700", "注销成功"),
+    USER_UNREGISTER_FAIL("3701", "注销失败");
 
     private String code;
     private String msg;

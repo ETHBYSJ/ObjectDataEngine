@@ -118,28 +118,38 @@ public class SubscribeRequestReceiver {
                 String template = jsonObject.getString("template");
                 JSONArray jsonArray = jsonObject.getJSONArray("events");
                 List<String> events = jsonArray == null ? new ArrayList<>() : JSONObject.parseArray(jsonArray.toJSONString(), String.class);
-                ObjectTemplate objectTemplate = ((ResultData<ObjectTemplate>)templateService.get(template)).getData();
+                ObjectTemplate objectTemplate = templateService.getTemplateById(template);
                 Map<String, Object> map = new HashMap<>();
-                if(objectTemplate.getType().equals("entity")) {
-                    // 检查事件列表
-                } else {
-                    events = new ArrayList<>();
-                }
-
-                String res = subscribeService.addTemplateSubscriber(template, userId, events);
-                if(res.equals("增加成功")) {
-                    map.put("status", "SUCC");
-                    map.put("template", template);
-                    map.put("events", events);
-                    map.put("message", res);
-                }
-                else {
+                String res;
+                if(objectTemplate == null) {
+                    res = "模板不存在";
                     map.put("status", "FAIL");
                     map.put("template", template);
                     map.put("events", events);
                     map.put("message", res);
                 }
-                subscribeSender.send(JSON.toJSONString(map), userId);
+                else {
+                    if(objectTemplate.getType().equals("entity")) {
+                        // 检查事件列表
+                    } else {
+                        events = new ArrayList<>();
+                    }
+
+                    res = subscribeService.addTemplateSubscriber(template, userId, events);
+                    if(res.equals("增加成功")) {
+                        map.put("status", "SUCC");
+                        map.put("template", template);
+                        map.put("events", events);
+                        map.put("message", res);
+                    }
+                    else {
+                        map.put("status", "FAIL");
+                        map.put("template", template);
+                        map.put("events", events);
+                        map.put("message", res);
+                    }
+                    subscribeSender.send(JSON.toJSONString(map), userId);
+                }
                 break;
             }
 
