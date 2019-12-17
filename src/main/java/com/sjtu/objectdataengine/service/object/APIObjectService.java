@@ -20,6 +20,7 @@ import com.sjtu.objectdataengine.service.tree.RedisTreeService;
 import com.sjtu.objectdataengine.model.object.MongoAttr;
 import com.sjtu.objectdataengine.utils.SetOp;
 import org.springframework.stereotype.Component;
+import com.sjtu.objectdataengine.utils.SubscriberWrapper;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -124,9 +125,10 @@ public class APIObjectService {
         map.put("message", "基于模板(ID=" + template + ")创建了新的实体对象，对象ID为" + id);
         map.put("type", "entity");
         map.put("object", redisObjectService.findObjectById(id));
-        Set<String> subscriberSet = getSubscriberSet("", template, new HashSet<>(events));
-        for (String subscriber : subscriberSet) {
-            subscribeSender.send(JSON.toJSONString(map), subscriber);
+        Set<SubscriberWrapper> subscriberSet = getSubscriberSet("", template, new HashSet<>(events));
+        for (SubscriberWrapper subscriber : subscriberSet) {
+            map.put("subType", subscriber.getSubType());
+            subscribeSender.send(JSON.toJSONString(map), subscriber.getUser());
         }
         return msg;
     }
@@ -172,9 +174,10 @@ public class APIObjectService {
         map.put("op", "OBJECT_DELETE_NOTICE");
         map.put("message", "对象(ID=" + id + ")已经被删除");
         map.put("id", id);
-        Set<String> subscriberSet = getSubscriberSet(id, template, events);
-        for (String subscriber : subscriberSet) {
-            subscribeSender.send(JSON.toJSONString(map), subscriber);
+        Set<SubscriberWrapper> subscriberSet = getSubscriberSet(id, template, events);
+        for (SubscriberWrapper subscriber : subscriberSet) {
+            map.put("subType", subscriber.getSubType());
+            subscribeSender.send(JSON.toJSONString(map), subscriber.getUser());
         }
         subscribeService.deleteByIdAndType(id, "entity");
         return "删除成功";
@@ -207,10 +210,10 @@ public class APIObjectService {
         map.put("updateTime", date);
         map.put("value", value);
         map.put("name", name);
-        Set<String> subscriberSet = getSubscriberSet(id, name, template, events);
-        System.out.println(subscriberSet);
-        for (String subscriber : subscriberSet) {
-            subscribeSender.send(JSON.toJSONString(map), subscriber);
+        Set<SubscriberWrapper> subscriberSet = getSubscriberSet(id, name, template, events);
+        for (SubscriberWrapper subscriber : subscriberSet) {
+            map.put("subType", subscriber.getSubType());
+            subscribeSender.send(JSON.toJSONString(map), subscriber.getUser());
         }
         return "添加成功";
     }
@@ -345,39 +348,54 @@ public class APIObjectService {
      * @param events 对象关联事件
      * @return 订阅者集合
      */
-    private Set<String> getSubscriberSet(String id, String name, String template, Set<String> events) {
+    private Set<SubscriberWrapper> getSubscriberSet(String id, String name, String template, Set<String> events) {
         // 发送列表
-        Set<String> subscriberSet = new HashSet<>();
+        Set<SubscriberWrapper> subscriberSet = new HashSet<>();
         // 对象订阅者
         EntityBaseSubscribeMessage entitySubscribeMessage = entitySubscribeService.findById(id);
         if(entitySubscribeMessage != null) {
-            subscriberSet.addAll(entitySubscribeMessage.getObjectSubscriber());
+            List<String> entitySubscribers = entitySubscribeMessage.getObjectSubscriber();
+            List<SubscriberWrapper> entitySubscriberWrappers = listConversion(entitySubscribers, "entity");
+            subscriberSet.addAll(entitySubscriberWrappers);
             // 属性订阅者
             HashMap<String, List<String>> attrSubscriberMap = entitySubscribeMessage.getAttrsSubscriber();
             if (name != null) {
-                subscriberSet.addAll(attrSubscriberMap.get(name));
+                List<String> attrSubscribers = attrSubscriberMap.get(name);
+                List<SubscriberWrapper> attrSubscriberWrappers = listConversion(attrSubscribers, "attr");
+                subscriberSet.addAll(attrSubscriberWrappers);
             } else {
                 for (String attrName : attrSubscriberMap.keySet()) {
-                    subscriberSet.addAll(attrSubscriberMap.get(attrName));
+                    List<String> attrSubscriber = attrSubscriberMap.get(attrName);
+                    List<SubscriberWrapper> attrSubscriberWrappers = listConversion(attrSubscriber, "attr");
+                    subscriberSet.addAll(attrSubscriberWrappers);
                 }
             }
         }
 
         // 模板订阅者
         TemplateBaseSubscribeMessage templateSubscribeMessage = templateSubscribeService.findById(template);
-        System.out.println(templateSubscribeMessage);
         if(templateSubscribeMessage != null) {
             HashMap<String, List<String>> templateSubscriberList = templateSubscribeMessage.getTemplateSubscriber();
             for(String templateSubscriber : templateSubscriberList.keySet()) {
                 HashSet<String> eventsSet = new HashSet<>(templateSubscriberList.get(templateSubscriber));
                 if (eventsSet.size() == 0 || SetOp.haveIntersection(events, eventsSet))
-                    subscriberSet.add(templateSubscriber);
+                    subscriberSet.add(new SubscriberWrapper(templateSubscriber, "template"));
             }
         }
         return subscriberSet;
     }
     // 重载
-    private Set<String> getSubscriberSet(String id, String template, Set<String> events) {
+    private Set<SubscriberWrapper> getSubscriberSet(String id, String template, Set<String> events) {
         return getSubscriberSet(id, null, template, events);
+    }
+    private List<SubscriberWrapper> listConversion(List<String> subscribers, String subType) {
+        List<SubscriberWrapper> subscriberWrappers = new ArrayList<>();
+        if(subscribers == null || subscribers.size() == 0) {
+            return subscriberWrappers;
+        }
+        for(String user : subscribers) {
+            subscriberWrappers.add(new SubscriberWrapper(user, subType));
+        }
+        return subscriberWrappers;
     }
 }
