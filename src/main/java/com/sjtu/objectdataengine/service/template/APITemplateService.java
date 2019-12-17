@@ -7,6 +7,7 @@ import com.sjtu.objectdataengine.model.template.ObjectTemplate;
 import com.sjtu.objectdataengine.rabbitMQ.inside.sender.MongoSender;
 import com.sjtu.objectdataengine.service.subscribe.SubscribeService;
 import com.sjtu.objectdataengine.service.tree.RedisTreeService;
+import com.sjtu.objectdataengine.utils.Result.*;
 import com.sjtu.objectdataengine.utils.TypeConversion;
 import org.springframework.stereotype.Component;
 
@@ -32,31 +33,31 @@ public class APITemplateService {
     @Resource
     SubscribeService subscribeService;
 
-    public String create(String request) {
+    public ResultInterface create(String request) {
         //解析
         JSONObject jsonObject = JSON.parseObject(request);
         //id必须要有
         String id = jsonObject.getString("id");
-        if(id == null) return "ID不能为空";
+        if(id == null) return Result.build(ResultCodeEnum.TEMPLATE_CREATE_EMPTY_ID);
         String name = jsonObject.getString("name");
-        if (name == null) return "name不能为空";
+        if (name == null) return Result.build(ResultCodeEnum.TEMPLATE_CREATE_EMPTY_NAME);
         String intro = jsonObject.getString("intro");
         if (intro == null) intro = "";
         String nodeId = jsonObject.getString("nodeId");
-        if (nodeId == null || nodeId.equals("")) return "nodeId不能为空";
+        if (nodeId == null || nodeId.equals("")) return Result.build(ResultCodeEnum.TEMPLATE_CREATE_EMPTY_NODEID);
         // 检查nodeId
         TreeNode treeNode = redisTreeService.findNodeByKey(nodeId);
         if(treeNode == null) {
-            return "指定的nodeId不存在";
+            return Result.build(ResultCodeEnum.TEMPLATE_CREATE_NODE_NOT_FOUND);
         } else if(!treeNode.getTemplate().equals("")) {
-            return "指定的node上已存在模板，若想创建新模板请先删除旧模板";
+            return Result.build(ResultCodeEnum.TEMPLATE_CREATE_ALREADY_EXISTS);
         }
         // 检查type
         String type = jsonObject.getString("type");
-        if (type == null || type.equals("")) return "类型不能为空";
+        if (type == null || type.equals("")) return Result.build(ResultCodeEnum.TEMPLATE_CREATE_TYPE_EMPTY);
         // 检查attrs
         JSONObject attrsJson = jsonObject.getJSONObject("attrs");
-        if (attrsJson == null) return "属性不能为空";
+        if (attrsJson == null) return Result.build(ResultCodeEnum.TEMPLATE_CREATE_ATTRS_EMPTY);
         HashMap<String, String> attrs = TypeConversion.JsonToMap(attrsJson);
         Date date = new Date();
         HashMap<String, Object> createMessage = new HashMap<>();
@@ -74,17 +75,17 @@ public class APITemplateService {
         if(redisTemplateService.createTemplate(id, name, intro, type, nodeId, attrs, date)) {
             // 创建订阅表
             subscribeService.create(id, "template");
-            return "创建成功";
+            return Result.build(ResultCodeEnum.TEMPLATE_CREATE_SUCCESS);
         }
         //this.delete(id);
-        return "创建失败!";
+        return Result.build(ResultCodeEnum.TEMPLATE_CREATE_FAIL);
     }
 
-    public String delete(String id) {
-        if(id == null || id.equals("")) return "ID不能为空";
+    public ResultInterface delete(String id) {
+        if(id == null || id.equals("")) return Result.build(ResultCodeEnum.TEMPLATE_DELETE_EMPTY_ID);
 
         ObjectTemplate objectTemplate = redisTemplateService.findTemplateById(id);
-        if (objectTemplate == null) return "没有该模板";
+        if (objectTemplate == null) return Result.build(ResultCodeEnum.TEMPLATE_DELETE_NOT_FOUND);
 
         String nodeId = objectTemplate.getNodeId();
 
@@ -97,12 +98,12 @@ public class APITemplateService {
 
         mongoSender.send(message);
         if (redisTemplateService.deleteTemplateById(id, date)) {
-            return  "删除成功！";
+            return Result.build(ResultCodeEnum.TEMPLATE_DELETE_SUCCESS);
         }
-        return "删除失败！";
+        return Result.build(ResultCodeEnum.TEMPLATE_DELETE_FAIL);
     }
 
-    public String modifyBaseInfo(String request) {
+    public ResultInterface modifyBaseInfo(String request) {
         Date date = new Date();
         // 解析
         JSONObject jsonObject = JSON.parseObject(request);
@@ -111,9 +112,9 @@ public class APITemplateService {
         modifyMessage.put("date", date);
         // id必须要有
         String id = jsonObject.getString("id");
-        if (id == null || id.equals("")) return "ID不能为空";
+        if (id == null || id.equals("")) return Result.build(ResultCodeEnum.TEMPLATE_MODIFY_EMPTY_ID);
         ObjectTemplate objectTemplate = redisTemplateService.findTemplateById(id);
-        if (objectTemplate == null) return "ID不存在";     // 不存在
+        if (objectTemplate == null) return Result.build(ResultCodeEnum.TEMPLATE_MODIFY_NOT_FOUND);     // 不存在
         modifyMessage.put("id", id);
         // name如果是null就不需要改
         String name = jsonObject.getString("name");
@@ -128,24 +129,24 @@ public class APITemplateService {
         // System.out.println(modifyMessage);
         mongoSender.send(modifyMessage);
         if (redisTemplateService.updateBaseInfo(id, name, intro, date)) {
-            return "修改成功";
+            return Result.build(ResultCodeEnum.TEMPLATE_MODIFY_SUCCESS);
         }
-        return "修改失败";
+        return Result.build(ResultCodeEnum.TEMPLATE_MODIFY_FAIL);
     }
 
-    public String addAttr(String request) {
+    public ResultInterface addAttr(String request) {
         // 解析
         JSONObject jsonObject = JSON.parseObject(request);
         // id
         String id = jsonObject.getString("id");
-        if (id == null || id.equals("")) return "ID不能为空";
-        if (redisTemplateService.hasKey(id)) return "ID不存在";
+        if (id == null || id.equals("")) return Result.build(ResultCodeEnum.TEMPLATE_ADD_ATTR_EMPTY_ID);
+        if (redisTemplateService.hasKey(id)) return Result.build(ResultCodeEnum.TEMPLATE_ADD_ATTR_NOT_FOUND);
         // name
         String name = jsonObject.getString("name");
-        if (name == null || name.equals("")) return "name不能为空";
+        if (name == null || name.equals("")) Result.build(ResultCodeEnum.TEMPLATE_ADD_ATTR_EMPTY_NAME);
         // nickname
         String nickname = jsonObject.getString("intro");
-        if (nickname == null || nickname.equals("")) return "nickname不能为空";
+        if (nickname == null || nickname.equals("")) return Result.build(ResultCodeEnum.TEMPLATE_ADD_ATTR_EMPTY_INTRO);
 
         HashMap<String, Object> opAttrMessage = new HashMap<>();
         Date date = new Date();
@@ -157,21 +158,21 @@ public class APITemplateService {
 
         mongoSender.send(opAttrMessage);
         if (redisTemplateService.addAttrs(id, name, nickname, date)) {
-            return "操作成功";
+            return Result.build(ResultCodeEnum.TEMPLATE_ADD_ATTR_SUCCESS);
         } else {
             opAttrMessage.put("op", "TEMP_DEL_ATTR");
             opAttrMessage.remove("nickname");
             mongoSender.send(opAttrMessage);
-            return "操作失败";
+            return Result.build(ResultCodeEnum.TEMPLATE_ADD_ATTR_FAIL);
         }
     }
 
-    public String delAttr(String id, String name) {
+    public ResultInterface delAttr(String id, String name) {
         Date date = new Date();
-        if (id == null || id.equals("")) return "ID不能为空";
-        if (!redisTemplateService.hasKey(id)) return "ID不存在";
+        if (id == null || id.equals("")) return Result.build(ResultCodeEnum.TEMPLATE_DEL_ATTR_EMPTY_ID);
+        if (!redisTemplateService.hasKey(id)) return Result.build(ResultCodeEnum.TEMPLATE_DEL_ATTR_NOT_FOUND);
         // name
-        if (name == null || name.equals("")) return "name不能为空";
+        if (name == null || name.equals("")) return Result.build(ResultCodeEnum.TEMPLATE_DEL_ATTR_EMPTY_NAME);
         //if (!redisTemplateService.keyHasName(id, name)) return "name不存在";
 
         HashMap<String, Object> delAttrMessage = new HashMap<>();
@@ -183,14 +184,20 @@ public class APITemplateService {
 
         mongoSender.send(delAttrMessage);
         if (redisTemplateService.delAttrs(id, name, date)) {
-            return "删除成功";
+            return Result.build(ResultCodeEnum.TEMPLATE_DEL_ATTR_SUCCESS);
         }
 
-        return "删除失败";
+        return Result.build(ResultCodeEnum.TEMPLATE_DEL_ATTR_FAIL);
     }
-
-    public ObjectTemplate get(String id) {
+    public ObjectTemplate getTemplateById(String id) {
+        return  mongoTemplateService.findTemplateById(id);
+    }
+    public ResultInterface get(String id) {
         if (id == null || id.equals("")) return null;
-        return mongoTemplateService.findTemplateById(id);
+        ObjectTemplate objectTemplate = mongoTemplateService.findTemplateById(id);
+        if(objectTemplate == null) {
+            return ResultData.build(ResultCodeEnum.TEMPLATE_GET_FAIL, null);
+        }
+        return ResultData.build(ResultCodeEnum.TEMPLATE_GET_SUCCESS, objectTemplate);
     }
 }

@@ -6,6 +6,10 @@ import com.sjtu.objectdataengine.rabbitMQ.outside.sender.SubscribeSender;
 import com.sjtu.objectdataengine.service.rabbit.RabbitMQService;
 import com.sjtu.objectdataengine.utils.MongoAutoIdUtil;
 import com.sjtu.objectdataengine.utils.MongoCondition;
+import com.sjtu.objectdataengine.utils.Result.Result;
+import com.sjtu.objectdataengine.utils.Result.ResultCodeEnum;
+import com.sjtu.objectdataengine.utils.Result.ResultData;
+import com.sjtu.objectdataengine.utils.Result.ResultInterface;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
@@ -42,16 +46,16 @@ public class UserService {
      * @param intro 简介
      * @return 分配给用户的唯一id
      */
-    public String register(String name, String intro) {
+    public ResultInterface register(String name, String intro) {
         MongoCondition mongoCondition = new MongoCondition();
         mongoCondition.setQuery(new Query().addCriteria(Criteria.where("name").is(name)));
         if(userDAO.findByArgs(mongoCondition, User.class).size() != 0) {
-            return "用户名重复";
+            return Result.build(ResultCodeEnum.USER_REGISTER_DUPLICATE_USERNAME);
         }
         String id = mongoAutoIdUtil.getNextId("seq_user").toString();
         this.create(id, name, intro);
         rabbitMQService.addQueue(name, id);
-        return id;
+        return ResultData.build(ResultCodeEnum.USER_REGISTER_SUCCESS, id);
     }
 
     /**
@@ -59,11 +63,11 @@ public class UserService {
      * @param id 分配给用户的唯一id
      * @return true代表注销成功，false代表注销失败
      */
-    public boolean unregister(String id) {
+    public ResultInterface unregister(String id) {
         User user = userDAO.findById(id, User.class);
         Map<String, String> map = new HashMap<>();
         if(user == null) {
-            return false;
+            return Result.build(ResultCodeEnum.USER_UNREGISTER_FAIL);
         }
         List<String> objectSubscribe = user.getObjectSubscribe();
         HashMap<String, List<String>> attrsSubscribeMap = user.getAttrsSubscribe();
@@ -87,7 +91,7 @@ public class UserService {
         }
         // 删除队列
         rabbitMQService.delQueue(id);
-        return false;
+        return Result.build(ResultCodeEnum.USER_UNREGISTER_SUCCESS);
     }
 
     /**

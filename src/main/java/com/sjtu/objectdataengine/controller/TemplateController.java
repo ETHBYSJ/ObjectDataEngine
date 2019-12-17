@@ -2,6 +2,7 @@ package com.sjtu.objectdataengine.controller;
 
 import com.sjtu.objectdataengine.model.template.ObjectTemplate;
 import com.sjtu.objectdataengine.service.template.APITemplateService;
+import com.sjtu.objectdataengine.utils.Result.ResultInterface;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,33 +18,33 @@ public class TemplateController {
 
     @PostMapping("/create")
     @ResponseBody
-    public String create(@RequestBody String request) {
+    public ResultInterface create(@RequestBody String request) {
         return APITemplateService.create(request);
     }
 
     @GetMapping("/delete")
-    public String delete(@RequestParam String id) {
+    public ResultInterface delete(@RequestParam String id) {
         return APITemplateService.delete(id);
     }
 
     @PostMapping("/modify_base")
-    public String modifyBaseInfo(@RequestBody String request) {
+    public ResultInterface modifyBaseInfo(@RequestBody String request) {
         return APITemplateService.modifyBaseInfo(request);
     }
 
     @PostMapping("/add_attr")
     @ResponseBody
-    public String addAttr(@RequestBody String request) {
+    public ResultInterface addAttr(@RequestBody String request) {
         return APITemplateService.addAttr(request);
     }
 
     @GetMapping("/del_attr")
-    public String delAttr(@RequestParam String id, @RequestParam String name) {
+    public ResultInterface delAttr(@RequestParam String id, @RequestParam String name) {
         return APITemplateService.delAttr(id, name);
     }
 
     @GetMapping("/get")
-    public ObjectTemplate get(@RequestParam String id) {
+    public ResultInterface get(@RequestParam String id) {
         return APITemplateService.get(id);
     }
 }

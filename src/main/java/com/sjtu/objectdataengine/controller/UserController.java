@@ -1,6 +1,7 @@
 package com.sjtu.objectdataengine.controller;
 
 import com.sjtu.objectdataengine.service.subscribe.UserService;
+import com.sjtu.objectdataengine.utils.Result.ResultInterface;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -13,11 +14,11 @@ public class UserController {
     UserService userService;
 
     @GetMapping("/register")
-    public String register(String name, String intro) {
+    public ResultInterface register(String name, String intro) {
         return userService.register(name, intro);
     }
     @GetMapping("/unregister")
-    public boolean unregister(String id) {
+    public ResultInterface unregister(String id) {
         return userService.unregister(id);
     }
 }
