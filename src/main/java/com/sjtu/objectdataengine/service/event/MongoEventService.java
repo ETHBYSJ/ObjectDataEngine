@@ -29,7 +29,8 @@ public class MongoEventService {
             EventObject e = mongoEventDAO.findById(id, EventObject.class);
             if (e != null) return false;
             List<String> objects = new ArrayList<>();
-            HashMap<String, String> attrsMap = mongoTemplateDAO.findById(template, ObjectTemplate.class).getAttrs();
+            ObjectTemplate objectTemplate = mongoTemplateDAO.findById(template, ObjectTemplate.class);
+            HashMap<String, String> attrsMap = objectTemplate.getAttrs();
             HashMap<String, MongoAttr> attrs = new HashMap<>();
             for (String attr : attrsMap.keySet()) {
                 String value = attrsKv.get(attr) == null ? "" : attrsKv.get(attr);
@@ -43,6 +44,7 @@ public class MongoEventService {
             // 设置创建时间为开始时间
             eventObject.setStartTime(date);
             mongoEventDAO.create(eventObject);
+            mongoTemplateDAO.opObjects(objectTemplate.getId(), id, "add");
             return true;
         } catch (Exception e) {
             e.printStackTrace();

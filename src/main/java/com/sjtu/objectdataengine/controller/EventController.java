@@ -29,12 +29,20 @@ public class EventController {
     public String modifyBase(@RequestBody String request) {
         return APIEventService.modifyBase(request);
     }
+
     @GetMapping("/find")
     public EventObject find(@RequestParam String id) {
         return APIEventService.find(id);
     }
+
     @GetMapping("/end")
     public String end(String id) {
         return APIEventService.end(id);
+    }
+
+    @PostMapping("/modify_attr")
+    @ResponseBody
+    public String modifyAttr(@RequestBody String request) {
+        return APIEventService.modifyAttr(request);
     }
 }

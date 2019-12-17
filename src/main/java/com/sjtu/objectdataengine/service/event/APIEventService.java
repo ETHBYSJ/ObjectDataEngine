@@ -112,7 +112,7 @@ public class APIEventService {
 
         String template = eventObject.getTemplate();
         Map<String, Object> map = new HashMap<>();
-        map.put("op", "EVENT_CREATE_DELETE");
+        map.put("op", "EVENT_DELETE");
         map.put("message", "基于模板(ID=" + template + ")创建了新的事件对象，事件ID为" + id);
         map.put("type", "event");
         map.put("subType", "template");
@@ -236,8 +236,6 @@ public class APIEventService {
      * @return 修改结果
      */
     public String modifyAttr(JSONObject jsonObject) {
-        HashMap<String, Object> modifyMessage = new HashMap<>();
-        modifyMessage.put("op", "EVENT_MODIFY_ATTR");
         // id必须要有
         String id = jsonObject.getString("id");
         if (id == null || id.equals("")) return "ID不能为空";
@@ -246,15 +244,22 @@ public class APIEventService {
         // 属性name
         String name = jsonObject.getString("name");
         if (name == null || name.equals("")) return "属性name不能为空";
-        modifyMessage.put("name", name);
         // 属性value
         String value = jsonObject.getString("value");
         if (value == null) return "属性值不能为空";
-        modifyMessage.put("value", value);
         // 日期date
         Date date = new Date();
-        modifyMessage.put("date", date);
+        String template = eventObject.getTemplate();
+        Map<String, Object> map = new HashMap<>();
+        map.put("op", "EVENT_UPDATE");
+        map.put("message", "基于模板(ID="  + template + ")的事件(ID=" + id + ")刚更新了属性(" + name + ")值为(" + value + ")");
+        map.put("type", "event");
+        map.put("subType", "template");
         if (redisEventService.updateAttr(id, name, value, date) && mongoEventService.modifyAttr(id, name, value, date)) {
+            Set<String> subscriberSet = getSubscriberSet(template);
+            for (String subscriber : subscriberSet) {
+                subscribeSender.send(JSON.toJSONString(map), subscriber);
+            }
             return  "更新属性成功";
         }
         return "更新属性失败";

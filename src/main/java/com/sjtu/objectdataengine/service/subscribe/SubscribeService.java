@@ -185,7 +185,7 @@ public class SubscribeService {
      *
      * @param id 模板id
      * @param user 用户id
-     * @param list 绑定事件列表或者实体对象列表
+     * @param list 绑定事件列表
      * @return 说明消息
      */
     public String addTemplateSubscriber(String id, String user, List<String> list) {

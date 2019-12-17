@@ -121,6 +121,7 @@ public class SubscribeRequestReceiver {
                 ObjectTemplate objectTemplate = templateService.getTemplateById(template);
                 Map<String, Object> map = new HashMap<>();
                 String res;
+                // System.out.println(events);
                 if(objectTemplate == null) {
                     res = "模板不存在";
                     map.put("status", "FAIL");
