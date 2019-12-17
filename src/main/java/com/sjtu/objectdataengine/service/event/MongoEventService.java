@@ -44,7 +44,7 @@ public class MongoEventService {
             // 设置创建时间为开始时间
             eventObject.setStartTime(date);
             mongoEventDAO.create(eventObject);
-            mongoTemplateDAO.opObjects(objectTemplate.getId(), id, "add");
+            mongoTemplateDAO.opObjects(template, id, "add");
             return true;
         } catch (Exception e) {
             e.printStackTrace();

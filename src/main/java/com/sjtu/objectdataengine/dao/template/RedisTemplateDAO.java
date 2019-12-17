@@ -108,4 +108,16 @@ public class RedisTemplateDAO extends RedisDAO {
         }
         return false;
     }
+    public boolean opEvent(String id, String objId, String op) {
+        if(op.equals("add")) {
+            if(!lHasValue(id + "#events", objId)) {
+                return lSet(id + "#events", objId);
+            }
+            else return false;
+        }
+        else if(op.equals("del")) {
+            return lRemove(id + "#events", 1, objId) > 0;
+        }
+        return false;
+    }
 }
