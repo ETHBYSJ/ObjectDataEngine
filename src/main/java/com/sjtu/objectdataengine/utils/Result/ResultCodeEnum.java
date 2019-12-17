@@ -63,11 +63,48 @@ public enum ResultCodeEnum {
     TEMPLATE_GET_FAIL("3501", "查询失败"),
     //-----------USER--------------
     // USER REGISTER
-    USER_REGISTER_SUCCESS("3600", "注册成功"),
-    USER_REGISTER_DUPLICATE_USERNAME("3601", "用户名重复"),
+    USER_REGISTER_SUCCESS("4000", "注册成功"),
+    USER_REGISTER_DUPLICATE_USERNAME("4001", "用户名重复"),
     // USER UNREGISTER
-    USER_UNREGISTER_SUCCESS("3700", "注销成功"),
-    USER_UNREGISTER_FAIL("3701", "注销失败");
+    USER_UNREGISTER_SUCCESS("4100", "注销成功"),
+    USER_UNREGISTER_FAIL("4101", "注销失败"),
+    //----------SUBSCRIBE-----------
+    // DELETE TEMPLATE SUBSCRIBE MESSAGE
+    SUB_MSG_DEL_TEMPLATE_SUCCESS("5000", "删除成功"),
+    SUB_MSG_DEL_TEMPLATE_NOT_FOUND("5001", "模板订阅表不存在"),
+    SUB_MSG_DEL_TEMPLATE_FAIL("5002", "删除失败"),
+    // DELETE ENTITY SUBSCRIBE MESSAGE
+    SUB_MSG_DEL_ENTITY_SUCCESS("5100", "删除成功"),
+    SUB_MSG_DEL_ENTITY_NOT_FOUND("5101", "实体对象订阅表不存在"),
+    SUB_MSG_DEL_ENTITY_FAIL("5102", "删除失败"),
+    SUB_MSG_DEL_TYPE_ERROR("5103", "类型错误"),
+    // ADD ENTITY SUBSCRIBER
+    SUB_ADD_ENTITY_SUCCESS("5200", "增加成功"),
+    SUB_ADD_ENTITY_EMPTY_ID("5201", "对象id不能为空"),
+    SUB_ADD_ENTITY_EMPTY_USER_ID("5202", "用户id不能为空"),
+    SUB_ADD_ENTITY_USER_NOT_FOUND("5203", "用户不存在"),
+    SUB_ADD_ENTITY_NOT_FOUND("5204", "实体对象不存在"),
+    SUB_ADD_ENTITY_FAIL("5205", "增加失败"),
+    // DEL ENTITY SUBSCRIBER
+    SUB_DEL_ENTITY_SUCCESS("5300", "删除成功"),
+    SUB_DEL_ENTITY_EMPTY_ID("5301", "对象id不能为空"),
+    SUB_DEL_ENTITY_EMPTY_USER_ID("5302", "用户id不能为空"),
+    SUB_DEL_ENTITY_USER_NOT_FOUND("5303", "用户不存在"),
+    SUB_DEL_ENTITY_FAIL("5304", "删除失败"),
+    // ADD TEMPLATE SUBSCRIBER
+    SUB_ADD_TEMPLATE_SUCCESS("5400", "增加成功"),
+    SUB_ADD_TEMPLATE_EMPTY_ID("5401", "模板id不能为空"),
+    SUB_ADD_TEMPLATE_EMPTY_USER_ID("5402", "用户id不能为空"),
+    SUB_ADD_TEMPLATE_USER_NOT_FOUND("5403", "用户不存在"),
+    SUB_ADD_TEMPLATE_NOT_FOUND("5404", "模板不存在"),
+    SUB_ADD_TEMPLATE_FAIL("5405", "增加失败"),
+    // DEL TEMPLATE SUBSCRIBER
+    SUB_DEL_TEMPLATE_SUCCESS("5500", "删除成功"),
+    SUB_DEL_TEMPLATE_EMPTY_ID("5501", "模板id不能为空"),
+    SUB_DEL_TEMPLATE_EMPTY_USER_ID("5502", "用户id不能为空"),
+    SUB_DEL_TEMPLATE_USER_NOT_FOUND("5503", "用户不存在"),
+    SUB_DEL_TEMPLATE_FAIL("5504", "删除失败");
+
 
     private String code;
     private String msg;

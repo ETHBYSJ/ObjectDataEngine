@@ -7,6 +7,9 @@ import com.sjtu.objectdataengine.model.subscribe.EntityBaseSubscribeMessage;
 import com.sjtu.objectdataengine.model.subscribe.TemplateBaseSubscribeMessage;
 import com.sjtu.objectdataengine.service.object.APIObjectService;
 import com.sjtu.objectdataengine.service.template.APITemplateService;
+import com.sjtu.objectdataengine.utils.Result.Result;
+import com.sjtu.objectdataengine.utils.Result.ResultCodeEnum;
+import com.sjtu.objectdataengine.utils.Result.ResultInterface;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -36,10 +39,10 @@ public class SubscribeService {
      * @return true or false
      */
 
-    public String deleteByIdAndType(String id, String type) {
+    public ResultInterface deleteByIdAndType(String id, String type) {
         if(type.equals("template")) {
             TemplateBaseSubscribeMessage templateSubscribeMessage = templateSubscribeService.findById(id);
-            if(templateSubscribeMessage == null) return "模板订阅表不存在";
+            if(templateSubscribeMessage == null) return Result.build(ResultCodeEnum.SUB_MSG_DEL_TEMPLATE_NOT_FOUND);
             // 从用户表中删除
             Set<String> templateSubscriber = templateSubscribeMessage.getTemplateSubscriber().keySet();
             for(String user : templateSubscriber) {
@@ -47,13 +50,13 @@ public class SubscribeService {
             }
             // 从订阅表中删除
             if(templateSubscribeService.deleteById(id)) {
-                return "删除成功";
+                return Result.build(ResultCodeEnum.SUB_MSG_DEL_TEMPLATE_SUCCESS);
             }
-            return "删除失败";
+            return Result.build(ResultCodeEnum.SUB_MSG_DEL_TEMPLATE_FAIL);
         }
         else if(type.equals("entity")) {
             EntityBaseSubscribeMessage entitySubscribeMessage = entitySubscribeService.findById(id);
-            if(entitySubscribeMessage == null) return "实体对象订阅表不存在";
+            if(entitySubscribeMessage == null) return Result.build(ResultCodeEnum.SUB_MSG_DEL_ENTITY_NOT_FOUND);
             // 从用户表中删除
             List<String> objectSubscriber = entitySubscribeMessage.getObjectSubscriber();
             for(String user : objectSubscriber) {
@@ -69,11 +72,11 @@ public class SubscribeService {
             }
             // 从订阅表中删除
             if(entitySubscribeService.deleteById(id)) {
-                return "删除成功";
+                return Result.build(ResultCodeEnum.SUB_MSG_DEL_ENTITY_SUCCESS);
             }
-            return "删除失败";
+            return Result.build(ResultCodeEnum.SUB_MSG_DEL_ENTITY_FAIL);
         }
-        else return "类型错误";
+        else return Result.build(ResultCodeEnum.SUB_MSG_DEL_TYPE_ERROR);
     }
 
     /**
@@ -117,18 +120,18 @@ public class SubscribeService {
      * @return 结果说明
      */
 
-    public String addEntitySubscriber(String id, String user, List<String> attrs) {
+    public ResultInterface addEntitySubscriber(String id, String user, List<String> attrs) {
         // 检测空
-        if(id == null || id.equals("")) return "对象id不能为空";
-        if (user == null || user.equals("")) return "用户id不能为空";
+        if(id == null || id.equals("")) return Result.build(ResultCodeEnum.SUB_ADD_ENTITY_EMPTY_ID);
+        if (user == null || user.equals("")) return Result.build(ResultCodeEnum.SUB_ADD_ENTITY_EMPTY_USER_ID);
         Date date = new Date();
         // 检测用户
         if(!userService.hasUser(user)) {
-            return "用户不存在";
+            return Result.build(ResultCodeEnum.SUB_ADD_ENTITY_USER_NOT_FOUND);
         }
         // 1.检查对象是否存在
         if(objectService.findObjectById(id) == null) {
-            return "实体对象不存在";
+            return Result.build(ResultCodeEnum.SUB_ADD_ENTITY_NOT_FOUND);
         }
         // 2.订阅表如果不存在，创建订阅表
         if(entitySubscribeService.findById(id) == null) {
@@ -138,16 +141,16 @@ public class SubscribeService {
         if(attrs == null || attrs.size() == 0) {
             if(entitySubscribeService.addEntitySubscriber(id, user)) {
                 userService.addObjectSubscribe(user, id);
-                return "增加成功";
+                return Result.build(ResultCodeEnum.SUB_ADD_ENTITY_SUCCESS);
             }
-            return "增加失败";
+            return Result.build(ResultCodeEnum.SUB_ADD_ENTITY_FAIL);
         }
         else {
             if(entitySubscribeService.addEntityAttrSubscriber(id, attrs, user)) {
                 userService.addAttrSubscribe(user, id, attrs);
-                return "增加成功";
+                return Result.build(ResultCodeEnum.SUB_ADD_ENTITY_SUCCESS);
             }
-            return "增加失败";
+            return Result.build(ResultCodeEnum.SUB_ADD_ENTITY_FAIL);
         }
     }
 
@@ -156,28 +159,28 @@ public class SubscribeService {
      * @param user 订阅者id
      * @return 结果说明
      */
-    public String delEntitySubscriber(String id, String user, List<String> attrs) {
+    public ResultInterface delEntitySubscriber(String id, String user, List<String> attrs) {
         // 检测空
-        if(id == null || id.equals("")) return "对象id不能为空";
-        if (user == null || user.equals("")) return "用户id不能为空";
+        if(id == null || id.equals("")) return Result.build(ResultCodeEnum.SUB_DEL_ENTITY_EMPTY_ID);
+        if (user == null || user.equals("")) return Result.build(ResultCodeEnum.SUB_DEL_ENTITY_EMPTY_USER_ID);
         // 检测用户
         if(!userService.hasUser(user)) {
-            return "用户不存在";
+            return Result.build(ResultCodeEnum.SUB_DEL_ENTITY_USER_NOT_FOUND);
         }
         // 双向操作
         if(attrs == null || attrs.size() == 0) {
             if(entitySubscribeService.delEntitySubscriber(id, user)) {
                 userService.delObjectSubscribe(user, id);
-                return "删除成功";
+                return Result.build(ResultCodeEnum.SUB_DEL_ENTITY_SUCCESS);
             }
-            return "删除失败";
+            return Result.build(ResultCodeEnum.SUB_DEL_ENTITY_FAIL);
         }
         else {
             if(entitySubscribeService.delEntityAttrSubscriber(id, attrs, user)) {
                 userService.delAttrSubscribe(user, id, attrs);
-                return "删除成功";
+                return Result.build(ResultCodeEnum.SUB_DEL_ENTITY_SUCCESS);
             }
-            return "删除失败";
+            return Result.build(ResultCodeEnum.SUB_DEL_ENTITY_FAIL);
         }
     }
 
@@ -188,18 +191,18 @@ public class SubscribeService {
      * @param list 绑定事件列表或者实体对象列表
      * @return 说明消息
      */
-    public String addTemplateSubscriber(String id, String user, List<String> list) {
+    public ResultInterface addTemplateSubscriber(String id, String user, List<String> list) {
         // 检测空
-        if(id == null || id.equals("")) return "对象id不能为空";
-        if (user == null || user.equals("")) return "用户id不能为空";
+        if(id == null || id.equals("")) return Result.build(ResultCodeEnum.SUB_ADD_TEMPLATE_EMPTY_ID);
+        if (user == null || user.equals("")) return Result.build(ResultCodeEnum.SUB_ADD_TEMPLATE_EMPTY_USER_ID);
         Date date = new Date();
         // 检测用户
         if(!userService.hasUser(user)) {
-            return "用户不存在";
+            return Result.build(ResultCodeEnum.SUB_ADD_TEMPLATE_USER_NOT_FOUND);
         }
         // 1.检查对象是否存在
         if(templateService.get(id) == null) {
-            return "模板不存在";
+            return Result.build(ResultCodeEnum.SUB_ADD_TEMPLATE_NOT_FOUND);
         }
         // 2.订阅表如果不存在，创建订阅表
         if(templateSubscribeService.findById(id) == null) {
@@ -208,9 +211,9 @@ public class SubscribeService {
         // 双向操作
         if(templateSubscribeService.addTemplateSubscriber(id, user, list)) {
             userService.addTemplateSubscribe(user, id, list);
-            return "增加成功";
+            return Result.build(ResultCodeEnum.SUB_ADD_TEMPLATE_SUCCESS);
         }
-        return "增加失败";
+        return Result.build(ResultCodeEnum.SUB_ADD_TEMPLATE_FAIL);
     }
 
     /**
@@ -219,21 +222,21 @@ public class SubscribeService {
      * @param user 用户id
      * @return 说明消息
      */
-    public String delTemplateSubscriber(String id, String user) {
+    public ResultInterface delTemplateSubscriber(String id, String user) {
         // 检测空
-        if(id == null || id.equals("")) return "对象id不能为空";
-        if (user == null || user.equals("")) return "用户id不能为空";
+        if(id == null || id.equals("")) return Result.build(ResultCodeEnum.SUB_DEL_TEMPLATE_EMPTY_ID);
+        if (user == null || user.equals("")) return Result.build(ResultCodeEnum.SUB_DEL_TEMPLATE_EMPTY_USER_ID);
         Date date = new Date();
         // 检测用户
         if(!userService.hasUser(user)) {
-            return "用户不存在";
+            return Result.build(ResultCodeEnum.SUB_DEL_TEMPLATE_USER_NOT_FOUND);
         }
         // 双向操作
         if(templateSubscribeService.delTemplateSubscriber(id, user)) {
             userService.delTemplateSubscribe(user, id);
-            return "删除成功";
+            return Result.build(ResultCodeEnum.SUB_DEL_TEMPLATE_SUCCESS);
         }
-        return "删除失败";
+        return Result.build(ResultCodeEnum.SUB_DEL_TEMPLATE_FAIL);
     }
 
 }

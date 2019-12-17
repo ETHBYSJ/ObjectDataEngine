@@ -11,6 +11,7 @@ import com.sjtu.objectdataengine.service.subscribe.SubscribeService;
 import com.sjtu.objectdataengine.service.subscribe.UserService;
 import com.sjtu.objectdataengine.service.template.APITemplateService;
 import com.sjtu.objectdataengine.utils.Result.ResultData;
+import com.sjtu.objectdataengine.utils.Result.ResultInterface;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
@@ -54,8 +55,8 @@ public class SubscribeRequestReceiver {
                 String id = jsonObject.getString("id");
                 boolean latest = jsonObject.getBoolean("latest");
                 Map<String, Object> map = new HashMap<String, Object>();
-                String res = subscribeService.addEntitySubscriber(id, userId, null);
-                if(res.equals("增加成功")) {
+                ResultInterface res = subscribeService.addEntitySubscriber(id, userId, null);
+                if(res.getCode().equals("5200")) {
                     map.put("status", "SUCC");
                     map.put("message", res);
                     map.put("id", id);
@@ -84,8 +85,8 @@ public class SubscribeRequestReceiver {
                 List<String> attrs = jsonArray == null ? new ArrayList<>() : JSONObject.parseArray(jsonArray.toJSONString(), String.class);
                 boolean latest = jsonObject.getBoolean("latest");
                 Map<String, Object> map = new HashMap<String, Object>();
-                String res = subscribeService.addEntitySubscriber(id, userId, attrs);
-                if(res.equals("增加成功")) {
+                ResultInterface res = subscribeService.addEntitySubscriber(id, userId, attrs);
+                if(res.getCode().equals("5200")) {
                     map.put("status", "SUCC");
                     map.put("message", res);
                     map.put("id", id);
@@ -120,9 +121,8 @@ public class SubscribeRequestReceiver {
                 List<String> events = jsonArray == null ? new ArrayList<>() : JSONObject.parseArray(jsonArray.toJSONString(), String.class);
                 ObjectTemplate objectTemplate = templateService.getTemplateById(template);
                 Map<String, Object> map = new HashMap<>();
-                String res;
                 if(objectTemplate == null) {
-                    res = "模板不存在";
+                    String res = "模板不存在";
                     map.put("status", "FAIL");
                     map.put("template", template);
                     map.put("events", events);
@@ -134,9 +134,8 @@ public class SubscribeRequestReceiver {
                     } else {
                         events = new ArrayList<>();
                     }
-
-                    res = subscribeService.addTemplateSubscriber(template, userId, events);
-                    if(res.equals("增加成功")) {
+                    ResultInterface res = subscribeService.addTemplateSubscriber(template, userId, events);
+                    if(res.getCode().equals("5400")) {
                         map.put("status", "SUCC");
                         map.put("template", template);
                         map.put("events", events);
