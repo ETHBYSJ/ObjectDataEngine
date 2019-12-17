@@ -37,7 +37,7 @@ public class RedisEventService {
             return false;
         }
         ObjectTemplate objectTemplate = redisTemplateDAO.findById(template);
-
+        redisTemplateDAO.opEvent(template, id, "add");
         String baseKey = id + "#base";
         redisEventDAO.hset(baseKey, "name", name);
         redisEventDAO.hset(baseKey, "intro", intro);
@@ -123,6 +123,7 @@ public class RedisEventService {
     public boolean deleteEventById(String id, String template) {
         //没有此对象，删除失败
         if(!redisEventDAO.hasKey(id + "#base")) {
+            System.out.println("redis delete error");
             return false;
         }
         //删除基本信息
@@ -137,7 +138,7 @@ public class RedisEventService {
             redisEventAttrDAO.del(id + '#' +attr);
         }
         //解除模板的关联
-        redisTemplateDAO.lRemove(template + "#objects", 1, id);
+        redisTemplateDAO.lRemove(template + "#events", 1, id);
         //索引表删除
         redisEventDAO.lRemove("index", 1, id);
         return true;
