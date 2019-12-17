@@ -81,7 +81,7 @@ public class EventObject extends BaseModel {
         return attrs;
     }
 
-    public void setAttrs(HashMap<String, MongoAttr> attr) {
+    public void setAttrs(HashMap<String, MongoAttr> attrs) {
         this.attrs = attrs;
     }
 

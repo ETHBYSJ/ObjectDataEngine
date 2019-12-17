@@ -44,11 +44,10 @@ public class APIEventService {
     /**
      * 创建一个事件
      * id, name, intro, template都必须是不为空的
-     * @param request 请求体
+     * @param jsonObject JSON请求体
      * @return 结果描述
      */
-    public String create(String request) {
-        JSONObject jsonObject = JSON.parseObject(request);
+    public String create(JSONObject jsonObject) {
         String id = jsonObject.getString("id");
         if (id == null || id.equals("")) return "ID不能为空！";
 
@@ -77,10 +76,11 @@ public class APIEventService {
         if (redisEventService.create(id, name, intro, template, attrs, date) && mongoEventService.create(id, name, intro, template, attrs, date)) {
             // 通知模板订阅者
             Map<String, Object> map = new HashMap<>();
-            map.put("op", "OBJECT_CREATE_NOTICE");
-            map.put("message", "基于模板(ID=" + template + ")创建了新的实体对象，对象ID为" + id);
-            map.put("type", "entity");
-            map.put("object", redisEventService.findEventObjectById(id));
+            map.put("op", "EVENT_CREATE_NOTICE");
+            map.put("message", "基于模板(ID=" + template + ")创建了新的事件对象，事件ID为" + id);
+            map.put("type", "event");
+            map.put("subType", "template");
+            map.put("event", redisEventService.findEventObjectById(id));
             Set<String> subscriberSet = getSubscriberSet(template);
             for (String subscriber : subscriberSet) {
                 subscribeSender.send(JSON.toJSONString(map), subscriber);
@@ -89,6 +89,15 @@ public class APIEventService {
         }
         return "创建失败";
     }
+
+    /**
+     * 重载create
+     */
+    public String create(String request) {
+        JSONObject jsonObject = JSON.parseObject(request);
+        return create(jsonObject);
+    }
+
 
     /**
      * 删除一个事件
@@ -102,17 +111,22 @@ public class APIEventService {
         if (eventObject == null) return "没有该事件";
 
         String template = eventObject.getTemplate();
-
-        HashMap<String, Object> message = new HashMap<>();
-        message.put("op", "EVENT_DELETE");
-        message.put("event", id);
-        message.put("template", template);
-        // 通知关联的实体对象订阅者
-        mongoSender.send(message);
+        Map<String, Object> map = new HashMap<>();
+        map.put("op", "EVENT_CREATE_DELETE");
+        map.put("message", "基于模板(ID=" + template + ")创建了新的事件对象，事件ID为" + id);
+        map.put("type", "event");
+        map.put("subType", "template");
+        map.put("event", redisEventService.findEventObjectById(id));
         if (redisEventService.deleteEventById(id, template) && mongoEventService.deleteEventById(id, template)) {
-            return  "删除失败！";
+            // 通知关联的实体对象订阅者
+            Set<String> subscriberSet = getSubscriberSet(template);
+            for (String subscriber : subscriberSet) {
+                subscribeSender.send(JSON.toJSONString(map), subscriber);
+            }
+            return  "删除成功";
         }
-        return "删除成功！";
+        return "删除失败";
+
     }
 
     public String modifyBase(String request) {
@@ -216,9 +230,12 @@ public class APIEventService {
         return eventObject;
     }
 
-    public String modifyAttr(String request) {
-        // 解析
-        JSONObject jsonObject = JSON.parseObject(request);
+    /**
+     * 修改属性列表
+     * @param jsonObject JSON请求体
+     * @return 修改结果
+     */
+    public String modifyAttr(JSONObject jsonObject) {
         HashMap<String, Object> modifyMessage = new HashMap<>();
         modifyMessage.put("op", "EVENT_MODIFY_ATTR");
         // id必须要有
@@ -237,11 +254,16 @@ public class APIEventService {
         // 日期date
         Date date = new Date();
         modifyMessage.put("date", date);
-        mongoSender.send(modifyMessage);
-        if (redisEventService.updateAttr(id, name, value, date)) {
+        if (redisEventService.updateAttr(id, name, value, date) && mongoEventService.modifyAttr(id, name, value, date)) {
             return  "更新属性成功";
         }
         return "更新属性失败";
+    }
+
+    public String modifyAttr(String request) {
+        // 解析
+        JSONObject jsonObject = JSON.parseObject(request);
+        return modifyAttr(jsonObject);
     }
 
     /**
