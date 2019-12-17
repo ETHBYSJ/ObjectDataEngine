@@ -96,14 +96,20 @@ public class MongoEventService {
         return mongoEventDAO.findById(id, EventObject.class);
     }
 
-    public void modifyAttr(String id, String name, String value, Date date) {
-        MongoCondition mongoCondition = new MongoCondition();
-        mongoCondition.whereIs("id", id);
-        MongoAttr mongoAttr = new MongoAttr(value);
-        mongoAttr.setUpdateTime(date);
-        mongoCondition.set("attrs." + name, mongoAttr);
-        mongoCondition.set("updateTime", date);
-        mongoEventDAO.update(mongoCondition, EventObject.class);
+    public boolean modifyAttr(String id, String name, String value, Date date) {
+        try {
+            MongoCondition mongoCondition = new MongoCondition();
+            mongoCondition.whereIs("id", id);
+            MongoAttr mongoAttr = new MongoAttr(value);
+            mongoAttr.setUpdateTime(date);
+            mongoCondition.set("attrs." + name, mongoAttr);
+            mongoCondition.set("updateTime", date);
+            mongoEventDAO.update(mongoCondition, EventObject.class);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public void addObject(String id, String objId) {

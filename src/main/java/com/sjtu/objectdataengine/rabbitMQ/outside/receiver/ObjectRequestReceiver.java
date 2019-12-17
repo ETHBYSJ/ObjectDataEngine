@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.sjtu.objectdataengine.model.object.CommonObject;
 import com.sjtu.objectdataengine.rabbitMQ.outside.sender.SubscribeSender;
+import com.sjtu.objectdataengine.service.event.APIEventService;
 import com.sjtu.objectdataengine.service.object.APIObjectService;
 import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.Queue;
@@ -24,6 +25,9 @@ public class ObjectRequestReceiver {
     @Resource
     APIObjectService apiObjectService;
 
+    @Resource
+    APIEventService apiEventService;
+
     @RabbitListener(
             bindings = @QueueBinding(
                     value = @Queue(value = "ObjectRequestQueue"),
@@ -34,14 +38,13 @@ public class ObjectRequestReceiver {
     )
     public void process(byte[] byteMsg) {
         String message = new String(byteMsg);
-        // System.out.println("get message!!!");
         System.out.println(message);
         JSONObject jsonObject = JSON.parseObject(message);
         String op = jsonObject.getString("op"); // CREATE ADD_ATTR DELETE FIND_ID FIND_TIME FIND_TIMES FIND_EVENT
         String userId = jsonObject.getString("userId");
 
         switch (op) {
-            case "CREATE": {
+            case "CREATE_OBJECT": {
                 String msg = apiObjectService.create(jsonObject);
                 if (jsonObject.getBoolean("response") != null && jsonObject.getBoolean("response")) {
                     Map<String, Object> result = new HashMap<>();
@@ -57,7 +60,7 @@ public class ObjectRequestReceiver {
                 }
                 break;
             }
-            case "DELETE": {
+            case "DELETE_OBJECT": {
                 String id = jsonObject.getString("id");
                 String msg = apiObjectService.deleteObjectById(id);
                 if (jsonObject.getBoolean("response") != null && jsonObject.getBoolean("response")) {
@@ -74,12 +77,12 @@ public class ObjectRequestReceiver {
                 }
                 break;
             }
-            case "UPDATE": {
+            case "UPDATE_OBJECT": {
                 String id = jsonObject.getString("id");
                 String name = jsonObject.getString("name");
                 String value = jsonObject.getString("value");
                 String msg = apiObjectService.addAttr(id, name, value);
-                if (jsonObject.getBoolean("response")) {
+                if (jsonObject.getBoolean("response")!=null && jsonObject.getBoolean("response")) {
                     Map<String, Object> result = new HashMap<>();
                     result.put("op", op);
                     result.put("id", id);
@@ -94,10 +97,9 @@ public class ObjectRequestReceiver {
                 }
                 break;
             }
-            case "FIND_ID": {
+            case "OBJECT_FIND_ID": {
                 String id = jsonObject.getString("id");
                 CommonObject commonObject = apiObjectService.findObjectById(id);
-                // System.out.println(commonObject);
                 Map<String, Object> result = new HashMap<>();
                 result.put("op", op);
                 result.put("id", id);
@@ -105,7 +107,6 @@ public class ObjectRequestReceiver {
                     result.put("status", "SUCC");
                     result.put("message", "查询成功");
                     result.put("object", commonObject);
-                    // System.out.println(commonObject.toString());
                 } else {
                     result.put("status", "FAIL");
                     result.put("message", "对象不存在");
@@ -114,7 +115,7 @@ public class ObjectRequestReceiver {
                 subscribeSender.send(JSON.toJSONString(result), userId);
                 break;
             }
-            case "FIND_TIME": {
+            case "OBJECT_FIND_TIME": {
                 String id =jsonObject.getString("id");
                 Date date = jsonObject.getDate("date");
                 CommonObject commonObject = apiObjectService.findObjectByTime(id, date);
@@ -134,14 +135,12 @@ public class ObjectRequestReceiver {
                 subscribeSender.send(JSON.toJSONString(result), userId);
                 break;
             }
-            case "FIND_TIMES": {
+            case "OBJECT_FIND_TIMES": {
                 String id = jsonObject.getString("id");
                 Date start = jsonObject.getDate("start");
                 Date end = jsonObject.getDate("end");
                 List<CommonObject> commonObjects = apiObjectService.findObjectsByTimes(id, start, end);
                 Map<String, Object> result = new HashMap<>();
-                List<String> objectsJson = new ArrayList<>();
-                // JSONArray objectsJson = new JSONArray();
                 result.put("op", op);
                 result.put("id", id);
                 result.put("start", start);
@@ -157,7 +156,7 @@ public class ObjectRequestReceiver {
                 subscribeSender.send(JSON.toJSONString(result), userId);
                 break;
             }
-            case "FIND_NODE_EVENT": {
+            case "OBJECT_FIND_NODE_EVENT": {
                 String nodeId = jsonObject.getString("nodeId");
                 String eventId = jsonObject.getString("eventId");
                 List<CommonObject> commonObjects = apiObjectService.findObjectsByNodeAndEvent(nodeId, eventId);
@@ -175,6 +174,44 @@ public class ObjectRequestReceiver {
                 result.put("objects", commonObjects);
                 // System.out.println(result);
                 subscribeSender.send(JSON.toJSONString(result), userId);
+                break;
+            }
+            case "CREATE_EVENT": {
+                String msg = apiEventService.create(jsonObject);
+                if (jsonObject.getBoolean("response") != null && jsonObject.getBoolean("response")) {
+                    Map<String, Object> result = new HashMap<>();
+                    result.put("op", op);
+                    result.put("id", jsonObject.getString("id"));
+                    if (msg.equals("创建成功")) {
+                        result.put("status", "SUCC");
+                    } else {
+                        result.put("status", "FAIL");
+                    }
+                    result.put("message", msg);
+                    subscribeSender.send(JSON.toJSONString(result), userId);
+                }
+                break;
+            }
+            case "DELETE_EVENT": {
+                break;
+            }
+            case "UPDATE_EVENT": {
+                String id = jsonObject.getString("id");
+                String name = jsonObject.getString("name");
+                String msg = apiEventService.modifyAttr(jsonObject);
+                if (jsonObject.getBoolean("response")!=null && jsonObject.getBoolean("response")) {
+                    Map<String, Object> result = new HashMap<>();
+                    result.put("op", op);
+                    result.put("id", id);
+                    result.put("name", name);
+                    if (msg.equals("更新属性成功")) {
+                        result.put("status", "SUCC");
+                    } else {
+                        result.put("status", "FAIL");
+                    }
+                    result.put("message", msg);
+                    subscribeSender.send(JSON.toJSONString(result), userId);
+                }
                 break;
             }
         }

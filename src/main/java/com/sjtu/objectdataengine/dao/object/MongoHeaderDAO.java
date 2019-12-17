@@ -19,8 +19,8 @@ public class MongoHeaderDAO extends MongoBaseDAO<AttrsHeader> {
             for (int i=1; i<=attrsHeader.getSize(); ++i) {
                 mongoAttrsDAO.deleteById(id + attr + i, AttrsModel.class);
             }
-            if (mongoAttrsDAO.findById(id + attr + attrsHeader.getSize()+1, AttrsModel.class) != null) {
-                mongoAttrsDAO.deleteById(id + attr + attrsHeader.getSize()+1, AttrsModel.class);
+            if (mongoAttrsDAO.findById(id + attr + (attrsHeader.getSize()+1), AttrsModel.class) != null) {
+                mongoAttrsDAO.deleteById(id + attr + (attrsHeader.getSize()+1), AttrsModel.class);
             }
             deleteById(id + attr + "0", tClass);
             return true;
