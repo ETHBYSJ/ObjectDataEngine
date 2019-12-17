@@ -4,6 +4,7 @@ package com.sjtu.objectdataengine.rabbitMQ.outside.receiver;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.sjtu.objectdataengine.model.event.EventObject;
 import com.sjtu.objectdataengine.model.object.CommonObject;
 import com.sjtu.objectdataengine.rabbitMQ.outside.sender.SubscribeSender;
 import com.sjtu.objectdataengine.service.event.APIEventService;
@@ -193,6 +194,20 @@ public class ObjectRequestReceiver {
                 break;
             }
             case "DELETE_EVENT": {
+                String id = jsonObject.getString("id");
+                String msg = apiEventService.delete(id);
+                if (jsonObject.getBoolean("response") != null && jsonObject.getBoolean("response")) {
+                    Map<String, Object> result = new HashMap<>();
+                    result.put("op", op);
+                    result.put("id", id);
+                    if (msg.equals("删除成功")) {
+                        result.put("status", "SUCC");
+                    } else {
+                        result.put("status", "FAIL");
+                    }
+                    result.put("message", msg);
+                    subscribeSender.send(JSON.toJSONString(result), userId);
+                }
                 break;
             }
             case "UPDATE_EVENT": {
@@ -212,6 +227,24 @@ public class ObjectRequestReceiver {
                     result.put("message", msg);
                     subscribeSender.send(JSON.toJSONString(result), userId);
                 }
+                break;
+            }
+            case "EVENT_FIND_ID": {
+                String id = jsonObject.getString("id");
+                EventObject eventObject = apiEventService.find(id);
+                Map<String, Object> result = new HashMap<>();
+                result.put("op", op);
+                result.put("id", id);
+                if (eventObject != null) {
+                    result.put("status", "SUCC");
+                    result.put("message", "查询成功");
+                    result.put("event", eventObject);
+                } else {
+                    result.put("status", "FAIL");
+                    result.put("message", "事件不存在");
+                    result.put("event", null);
+                }
+                subscribeSender.send(JSON.toJSONString(result), userId);
                 break;
             }
         }

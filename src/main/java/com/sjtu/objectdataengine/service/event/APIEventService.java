@@ -123,9 +123,9 @@ public class APIEventService {
             for (String subscriber : subscriberSet) {
                 subscribeSender.send(JSON.toJSONString(map), subscriber);
             }
-            return  "删除成功！";
+            return  "删除成功";
         }
-        return "删除失败！";
+        return "删除失败";
 
     }
 
