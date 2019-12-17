@@ -10,6 +10,7 @@ import com.sjtu.objectdataengine.service.object.APIObjectService;
 import com.sjtu.objectdataengine.service.subscribe.SubscribeService;
 import com.sjtu.objectdataengine.service.subscribe.UserService;
 import com.sjtu.objectdataengine.service.template.APITemplateService;
+import com.sjtu.objectdataengine.utils.Result.ResultData;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
@@ -117,7 +118,7 @@ public class SubscribeRequestReceiver {
                 String template = jsonObject.getString("template");
                 JSONArray jsonArray = jsonObject.getJSONArray("events");
                 List<String> events = jsonArray == null ? new ArrayList<>() : JSONObject.parseArray(jsonArray.toJSONString(), String.class);
-                ObjectTemplate objectTemplate = templateService.get(template);
+                ObjectTemplate objectTemplate = ((ResultData<ObjectTemplate>)templateService.get(template)).getData();
                 Map<String, Object> map = new HashMap<>();
                 if(objectTemplate.getType().equals("entity")) {
                     // 检查事件列表

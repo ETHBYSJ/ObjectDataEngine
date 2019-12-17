@@ -6,6 +6,7 @@ import com.sjtu.objectdataengine.model.tree.TreeNode;
 import com.sjtu.objectdataengine.model.tree.TreeNodeReturn;
 import com.sjtu.objectdataengine.rabbitMQ.inside.sender.MongoSender;
 import com.sjtu.objectdataengine.service.template.RedisTemplateService;
+import com.sjtu.objectdataengine.utils.Result.*;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -26,7 +27,6 @@ public class APITreeService {
     @Resource
     private RedisTemplateService redisTemplateService;
 
-
     /**
      * 需要注意create之后，没有template的情况，反之亦然
      * 参数json(*为必须)
@@ -37,18 +37,18 @@ public class APITreeService {
      *     parents  String*
      * }
      */
-    public String create(String request) {
+    public ResultInterface create(String request) {
         //解析
         JSONObject jsonObject = JSON.parseObject(request);
         //id必须要有
         String id = jsonObject.getString("id");
-        if(id == null) return "ID不能为空";
+        if(id == null) return Result.build(ResultCodeEnum.TREE_CREATE_EMPTY_ID);
         String name = jsonObject.getString("name");
-        if (name == null) return  "name不能为空";
+        if (name == null) return Result.build(ResultCodeEnum.TREE_CREATE_EMPTY_NAME);
         String intro = jsonObject.getString("intro");
         if (intro == null) intro = "";
         String parent = jsonObject.getString("parent");
-        if (parent  == null) return "父节点不能为空";
+        if (parent  == null) return Result.build(ResultCodeEnum.TREE_CREATE_EMPTY_PARENT);
 
         List<String> children = new ArrayList<>();
         Date date = new Date();
@@ -64,17 +64,17 @@ public class APITreeService {
         // 双写
         mongoSender.send(message);
         if(redisTreeService.createTreeNode(id, name, intro, parent, children, date))//redisTreeService.createTreeNode(id, name, template, parentsArray, children)) //改成上面参数的形式
-           return "创建成功！";
+           return Result.build(ResultCodeEnum.TREE_CREATE_SUCCESS);
         //如果传入id重复则会执行到此处并报错
         //this.delete(id);
-        return "创建失败!";
+        return Result.build(ResultCodeEnum.TREE_CREATE_FAIL);
     }
 
-    public String delete(String id) {
-        if(id == null || id.equals("")) return "ID不能为空";
+    public ResultInterface delete(String id) {
+        if(id == null || id.equals("")) return Result.build(ResultCodeEnum.TREE_DELETE_EMPTY_ID);
 
         TreeNode treeNode = redisTreeService.findNodeByKey(id);
-        if (treeNode == null) return "没有该节点";
+        if (treeNode == null) return Result.build(ResultCodeEnum.TREE_DELETE_NODE_NOT_FOUND);
 
         String template = treeNode.getTemplate();
         Date date = new Date();
@@ -86,9 +86,9 @@ public class APITreeService {
 
         mongoSender.send(message);
         if (redisTreeService.deleteWholeNodeByKey(id, date)) { //删除node要把对应template删了
-            return  "删除成功！";
+            return Result.build(ResultCodeEnum.TREE_DELETE_SUCCESS);
         }
-        return "删除失败！";
+        return Result.build(ResultCodeEnum.TREE_DELETE_FAIL);
     }
 
     /**
@@ -98,7 +98,7 @@ public class APITreeService {
      * @param request 请求体
      * @return 结果说明
      */
-    public String modify(String request) {
+    public ResultInterface modify(String request) {
         Date date = new Date();
         // 解析
         JSONObject jsonObject = JSON.parseObject(request);
@@ -106,8 +106,8 @@ public class APITreeService {
         modifyMessage.put("op", "NODE_MODIFY");
         // id必须要有
         String id = jsonObject.getString("id");
-        if(id == null) return "ID不能为空";
-        if(!redisTreeService.hasKey(id)) return "ID不存在";     // 不存在
+        if(id == null) return Result.build(ResultCodeEnum.TREE_MODIFY_EMPTY_ID);
+        if(!redisTreeService.hasKey(id)) return Result.build(ResultCodeEnum.TREE_MODIFY_NODE_NOT_FOUND);     // 不存在
         modifyMessage.put("id", id);
         // name如果是null就不需要改
         String name = jsonObject.getString("name");
@@ -129,17 +129,25 @@ public class APITreeService {
         mongoSender.send(modifyMessage);
 
         if (redisTreeService.updateNodeByKey(id, name, intro, parent, date)) {
-            return "修改成功";
+            return Result.build(ResultCodeEnum.TREE_MODIFY_SUCCESS);
         }
-        return "修改失败";
+        return Result.build(ResultCodeEnum.TREE_MODIFY_FAIL);
     }
 
-    public TreeNodeReturn getTreeByRoot(String id) {
-        return redisTreeService.findTreeByRoot(id);
+    public ResultInterface getTreeByRoot(String id) {
+        TreeNodeReturn treeNodeReturn = redisTreeService.findTreeByRoot(id);
+        if(treeNodeReturn == null) {
+            return ResultData.build(ResultCodeEnum.TREE_GET_FAIL, null);
+        }
+        return ResultData.build(ResultCodeEnum.TREE_GET_SUCCESS, treeNodeReturn);
     }
 
-    public TreeNode getNodeById(String id) {
-        return redisTreeService.findNodeByKey(id);
+    public ResultInterface getNodeById(String id) {
+        TreeNode treeNode = redisTreeService.findNodeByKey(id);
+        if(treeNode == null) {
+            return ResultData.build(ResultCodeEnum.NODE_GET_FAIL, null);
+        }
+        return ResultData.build(ResultCodeEnum.NODE_GET_SUCCESS, treeNode);
     }
 
     // public TreeNode getNodeByName(String name) {

@@ -3,6 +3,7 @@ package com.sjtu.objectdataengine.controller;
 import com.sjtu.objectdataengine.model.tree.TreeNode;
 import com.sjtu.objectdataengine.model.tree.TreeNodeReturn;
 import com.sjtu.objectdataengine.service.tree.APITreeService;
+import com.sjtu.objectdataengine.utils.Result.ResultInterface;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,27 +18,27 @@ public class TreeController {
 
     @PostMapping("/create")
     @ResponseBody
-    public String create(@RequestBody String request) {
+    public ResultInterface create(@RequestBody String request) {
         return APITreeService.create(request);
     }
 
     @GetMapping("/delete")
-    public String delete(@RequestParam String id) {
+    public ResultInterface delete(@RequestParam String id) {
         return APITreeService.delete(id);
     }
 
     @PostMapping("/modify")
-    public String modify(@RequestBody String request) {
+    public ResultInterface modify(@RequestBody String request) {
         return APITreeService.modify(request);
     }
 
     @GetMapping("/get_tree")
-    public TreeNodeReturn getTreeByRoot(@RequestParam String id) {
+    public ResultInterface getTreeByRoot(@RequestParam String id) {
         return APITreeService.getTreeByRoot(id);
     }
 
     @GetMapping("/get_node")
-    public TreeNode getNodeById(@RequestParam String id) {
+    public ResultInterface getNodeById(@RequestParam String id) {
         return APITreeService.getNodeById(id);
     }
 }
