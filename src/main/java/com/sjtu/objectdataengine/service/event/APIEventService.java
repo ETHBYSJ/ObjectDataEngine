@@ -255,6 +255,7 @@ public class APIEventService {
         map.put("message", "基于模板(ID="  + template + ")的事件(ID=" + id + ")刚更新了属性(" + name + ")值为(" + value + ")");
         map.put("type", "event");
         map.put("subType", "template");
+        map.put("updateTime", date);
         if (redisEventService.updateAttr(id, name, value, date) && mongoEventService.modifyAttr(id, name, value, date)) {
             Set<String> subscriberSet = getSubscriberSet(template);
             for (String subscriber : subscriberSet) {
