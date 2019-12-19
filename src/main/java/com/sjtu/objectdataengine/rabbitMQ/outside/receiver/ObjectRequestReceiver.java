@@ -99,22 +99,26 @@ public class ObjectRequestReceiver {
                 break;
             }
             case "OBJECT_FIND_ID": {
-                String id = jsonObject.getString("id");
-                CommonObject commonObject = apiObjectService.findObjectById(id);
-                Map<String, Object> result = new HashMap<>();
-                result.put("op", op);
-                result.put("id", id);
-                if (commonObject != null) {
-                    result.put("status", "SUCC");
-                    result.put("message", "查询成功");
-                    result.put("object", commonObject);
-                } else {
-                    result.put("status", "FAIL");
-                    result.put("message", "对象不存在");
-                    result.put("object", null);
+                try {
+                    String id = jsonObject.getString("id");
+                    CommonObject commonObject = apiObjectService.findObjectById(id);
+                    Map<String, Object> result = new HashMap<>();
+                    result.put("op", op);
+                    result.put("id", id);
+                    if (commonObject != null) {
+                        result.put("status", "SUCC");
+                        result.put("message", "查询成功");
+                        result.put("object", commonObject);
+                    } else {
+                        result.put("status", "FAIL");
+                        result.put("message", "对象不存在");
+                        result.put("object", null);
+                    }
+                    subscribeSender.send(JSON.toJSONString(result), userId);
+                    break;
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-                subscribeSender.send(JSON.toJSONString(result), userId);
-                break;
             }
             case "OBJECT_FIND_TIME": {
                 String id =jsonObject.getString("id");

@@ -151,7 +151,7 @@ public class SubscribeRequestReceiver {
                 }
                 break;
             }
-            case "UN_SUB_OBJECT" : {
+            case "UNSUB_OBJECT" : {
                 String userId = jsonObject.getString("userId");
                 String id = jsonObject.getString("id");
                 Map<String, Object> map = new HashMap<String, Object>();
@@ -169,7 +169,7 @@ public class SubscribeRequestReceiver {
                 subscribeSender.send(JSON.toJSONString(map), userId);
                 break;
             }
-            case "UN_SUB_ATTR" : {
+            case "UNSUB_ATTR" : {
                 String userId = jsonObject.getString("userId");
                 String id = jsonObject.getString("id");
                 JSONArray jsonArray = jsonObject.getJSONArray("names");
@@ -189,7 +189,7 @@ public class SubscribeRequestReceiver {
                 subscribeSender.send(JSON.toJSONString(map), userId);
                 break;
             }
-            case "UN_SUB_TEMPLATE" : {
+            case "UNSUB_TEMPLATE" : {
                 String userId = jsonObject.getString("userId");
                 String template = jsonObject.getString("template");
                 ObjectTemplate objectTemplate = templateService.getTemplateById(template);
