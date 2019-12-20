@@ -13,6 +13,7 @@ import com.sjtu.objectdataengine.rabbitMQ.outside.sender.SubscribeSender;
 import com.sjtu.objectdataengine.service.template.RedisTemplateService;
 import com.sjtu.objectdataengine.utils.SubscriberWrapper;
 import org.springframework.stereotype.Component;
+import com.sjtu.objectdataengine.utils.Result.*;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -48,21 +49,21 @@ public class APIEventService {
      * @param jsonObject JSON请求体
      * @return 结果描述
      */
-    public String create(JSONObject jsonObject) {
+    public ResultInterface create(JSONObject jsonObject) {
         String id = jsonObject.getString("id");
-        if (id == null || id.equals("")) return "ID不能为空！";
+        if (id == null || id.equals("")) return Result.build(ResultCodeEnum.EVENT_CREATE_EMPTY_ID);
 
         String name = jsonObject.getString("name");
-        if (name == null || name.equals("")) return "name不能为空";
+        if (name == null || name.equals("")) return Result.build(ResultCodeEnum.EVENT_CREATE_EMPTY_NAME);
 
         String intro = jsonObject.getString("intro");
-        if (intro == null || intro.equals("")) return "intro不能为空！";
+        if (intro == null || intro.equals("")) return Result.build(ResultCodeEnum.EVENT_CREATE_EMPTY_INTRO);
 
         String template = jsonObject.getString("template");
-        if(template == null || template.equals("")) return "template不能为空！";
+        if(template == null || template.equals("")) return Result.build(ResultCodeEnum.EVENT_CREATE_EMPTY_TEMPLATE);
         ObjectTemplate objectTemplate = redisTemplateService.findTemplateById(template);
-        if(objectTemplate == null) return "template不存在";
-        else if (!objectTemplate.getType().equals("event")) return "模板不是事件模板！";
+        if(objectTemplate == null) return Result.build(ResultCodeEnum.EVENT_CREATE_TEMPLATE_NOT_FOUND);
+        else if (!objectTemplate.getType().equals("event")) return Result.build(ResultCodeEnum.EVENT_CREATE_TEMPLATE_TYPE_ERROR);
 
         JSONObject attrObject = jsonObject.getJSONObject("attrs");
         HashMap<String, String> attrs = new HashMap<>();
@@ -86,15 +87,15 @@ public class APIEventService {
             for (SubscriberWrapper subscriber : subscriberSet) {
                 subscribeSender.send(JSON.toJSONString(map), subscriber.getUser());
             }
-            return "创建成功";
+            return Result.build(ResultCodeEnum.EVENT_CREATE_SUCCESS);
         }
-        return "创建失败";
+        return Result.build(ResultCodeEnum.EVENT_CREATE_FAIL);
     }
 
     /**
      * 重载create
      */
-    public String create(String request) {
+    public ResultInterface create(String request) {
         JSONObject jsonObject = JSON.parseObject(request);
         return create(jsonObject);
     }
@@ -105,11 +106,11 @@ public class APIEventService {
      * @param id eventId
      * @return 结果说明
      */
-    public String delete(String id) {
-        if(id == null || id.equals("")) return "ID不能为空";
+    public ResultInterface delete(String id) {
+        if(id == null || id.equals("")) return Result.build(ResultCodeEnum.EVENT_DEL_EMPTY_ID);
 
         EventObject eventObject = redisEventService.findEventObjectById(id);
-        if (eventObject == null) return "没有该事件";
+        if (eventObject == null) return Result.build(ResultCodeEnum.EVENT_DEL_NOT_FOUND);
 
         String template = eventObject.getTemplate();
         Map<String, Object> map = new HashMap<>();
@@ -124,22 +125,22 @@ public class APIEventService {
             for (SubscriberWrapper subscriber : subscriberSet) {
                 subscribeSender.send(JSON.toJSONString(map), subscriber.getUser());
             }
-            return  "删除成功";
+            return Result.build(ResultCodeEnum.EVENT_DEL_SUCCESS);
         }
-        return "删除失败";
+        return Result.build(ResultCodeEnum.EVENT_DEL_FAIL);
 
     }
 
-    public String modifyBase(String request) {
+    public ResultInterface modifyBase(String request) {
         // 解析
         JSONObject jsonObject = JSON.parseObject(request);
         HashMap<String, Object> modifyMessage = new HashMap<>();
         modifyMessage.put("op", "EVENT_MODIFY_BASE");
         // id必须要有
         String id = jsonObject.getString("id");
-        if (id == null || id.equals("")) return "ID不能为空";
+        if (id == null || id.equals("")) return Result.build(ResultCodeEnum.EVENT_MODIFY_EMPTY_ID);
         EventObject eventObject = redisEventService.findEventObjectById(id);
-        if (eventObject == null) return "事件不存在或已结束";     // 不存在
+        if (eventObject == null) return Result.build(ResultCodeEnum.EVENT_MODIFY_NOT_FOUND);     // 不存在
         modifyMessage.put("id", id);
         // name如果是null就不需要改
         String name = jsonObject.getString("name");
@@ -161,16 +162,16 @@ public class APIEventService {
         modifyMessage.put("date", date);
         mongoSender.send(modifyMessage);
         if (redisEventService.updateBaseInfo(id, name, intro, stage, date)) {
-            return "修改成功";
+            return Result.build(ResultCodeEnum.EVENT_MODIFY_SUCCESS);
         }
-        return "修改失败";
+        return Result.build(ResultCodeEnum.EVENT_MODIFY_FAIL);
     }
 
-    public String end(String id) {
-        if (id == null || id.equals("")) return "ID不能为空";
+    public ResultInterface end(String id) {
+        if (id == null || id.equals("")) return Result.build(ResultCodeEnum.EVENT_END_EMPTY_ID);
 
         EventObject eventObject = redisEventService.findEventObjectById(id);
-        if (eventObject == null) return "没有该事件或事件已经结束";
+        if (eventObject == null) return Result.build(ResultCodeEnum.EVENT_END_NOT_FOUND);
 
         HashMap<String, Object> endMessage = new HashMap<>();
 
@@ -190,9 +191,9 @@ public class APIEventService {
             String msg;
             List<String> userList;
 
-            return "事件结束成功";
+            return Result.build(ResultCodeEnum.EVENT_END_SUCCESS);
         }
-        return "事件结束失败";
+        return Result.build(ResultCodeEnum.EVENT_END_FAIL);
     }
 
     public EventObject find(String id) {
@@ -208,18 +209,18 @@ public class APIEventService {
      * @param jsonObject JSON请求体
      * @return 修改结果
      */
-    public String modifyAttr(JSONObject jsonObject) {
+    public ResultInterface modifyAttr(JSONObject jsonObject) {
         // id必须要有
         String id = jsonObject.getString("id");
-        if (id == null || id.equals("")) return "ID不能为空";
+        if (id == null || id.equals("")) return Result.build(ResultCodeEnum.EVENT_MODIFY_ATTR_EMPTY_ID);
         EventObject eventObject = redisEventService.findEventObjectById(id);
-        if (eventObject == null) return "事件不存在或已结束";     // 不存在
+        if (eventObject == null) return Result.build(ResultCodeEnum.EVENT_MODIFY_ATTR_NOT_FOUND);     // 不存在
         // 属性name
         String name = jsonObject.getString("name");
-        if (name == null || name.equals("")) return "属性name不能为空";
+        if (name == null || name.equals("")) return Result.build(ResultCodeEnum.EVENT_MODIFY_ATTR_EMPTY_NAME);
         // 属性value
         String value = jsonObject.getString("value");
-        if (value == null) return "属性值不能为空";
+        if (value == null) return Result.build(ResultCodeEnum.EVENT_MODIFY_ATTR_EMPTY_VALUE);
         // 日期date
         Date date = new Date();
         String template = eventObject.getTemplate();
@@ -234,12 +235,12 @@ public class APIEventService {
             for (SubscriberWrapper subscriber : subscriberSet) {
                 subscribeSender.send(JSON.toJSONString(map), subscriber.getUser());
             }
-            return  "更新属性成功";
+            return Result.build(ResultCodeEnum.EVENT_MODIFY_ATTR_SUCCESS);
         }
-        return "更新属性失败";
+        return Result.build(ResultCodeEnum.EVENT_MODIFY_ATTR_FAIL);
     }
 
-    public String modifyAttr(String request) {
+    public ResultInterface modifyAttr(String request) {
         // 解析
         JSONObject jsonObject = JSON.parseObject(request);
         return modifyAttr(jsonObject);

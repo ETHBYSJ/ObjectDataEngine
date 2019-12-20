@@ -106,5 +106,38 @@ public class Constants {
     public final static String SUB_DEL_TEMPLATE_EMPTY_USER_ID = "5502";
     public final static String SUB_DEL_TEMPLATE_USER_NOT_FOUND = "5503";
     public final static String SUB_DEL_TEMPLATE_FAIL = "5504";
+    //--------EVENT-----------
+    // CREATE EVENT
+    public final static String EVENT_CREATE_SUCCESS = "6000";
+    public final static String EVENT_CREATE_EMPTY_ID = "6001";
+    public final static String EVENT_CREATE_EMPTY_NAME = "6002";
+    public final static String EVENT_CREATE_EMPTY_INTRO = "6003";
+    public final static String EVENT_CREATE_EMPTY_TEMPLATE = "6004";
+    public final static String EVENT_CREATE_TEMPLATE_NOT_FOUND = "6005";
+    public final static String EVENT_CREATE_TEMPLATE_TYPE_ERROR = "6006";
+    public final static String EVENT_CREATE_FAIL = "6007";
+    // DELETE EVENT
+    public final static String EVENT_DEL_SUCCESS = "6100";
+    public final static String EVENT_DEL_EMPTY_ID = "6101";
+    public final static String EVENT_DEL_NOT_FOUND = "6102";
+    public final static String EVENT_DEL_FAIL = "6103";
+    // EVENT MODIFY
+    public final static String EVENT_MODIFY_SUCCESS = "6200";
+    public final static String EVENT_MODIFY_EMPTY_ID = "6201";
+    public final static String EVENT_MODIFY_NOT_FOUND = "6202";
+    public final static String EVENT_MODIFY_FAIL = "6203";
+    // EVENT END
+    public final static String EVENT_END_SUCCESS = "6300";
+    public final static String EVENT_END_EMPTY_ID = "6301";
+    public final static String EVENT_END_NOT_FOUND = "6302";
+    public final static String EVENT_END_FAIL = "6303";
+    // EVENT MODIFY ATTR
+    public final static String EVENT_MODIFY_ATTR_SUCCESS = "6400";
+    public final static String EVENT_MODIFY_ATTR_EMPTY_ID = "6401";
+    public final static String EVENT_MODIFY_ATTR_NOT_FOUND = "6402";
+    public final static String EVENT_MODIFY_ATTR_EMPTY_NAME = "6403";
+    public final static String EVENT_MODIFY_ATTR_EMPTY_VALUE = "6404";
+    public final static String EVENT_MODIFY_ATTR_FAIL = "6405";
+
 
 }

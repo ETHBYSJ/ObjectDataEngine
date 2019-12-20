@@ -21,7 +21,6 @@ import javax.annotation.Resource;
 import java.util.*;
 
 @Component
-@RabbitListener(queues = "SubscribeRequestQueue")
 public class SubscribeRequestReceiver {
     //监听订阅相关消息
 
@@ -40,7 +39,7 @@ public class SubscribeRequestReceiver {
     @Resource
     private APIObjectService objectService;
 
-    @RabbitHandler
+    @RabbitListener(queues = "SubscribeRequestQueue")
     public void process(byte[] byteMsg) {
         String message = new String(byteMsg);
         JSONObject jsonObject = JSON.parseObject(message);
@@ -52,168 +51,198 @@ public class SubscribeRequestReceiver {
              */
             // 对象订阅
             case "SUB_OBJECT" : {
-                String userId = jsonObject.getString("userId");
-                String id = jsonObject.getString("id");
-                boolean latest = jsonObject.getBoolean("latest");
-                Map<String, Object> map = new HashMap<String, Object>();
-                ResultInterface res = subscribeService.addEntitySubscriber(id, userId, null);
-                if(res.getCode().equals(Constants.SUB_ADD_ENTITY_SUCCESS)) {
-                    map.put("status", "SUCC");
-                    map.put("message", res.getMsg());
-                    map.put("id", id);
-                    if(latest) {
-                        CommonObject commonObject = objectService.findObjectById(id);
-                        map.put("object", commonObject);
+                try {
+                    String userId = jsonObject.getString("userId");
+                    String id = jsonObject.getString("id");
+                    boolean latest = jsonObject.getBoolean("latest");
+                    Map<String, Object> map = new HashMap<String, Object>();
+                    ResultInterface res = subscribeService.addEntitySubscriber(id, userId, null);
+                    if(res.getCode().equals(Constants.SUB_ADD_ENTITY_SUCCESS)) {
+                        map.put("status", "SUCC");
+                        map.put("message", res.getMsg());
+                        map.put("id", id);
+                        if(latest) {
+                            CommonObject commonObject = objectService.findObjectById(id);
+                            map.put("object", commonObject);
+                        }
+                        else {
+                            map.put("object", null);
+                        }
                     }
                     else {
+                        map.put("status", "FAIL");
+                        map.put("message", res.getMsg());
+                        map.put("id", id);
                         map.put("object", null);
                     }
+                    subscribeSender.send(JSON.toJSONString(map), userId);
+                    break;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    break;
                 }
-                else {
-                    map.put("status", "FAIL");
-                    map.put("message", res.getMsg());
-                    map.put("id", id);
-                    map.put("object", null);
-                }
-                subscribeSender.send(JSON.toJSONString(map), userId);
-                break;
             }
             // 属性订阅
             case "SUB_ATTR" : {
-                String userId = jsonObject.getString("userId");
-                String id = jsonObject.getString("id");
-                JSONArray jsonArray = jsonObject.getJSONArray("names");
-                List<String> attrs = jsonArray == null ? new ArrayList<>() : JSONObject.parseArray(jsonArray.toJSONString(), String.class);
-                boolean latest = jsonObject.getBoolean("latest");
-                Map<String, Object> map = new HashMap<String, Object>();
-                ResultInterface res = subscribeService.addEntitySubscriber(id, userId, attrs);
-                if(res.getCode().equals(Constants.SUB_ADD_ENTITY_SUCCESS)) {
-                    map.put("status", "SUCC");
-                    map.put("message", res.getMsg());
-                    map.put("id", id);
-                    map.put("names", attrs);
-                    if(latest) {
-                        Date date = new Date();
-                        Map<String, MongoAttr> retMap = new HashMap<>();
-                        for(String attr : attrs) {
-                            retMap.put(attr, objectService.findAttrByTime(id, attr, date));
+                try {
+                    String userId = jsonObject.getString("userId");
+                    String id = jsonObject.getString("id");
+                    JSONArray jsonArray = jsonObject.getJSONArray("names");
+                    List<String> attrs = jsonArray == null ? new ArrayList<>() : JSONObject.parseArray(jsonArray.toJSONString(), String.class);
+                    boolean latest = jsonObject.getBoolean("latest");
+                    Map<String, Object> map = new HashMap<String, Object>();
+                    ResultInterface res = subscribeService.addEntitySubscriber(id, userId, attrs);
+                    if(res.getCode().equals(Constants.SUB_ADD_ENTITY_SUCCESS)) {
+                        map.put("status", "SUCC");
+                        map.put("message", res.getMsg());
+                        map.put("id", id);
+                        map.put("names", attrs);
+                        if(latest) {
+                            Date date = new Date();
+                            Map<String, MongoAttr> retMap = new HashMap<>();
+                            for(String attr : attrs) {
+                                retMap.put(attr, objectService.findAttrByTime(id, attr, date));
+                            }
+                            map.put("attrs", retMap);
                         }
-                        map.put("attrs", retMap);
+                        else {
+                            map.put("attrs", null);
+                        }
                     }
                     else {
+                        map.put("status", "FAIL");
+                        map.put("message", res.getMsg());
+                        map.put("id", id);
+                        map.put("name", attrs);
                         map.put("attrs", null);
                     }
+                    subscribeSender.send(JSON.toJSONString(map), userId);
+                    break;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    break;
                 }
-                else {
-                    map.put("status", "FAIL");
-                    map.put("message", res.getMsg());
-                    map.put("id", id);
-                    map.put("name", attrs);
-                    map.put("attrs", null);
-                }
-                subscribeSender.send(JSON.toJSONString(map), userId);
-                break;
             }
             // 模板订阅
             case "SUB_TEMPLATE" : {
-                String userId = jsonObject.getString("userId");
-                String template = jsonObject.getString("template");
-                JSONArray jsonArray = jsonObject.getJSONArray("events");
-                List<String> events = jsonArray == null ? new ArrayList<>() : JSONObject.parseArray(jsonArray.toJSONString(), String.class);
-                ObjectTemplate objectTemplate = templateService.getTemplateById(template);
-                Map<String, Object> map = new HashMap<>();
-                if(objectTemplate == null) {
-                    map.put("status", "FAIL");
-                    map.put("template", template);
-                    map.put("events", events);
-                    map.put("message", "模板不存在");
-                }
-                else {
-                    if(objectTemplate.getType().equals("entity")) {
-                        // 检查事件列表
-                    } else {
-                        events = new ArrayList<>();
-                    }
-                    ResultInterface res = subscribeService.addTemplateSubscriber(template, userId, events);
-                    if(res.getCode().equals(Constants.SUB_ADD_TEMPLATE_SUCCESS)) {
-                        map.put("status", "SUCC");
-                        map.put("template", template);
-                        map.put("events", events);
-                        map.put("message", res.getMsg());
-                    }
-                    else {
+                try {
+                    String userId = jsonObject.getString("userId");
+                    String template = jsonObject.getString("template");
+                    JSONArray jsonArray = jsonObject.getJSONArray("events");
+                    List<String> events = jsonArray == null ? new ArrayList<>() : JSONObject.parseArray(jsonArray.toJSONString(), String.class);
+                    ObjectTemplate objectTemplate = templateService.getTemplateById(template);
+                    Map<String, Object> map = new HashMap<>();
+                    if(objectTemplate == null) {
                         map.put("status", "FAIL");
                         map.put("template", template);
                         map.put("events", events);
-                        map.put("message", res.getMsg());
+                        map.put("message", "模板不存在");
                     }
-                    subscribeSender.send(JSON.toJSONString(map), userId);
+                    else {
+                        if(objectTemplate.getType().equals("entity")) {
+                            // 检查事件列表
+                        } else {
+                            events = new ArrayList<>();
+                        }
+                        ResultInterface res = subscribeService.addTemplateSubscriber(template, userId, events);
+                        if(res.getCode().equals(Constants.SUB_ADD_TEMPLATE_SUCCESS)) {
+                            map.put("status", "SUCC");
+                            map.put("template", template);
+                            map.put("events", events);
+                            map.put("message", res.getMsg());
+                        }
+                        else {
+                            map.put("status", "FAIL");
+                            map.put("template", template);
+                            map.put("events", events);
+                            map.put("message", res.getMsg());
+                        }
+                        subscribeSender.send(JSON.toJSONString(map), userId);
+                    }
+                    break;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    break;
                 }
-                break;
             }
             case "UN_SUB_OBJECT" : {
-                String userId = jsonObject.getString("userId");
-                String id = jsonObject.getString("id");
-                Map<String, Object> map = new HashMap<String, Object>();
-                ResultInterface res = subscribeService.delEntitySubscriber(id, userId, null);
-                if(res.getCode().equals(Constants.SUB_DEL_ENTITY_SUCCESS)) {
-                    map.put("status", "SUCC");
-                    map.put("message", res.getMsg());
-                    map.put("id", id);
-                }
-                else {
-                    map.put("status", "FAIL");
-                    map.put("message", res.getMsg());
-                    map.put("id", id);
-                }
-                subscribeSender.send(JSON.toJSONString(map), userId);
-                break;
-            }
-            case "UN_SUB_ATTR" : {
-                String userId = jsonObject.getString("userId");
-                String id = jsonObject.getString("id");
-                JSONArray jsonArray = jsonObject.getJSONArray("names");
-                List<String> attrs = jsonArray == null ? new ArrayList<>() : JSONObject.parseArray(jsonArray.toJSONString(), String.class);
-                Map<String, Object> map = new HashMap<String, Object>();
-                ResultInterface res = subscribeService.delEntitySubscriber(id, userId, attrs);
-                if(res.getCode().equals(Constants.SUB_DEL_ENTITY_SUCCESS)) {
-                    map.put("status", "SUCC");
-                    map.put("message", res.getMsg());
-                    map.put("id", id);
-                }
-                else {
-                    map.put("status", "FAIL");
-                    map.put("message", res.getMsg());
-                    map.put("id", id);
-                }
-                subscribeSender.send(JSON.toJSONString(map), userId);
-                break;
-            }
-            case "UN_SUB_TEMPLATE" : {
-                String userId = jsonObject.getString("userId");
-                String template = jsonObject.getString("template");
-                ObjectTemplate objectTemplate = templateService.getTemplateById(template);
-                Map<String, Object> map = new HashMap<>();
-                if(objectTemplate == null) {
-                    map.put("status", "FAIL");
-                    map.put("template", template);
-                    map.put("message", "模板不存在");
-                }
-                else {
-                    ResultInterface res = subscribeService.delTemplateSubscriber(template, userId);
-                    if(res.getCode().equals(Constants.SUB_DEL_TEMPLATE_SUCCESS)) {
+                try {
+                    String userId = jsonObject.getString("userId");
+                    String id = jsonObject.getString("id");
+                    Map<String, Object> map = new HashMap<String, Object>();
+                    ResultInterface res = subscribeService.delEntitySubscriber(id, userId, null);
+                    if(res.getCode().equals(Constants.SUB_DEL_ENTITY_SUCCESS)) {
                         map.put("status", "SUCC");
-                        map.put("template", template);
                         map.put("message", res.getMsg());
+                        map.put("id", id);
                     }
                     else {
                         map.put("status", "FAIL");
-                        map.put("template", template);
                         map.put("message", res.getMsg());
+                        map.put("id", id);
                     }
+                    subscribeSender.send(JSON.toJSONString(map), userId);
+                    break;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    break;
                 }
-                subscribeSender.send(JSON.toJSONString(map), userId);
-                break;
+            }
+            case "UN_SUB_ATTR" : {
+                try {
+                    String userId = jsonObject.getString("userId");
+                    String id = jsonObject.getString("id");
+                    JSONArray jsonArray = jsonObject.getJSONArray("names");
+                    List<String> attrs = jsonArray == null ? new ArrayList<>() : JSONObject.parseArray(jsonArray.toJSONString(), String.class);
+                    Map<String, Object> map = new HashMap<String, Object>();
+                    ResultInterface res = subscribeService.delEntitySubscriber(id, userId, attrs);
+                    if(res.getCode().equals(Constants.SUB_DEL_ENTITY_SUCCESS)) {
+                        map.put("status", "SUCC");
+                        map.put("message", res.getMsg());
+                        map.put("id", id);
+                    }
+                    else {
+                        map.put("status", "FAIL");
+                        map.put("message", res.getMsg());
+                        map.put("id", id);
+                    }
+                    subscribeSender.send(JSON.toJSONString(map), userId);
+                    break;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    break;
+                }
+            }
+            case "UN_SUB_TEMPLATE" : {
+                try {
+                    String userId = jsonObject.getString("userId");
+                    String template = jsonObject.getString("template");
+                    ObjectTemplate objectTemplate = templateService.getTemplateById(template);
+                    Map<String, Object> map = new HashMap<>();
+                    if(objectTemplate == null) {
+                        map.put("status", "FAIL");
+                        map.put("template", template);
+                        map.put("message", "模板不存在");
+                    }
+                    else {
+                        ResultInterface res = subscribeService.delTemplateSubscriber(template, userId);
+                        if(res.getCode().equals(Constants.SUB_DEL_TEMPLATE_SUCCESS)) {
+                            map.put("status", "SUCC");
+                            map.put("template", template);
+                            map.put("message", res.getMsg());
+                        }
+                        else {
+                            map.put("status", "FAIL");
+                            map.put("template", template);
+                            map.put("message", res.getMsg());
+                        }
+                    }
+                    subscribeSender.send(JSON.toJSONString(map), userId);
+                    break;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    break;
+                }
             }
         }
     }

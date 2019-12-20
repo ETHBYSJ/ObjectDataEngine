@@ -36,37 +36,52 @@ public class RedisReceiver {
         switch (op) {
 
             case "OBJECT_CREATE": {
-                String id = message.get("id").toString();
-                String name = message.get("name").toString();
-                String intro = message.get("intro").toString();
-                String template = message.get("template").toString();
-                List<String> objects = TypeConversion.cast(message.get("events"));
-                HashMap<String, String> attrs = TypeConversion.cast(message.get("attrs"));
-                Date date = (Date) message.get("date");
-                redisObjectService.create(id, name, intro, template, objects, attrs, date);
-                break;
+                try {
+                    String id = message.get("id").toString();
+                    String name = message.get("name").toString();
+                    String intro = message.get("intro").toString();
+                    String template = message.get("template").toString();
+                    List<String> objects = TypeConversion.cast(message.get("events"));
+                    HashMap<String, String> attrs = TypeConversion.cast(message.get("attrs"));
+                    Date date = (Date) message.get("date");
+                    redisObjectService.create(id, name, intro, template, objects, attrs, date);
+                    break;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    break;
+                }
             }
 
             case "EVICT_AND_ADD": {
-                String id = message.get("id").toString();
-                String name = message.get("name").toString();
-                String key = id + '#' + name + '#' + "time";
-                //String key = message.get("key").toString();
-                String value = message.get("value").toString();
-                Date date = (Date) message.get("date");
-                redisObjectService.doEvict(id, name);
-                redisObjectService.addAttr(key, value, date);
-                break;
+                try {
+                    String id = message.get("id").toString();
+                    String name = message.get("name").toString();
+                    String key = id + '#' + name + '#' + "time";
+                    //String key = message.get("key").toString();
+                    String value = message.get("value").toString();
+                    Date date = (Date) message.get("date");
+                    redisObjectService.doEvict(id, name);
+                    redisObjectService.addAttr(key, value, date);
+                    break;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    break;
+                }
             }
 
             case "OBJECT_ADD_ATTR": {
-                String id = message.get("id").toString();
-                String name = message.get("name").toString();
-                String key = id + '#' + name + '#' + "time";
-                String value = message.get("value").toString();
-                Date date = (Date) message.get("date");
-                redisObjectService.addAttr(key, value, date);
-                break;
+                try {
+                    String id = message.get("id").toString();
+                    String name = message.get("name").toString();
+                    String key = id + '#' + name + '#' + "time";
+                    String value = message.get("value").toString();
+                    Date date = (Date) message.get("date");
+                    redisObjectService.addAttr(key, value, date);
+                    break;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    break;
+                }
             }
         }
     }
