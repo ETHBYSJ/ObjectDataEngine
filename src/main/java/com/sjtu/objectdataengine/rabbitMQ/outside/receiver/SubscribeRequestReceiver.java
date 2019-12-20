@@ -187,6 +187,7 @@ public class SubscribeRequestReceiver {
                     e.printStackTrace();
                     break;
                 }
+<<<<<<< HEAD
             }
             case "UN_SUB_ATTR" : {
                 try {
@@ -197,6 +198,61 @@ public class SubscribeRequestReceiver {
                     Map<String, Object> map = new HashMap<String, Object>();
                     ResultInterface res = subscribeService.delEntitySubscriber(id, userId, attrs);
                     if(res.getCode().equals(Constants.SUB_DEL_ENTITY_SUCCESS)) {
+=======
+                break;
+            }
+            case "UNSUB_OBJECT" : {
+                String userId = jsonObject.getString("userId");
+                String id = jsonObject.getString("id");
+                Map<String, Object> map = new HashMap<String, Object>();
+                ResultInterface res = subscribeService.delEntitySubscriber(id, userId, null);
+                if(res.getCode().equals(Constants.SUB_DEL_ENTITY_SUCCESS)) {
+                    map.put("status", "SUCC");
+                    map.put("message", res.getMsg());
+                    map.put("id", id);
+                }
+                else {
+                    map.put("status", "FAIL");
+                    map.put("message", res.getMsg());
+                    map.put("id", id);
+                }
+                subscribeSender.send(JSON.toJSONString(map), userId);
+                break;
+            }
+            case "UNSUB_ATTR" : {
+                String userId = jsonObject.getString("userId");
+                String id = jsonObject.getString("id");
+                JSONArray jsonArray = jsonObject.getJSONArray("names");
+                List<String> attrs = jsonArray == null ? new ArrayList<>() : JSONObject.parseArray(jsonArray.toJSONString(), String.class);
+                Map<String, Object> map = new HashMap<String, Object>();
+                ResultInterface res = subscribeService.delEntitySubscriber(id, userId, attrs);
+                if(res.getCode().equals(Constants.SUB_DEL_ENTITY_SUCCESS)) {
+                    map.put("status", "SUCC");
+                    map.put("message", res.getMsg());
+                    map.put("id", id);
+                }
+                else {
+                    map.put("status", "FAIL");
+                    map.put("message", res.getMsg());
+                    map.put("id", id);
+                }
+                subscribeSender.send(JSON.toJSONString(map), userId);
+                break;
+            }
+            case "UNSUB_TEMPLATE" : {
+                String userId = jsonObject.getString("userId");
+                String template = jsonObject.getString("template");
+                ObjectTemplate objectTemplate = templateService.getTemplateById(template);
+                Map<String, Object> map = new HashMap<>();
+                if(objectTemplate == null) {
+                    map.put("status", "FAIL");
+                    map.put("template", template);
+                    map.put("message", "模板不存在");
+                }
+                else {
+                    ResultInterface res = subscribeService.delTemplateSubscriber(template, userId);
+                    if(res.getCode().equals(Constants.SUB_DEL_TEMPLATE_SUCCESS)) {
+>>>>>>> 5765ccbab9e4c9391b41ff10b7ee00ce1e2a26f4
                         map.put("status", "SUCC");
                         map.put("message", res.getMsg());
                         map.put("id", id);

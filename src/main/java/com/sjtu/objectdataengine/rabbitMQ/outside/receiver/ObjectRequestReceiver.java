@@ -169,7 +169,53 @@ public class ObjectRequestReceiver {
                     e.printStackTrace();
                     break;
                 }
+<<<<<<< HEAD
 
+=======
+                break;
+            }
+            case "OBJECT_FIND_ID": {
+                try {
+                    String id = jsonObject.getString("id");
+                    CommonObject commonObject = apiObjectService.findObjectById(id);
+                    Map<String, Object> result = new HashMap<>();
+                    result.put("op", op);
+                    result.put("id", id);
+                    if (commonObject != null) {
+                        result.put("status", "SUCC");
+                        result.put("message", "查询成功");
+                        result.put("object", commonObject);
+                    } else {
+                        result.put("status", "FAIL");
+                        result.put("message", "对象不存在");
+                        result.put("object", null);
+                    }
+                    subscribeSender.send(JSON.toJSONString(result), userId);
+                    break;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            case "OBJECT_FIND_TIME": {
+                String id =jsonObject.getString("id");
+                Date date = jsonObject.getDate("date");
+                CommonObject commonObject = apiObjectService.findObjectByTime(id, date);
+                Map<String, Object> result = new HashMap<>();
+                result.put("op", "FIND_TIME");
+                result.put("id", id);
+                result.put("date", date);
+                if (commonObject != null) {
+                    result.put("status", "SUCC");
+                    result.put("message", "查询成功");
+                    result.put("object", commonObject);
+                } else {
+                    result.put("status", "FAIL");
+                    result.put("message", "对象不存在");
+                    result.put("object", null);
+                }
+                subscribeSender.send(JSON.toJSONString(result), userId);
+                break;
+>>>>>>> 5765ccbab9e4c9391b41ff10b7ee00ce1e2a26f4
             }
             case "OBJECT_FIND_TIMES": {
                 try {

@@ -38,7 +38,7 @@ public class TemplateSubscribeDAO extends MongoBaseDAO<TemplateBaseSubscribeMess
         Query query = new Query();
         query.addCriteria(Criteria.where("_id").is(objId + type));
         Update update = new Update();
-        update.pull("templateSubscriber", user);
+        update.unset("templateSubscriber." + user);
         update.set("updateTime", new Date());
         return mongoTemplate.updateMulti(query, update, TemplateBaseSubscribeMessage.class).getModifiedCount() > 0;
     }
