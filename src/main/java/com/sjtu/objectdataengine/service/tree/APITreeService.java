@@ -70,6 +70,30 @@ public class APITreeService {
         return Result.build(ResultCodeEnum.TREE_CREATE_FAIL);
     }
 
+    /**
+     * 删除整个子树
+     * @param id 节点id
+     * @return
+     */
+    public ResultInterface delSubtree(String id) {
+        // ID不能为空
+        if(id == null || id.equals("")) return Result.build(ResultCodeEnum.SUBTREE_DELETE_EMPTY_ID);
+        TreeNode treeNode = redisTreeService.findNodeByKey(id);
+        // 检查节点有效性
+        if (treeNode == null) return Result.build(ResultCodeEnum.SUBTREE_DELETE_NODE_NOT_FOUND);
+        String template = treeNode.getTemplate();
+        Date date = new Date();
+        HashMap<String, Object> message = new HashMap<>();
+        message.put("op", "SUBTREE_DELETE");
+        message.put("id", id);
+        message.put("date", date);
+
+        mongoSender.send(message);
+        if(redisTreeService.deleteSubtree(id, date)) {
+            return Result.build(ResultCodeEnum.SUBTREE_DELETE_SUCCESS);
+        }
+        return Result.build(ResultCodeEnum.SUBTREE_DELETE_FAIL);
+    }
     public ResultInterface delete(String id) {
         if(id == null || id.equals("")) return Result.build(ResultCodeEnum.TREE_DELETE_EMPTY_ID);
 

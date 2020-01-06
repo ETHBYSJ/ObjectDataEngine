@@ -189,6 +189,20 @@ public class MongoTreeService {
     }
 
     /**
+     * 删除以指定key节点为根的整个子树
+     * @param key 键
+     * @param date 时间
+     */
+    public void deleteSubtree(String key, Date date) {
+        TreeNode treeNode = findNodeByKey(key);
+        String template = treeNode.getTemplate();
+        List<String> children = treeNode.getChildren();
+        for(String child : children) {
+            deleteSubtree(child, date);
+        }
+        deleteWholeNodeByKey(key, template, date);
+    }
+    /**
      * 修改指定key的结点的属性,只能修改name，intro，parent
      * @param id ID
      * @return true表示成功，false反之

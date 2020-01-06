@@ -28,4 +28,4 @@ spring:
     username: guest
     password: guest
 server:
-  port: 7658
+  port: 8080
