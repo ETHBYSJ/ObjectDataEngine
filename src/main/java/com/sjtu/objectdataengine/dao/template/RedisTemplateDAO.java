@@ -80,6 +80,7 @@ public class RedisTemplateDAO extends RedisDAO {
         String attrsKey = id + '#' + "attrs";
         String baseKey = id + '#' + "base";
         String objectsKey = id + '#' + "objects";
+        String eventsKey = id + '#' + "events";
         if(sHasKey(indexKey, id)) {
             //如果在索引表中存在此id，则删除
             setRemove(indexKey, id);
@@ -87,6 +88,7 @@ public class RedisTemplateDAO extends RedisDAO {
             del(baseKey);
             del(attrsKey);
             del(objectsKey);
+            del(eventsKey);
         }
         return true;
         /*

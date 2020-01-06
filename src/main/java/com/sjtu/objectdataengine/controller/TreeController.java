@@ -41,4 +41,9 @@ public class TreeController {
     public ResultInterface getNodeById(@RequestParam String id) {
         return APITreeService.getNodeById(id);
     }
+
+    @GetMapping("/del_subtree")
+    public ResultInterface delSubtree(@RequestParam String id) {
+        return APITreeService.delSubtree(id);
+    }
 }

@@ -111,7 +111,20 @@ public class MongoReceiver {
                     break;
                 }
             }
-
+            /*
+             * 删除整个子树
+             */
+            case "SUBTREE_DELETE": {
+                try {
+                    String id = message.get("id").toString();
+                    Date date = (Date) message.get("date");
+                    mongoTreeService.deleteSubtree(id, date);
+                    break;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    break;
+                }
+            }
             /*
              * 删除知识树节点
              */

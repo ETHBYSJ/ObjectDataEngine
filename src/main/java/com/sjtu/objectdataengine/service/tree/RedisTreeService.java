@@ -276,6 +276,20 @@ public class RedisTreeService {
     }
 
     /**
+     * 删除以指定key节点为根的整个子树
+     * @param key 键
+     * @param date 时间
+     */
+    public boolean deleteSubtree(String key, Date date) {
+        TreeNode treeNode = findNodeByKey(key);
+        String template = treeNode.getTemplate();
+        List<String> children = treeNode.getChildren();
+        for(String child : children) {
+            deleteSubtree(child, date);
+        }
+        return deleteWholeNodeByKey(key, date);
+    }
+    /**
      * 对树节点的更新
      * @param id ID
      * @return true代表更新成功，false代表更新失败

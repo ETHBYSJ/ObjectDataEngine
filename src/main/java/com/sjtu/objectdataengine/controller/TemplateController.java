@@ -42,7 +42,6 @@ public class TemplateController {
     public ResultInterface delAttr(@RequestParam String id, @RequestParam String name) {
         return APITemplateService.delAttr(id, name);
     }
-
     @GetMapping("/get")
     public ResultInterface get(@RequestParam String id) {
         return APITemplateService.get(id);

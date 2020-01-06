@@ -26,6 +26,11 @@ public class Constants {
     // GET NODE
     public final static String NODE_GET_SUCCESS = "2400";
     public final static String NODE_GET_FAIL = "2401";
+    // SUBTREE DELETE
+    public final static String SUBTREE_DELETE_SUCCESS = "2500";
+    public final static String SUBTREE_DELETE_EMPTY_ID = "2501";
+    public final static String SUBTREE_DELETE_NODE_NOT_FOUND = "2502";
+    public final static String SUBTREE_DELETE_FAIL = "2503";
     //---------TEMPLATE-----------
     // TEMPLATE CREATE
     public final static String TEMPLATE_CREATE_SUCCESS = "3000";
