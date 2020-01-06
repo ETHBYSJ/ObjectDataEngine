@@ -20,7 +20,7 @@ spring:
   data:
     mongodb:
       uri:
-        mongodb://localhost:27017/test
+        mongodb://localhost:27017/Engine
 
   rabbitmq:
     host: localhost
