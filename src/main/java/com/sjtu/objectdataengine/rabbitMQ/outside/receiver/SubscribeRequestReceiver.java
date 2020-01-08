@@ -61,6 +61,7 @@ public class SubscribeRequestReceiver {
                         map.put("status", "SUCC");
                         map.put("message", res.getMsg());
                         map.put("id", id);
+                        map.put("op", op);
                         if(latest) {
                             CommonObject commonObject = objectService.findObjectById(id);
                             map.put("object", commonObject);
@@ -74,6 +75,7 @@ public class SubscribeRequestReceiver {
                         map.put("message", res.getMsg());
                         map.put("id", id);
                         map.put("object", null);
+                        map.put("op", op);
                     }
                     subscribeSender.send(JSON.toJSONString(map), userId);
                     break;
@@ -97,6 +99,7 @@ public class SubscribeRequestReceiver {
                         map.put("message", res.getMsg());
                         map.put("id", id);
                         map.put("names", attrs);
+                        map.put("op", op);
                         if(latest) {
                             Date date = new Date();
                             Map<String, MongoAttr> retMap = new HashMap<>();
@@ -115,6 +118,7 @@ public class SubscribeRequestReceiver {
                         map.put("id", id);
                         map.put("name", attrs);
                         map.put("attrs", null);
+                        map.put("op", op);
                     }
                     subscribeSender.send(JSON.toJSONString(map), userId);
                     break;
@@ -137,6 +141,7 @@ public class SubscribeRequestReceiver {
                         map.put("template", template);
                         map.put("events", events);
                         map.put("message", "模板不存在");
+                        map.put("op", op);
                     }
                     else {
                         if(objectTemplate.getType().equals("entity")) {
@@ -150,12 +155,14 @@ public class SubscribeRequestReceiver {
                             map.put("template", template);
                             map.put("events", events);
                             map.put("message", res.getMsg());
+                            map.put("op", op);
                         }
                         else {
                             map.put("status", "FAIL");
                             map.put("template", template);
                             map.put("events", events);
                             map.put("message", res.getMsg());
+                            map.put("op", op);
                         }
                         subscribeSender.send(JSON.toJSONString(map), userId);
                     }
@@ -175,11 +182,13 @@ public class SubscribeRequestReceiver {
                         map.put("status", "SUCC");
                         map.put("message", res.getMsg());
                         map.put("id", id);
+                        map.put("op", op);
                     }
                     else {
                         map.put("status", "FAIL");
                         map.put("message", res.getMsg());
                         map.put("id", id);
+                        map.put("op", op);
                     }
                     subscribeSender.send(JSON.toJSONString(map), userId);
                     break;
@@ -197,11 +206,13 @@ public class SubscribeRequestReceiver {
                     map.put("status", "SUCC");
                     map.put("message", res.getMsg());
                     map.put("id", id);
+                    map.put("op", op);
                 }
                 else {
                     map.put("status", "FAIL");
                     map.put("message", res.getMsg());
                     map.put("id", id);
+                    map.put("op", op);
                 }
                 subscribeSender.send(JSON.toJSONString(map), userId);
                 break;
@@ -217,11 +228,13 @@ public class SubscribeRequestReceiver {
                     map.put("status", "SUCC");
                     map.put("message", res.getMsg());
                     map.put("id", id);
+                    map.put("op", op);
                 }
                 else {
                     map.put("status", "FAIL");
                     map.put("message", res.getMsg());
                     map.put("id", id);
+                    map.put("op", op);
                 }
                 subscribeSender.send(JSON.toJSONString(map), userId);
                 break;
@@ -236,6 +249,7 @@ public class SubscribeRequestReceiver {
                         map.put("status", "FAIL");
                         map.put("template", template);
                         map.put("message", "模板不存在");
+                        map.put("op", op);
                     }
                     else {
                         ResultInterface res = subscribeService.delTemplateSubscriber(template, userId);
@@ -243,11 +257,13 @@ public class SubscribeRequestReceiver {
                             map.put("status", "SUCC");
                             map.put("template", template);
                             map.put("message", res.getMsg());
+                            map.put("op", op);
                         }
                         else {
                             map.put("status", "FAIL");
                             map.put("template", template);
                             map.put("message", res.getMsg());
+                            map.put("op", op);
                         }
                     }
                     subscribeSender.send(JSON.toJSONString(map), userId);

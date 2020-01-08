@@ -440,7 +440,6 @@ public class MongoObjectService {
      * 查找某个时间点的obj
      */
     public CommonObject findObjectByTime(String id, Date time) {
-        // System.out.println("findObjectByTime: id = " + id + ", time = " + time + ", time.getTime() = " + time.getTime());
         // 初始化Date为0
         Date ut = new Date(0);
         // 取下最新的属性，作为模板，更换对应时间的属性
@@ -519,12 +518,10 @@ public class MongoObjectService {
      */
     private MongoAttr divFindAttrByTime(AttrsModel mongoAttrs, Date time) {
         List<MongoAttr> mongoAttrList = mongoAttrs.getAttrs();
-        //System.out.println("div:" + time + mongoAttrs);
         int low = 0;
         int high = mongoAttrList.size()-1;
         while(high - low > 1) {
             int mid = (low + high) / 2;
-            //System.out.println(low + " " + high + " " + mid);
             MongoAttr midAttr = mongoAttrList.get(mid);
             Date ut = midAttr.getUpdateTime();
             if (time.before(ut)) {
@@ -547,7 +544,6 @@ public class MongoObjectService {
      * @return 返回块
      */
     private AttrsModel divFindAttrsByTime(String id, String name, Date time, int cSize) {
-        // System.out.println("divFindAttrsByTime: id = " + id + ", name = " + name + ", time.getTime() = " + time.getTime() + ", cSize = " + cSize);
         int high = cSize;
         int low = 1;
         // 当前链的第一块

@@ -26,8 +26,8 @@ public class MongoObjectDAO extends MongoBaseDAO<CommonObject> {
 
             //Query query = Query.query(new Criteria().andOperator(Criteria.where("id").is(viewTemplateId),Criteria.where("template").elemMatch(Criteria.where("id").is(templateId))));
 
-            update.set("attr." + name + ".value", mongoAttr.getValue());
-            update.set("attr." + name + ".updateTime", mongoAttr.getUpdateTime());
+            update.set("attrs." + name + ".value", mongoAttr.getValue());
+            update.set("attrs." + name + ".updateTime", mongoAttr.getUpdateTime());
             update.set("updateTime", date);
             mongoTemplate.updateMulti(query, update, CommonObject.class);
         } catch (Exception e) {

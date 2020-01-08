@@ -1,5 +1,8 @@
 package com.sjtu.objectdataengine.controller;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.sjtu.objectdataengine.model.object.CommonObject;
 import com.sjtu.objectdataengine.service.object.APIObjectService;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -30,8 +33,18 @@ public class ObjectController {
         return objectService.deleteObjectById(id);
     }
 
-    @GetMapping("/add_attr")
-    public String addAttr(@RequestParam String id, @RequestParam String name, @RequestParam String value) {
+    @PostMapping("/add_attr")
+    @ResponseBody
+    public String addAttrPost(@RequestBody String request) {
+        JSONObject jsonObject = JSON.parseObject(request);
+        String id = jsonObject.getString("id");
+        String name = jsonObject.getString("name");
+        String value = jsonObject.getJSONArray("value").toJSONString();
+
+        return addAttr(id, name, value);
+    }
+
+    public String addAttr(String id, String name, String value) {
         return objectService.addAttr(id, name, value);
     }
 
