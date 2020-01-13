@@ -47,7 +47,10 @@ public class ObjectController {
     public String addAttr(String id, String name, String value) {
         return objectService.addAttr(id, name, value);
     }
-
+    @GetMapping("/addAttribute")
+    public String addAttribute(@RequestParam String id, @RequestParam String name, @RequestParam String value) {
+        return objectService.addAttr(id, name, value);
+    }
     @GetMapping("/get_object_by_id")
     public CommonObject getObjectById(@RequestParam String id) {
         return objectService.findObjectById(id);
